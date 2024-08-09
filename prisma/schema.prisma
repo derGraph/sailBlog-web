@@ -1,0 +1,115 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  username          String    @id @unique
+  email             String    @unique
+  firstName         String?
+  lastName          String?
+  description       String?
+  profilePicture    Media?    @relation("profilePicture", fields: [profilePictureId], references: [id])
+  profilePictureId  String?   @unique
+  dateOfBirth       DateTime?
+  role              Role      @relation(fields: [roleId], references: [id])
+  roleId            String    @default("user")
+  skipperedTrips    Trip[] @relation("skipper")
+  crewedTrips       Trip[] @relation("crew")
+  activeTrip        Trip   @relation(fields: [activeTripId], references: [id])
+  activeTripId      String
+  uploadedMedia     Media[]   @relation("uploader")                
+  sessions          Session[]
+  key               Key[]
+  lastPing          DateTime  @default(now())
+}
+
+model Session {
+  id                String    @id
+  userId            String
+  expiresAt         DateTime
+  user              User      @relation(references: [username], fields: [userId], onDelete: Cascade)
+}
+
+model Role {
+  id                String    @id
+  users             User[]
+}
+
+model Key {
+  id                String    @id @unique @default(cuid())
+  type              String
+  passwordHash      String?
+  userId            String
+  primary           Boolean
+  user              User      @relation(fields: [userId], references: [username], onDelete: Cascade)
+  @@index([userId])
+}
+
+model Voyage {
+  id                String    @id @default(cuid())
+  name              String
+  description       String?
+  trips             Trip[]
+  start             DateTime?
+  end               DateTime?
+  public            Boolean
+}
+
+model Trip {
+  id                String    @id @default(cuid())
+  voyage            Voyage    @relation(fields: [voyageId], references: [id])
+  voyageId          String
+  name              String
+  description       String?
+  startPoint        Datapoint?@relation("startPoint", fields: [startPointId], references: [id])
+  startPointId      String?   @unique
+  endPoint          Datapoint?@relation("endPoint", fields: [endPointId], references: [id])
+  endPointId        String?   @unique
+  datapoints        Datapoint[]
+  activeUser        User[]
+  start             DateTime?
+  end               DateTime?
+  last_update       DateTime  @updatedAt
+  length            Decimal?
+  skipper           User?     @relation("skipper", fields: [skipperName], references: [username])
+  skipperName       String?
+  crew              User[]    @relation("crew")
+}
+
+model Datapoint {
+  id                String    @id @default(cuid())
+  tripStart         Trip?     @relation("startPoint")
+  tripEnd           Trip?     @relation("endPoint")
+  trip              Trip      @relation(fields: [tripId], references: [id])
+  tripId            String
+  time              DateTime  @default(now())
+  lat               Decimal
+  long              Decimal
+  speed             Decimal?
+  heading           Decimal?
+  depth             Decimal?
+  h_accuracy        Decimal?
+  v_accuracy        Decimal?
+  propulsion        Int? // 0: anchor
+                            // 1: motor
+                            // 2: sailing
+}
+
+model Media {
+  id                String    @id @default(cuid())
+  visibility        Int       @default(1) // 0: private
+                                          // 1: logged in
+                                          // 2: public 
+  user              User      @relation("uploader", fields: [username], references: [username])
+  profilePicture    User?     @relation("profilePicture")
+  username          String
+}
