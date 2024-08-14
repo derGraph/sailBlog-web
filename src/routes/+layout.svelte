@@ -7,7 +7,6 @@
 	import { onMount } from 'svelte';
 	import { storePopup } from '@skeletonlabs/skeleton';
 
-
 	let navHeight = 2;
 	export let data;
 
@@ -15,55 +14,76 @@
 		setModeCurrent($modeCurrent);
 	});
 
-	function changeDarkMode(){
+	function changeDarkMode() {
 		setModeCurrent(!$modeCurrent);
 		setModeUserPrefers(!$modeCurrent);
 	}
 
-	function getInitials(){
-		if (user != null && user.firstName && user.lastName){
-			return user.firstName.charAt(0) + user.lastName.charAt(0)
+	function getInitials() {
+		if (user != null && user.firstName && user.lastName) {
+			return user.firstName.charAt(0) + user.lastName.charAt(0);
 		}
 	}
 
-	function getPictureUrl(){
-
-		return "htstps://upload.wikimedia.org/wikipedia/en/9/9a/Trollface_non-free.png"
+	function getPictureUrl() {
+		return 'htstps://upload.wikimedia.org/wikipedia/en/9/9a/Trollface_non-free.png';
 	}
 
 	$: user = data.user;
 	$: session = data.session;
 </script>
 
-
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+<link
+	rel="stylesheet"
+	href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0"
+/>
 <AppShell>
 	<svelte:fragment slot="header">
 		<div class="md:container h-full md:mx-auto justify-center items-center">
 			<AppBar class="rounded-b-3xl">
 				<svelte:fragment slot="lead">
 					<a href="/" class="material-symbols-outlined" style="font-size: {navHeight}rem">map</a>
-					<a href="/" style="font-size: {navHeight*2/3}rem">sailBlog</a>
+					<a href="/" style="font-size: {(navHeight * 2) / 3}rem">sailBlog</a>
 				</svelte:fragment>
-				<svelte:fragment slot="default">
-				</svelte:fragment>
+				<svelte:fragment slot="default"></svelte:fragment>
 				<svelte:fragment slot="trail">
 					{#if !user}
 						<div class="btn-md btn variant-ghost-secondary">
 							<a href="/sign_in"><button type="button" class="">Sign in!</button></a>
-							<span class="divider-vertical h-6" style="border-color:rgb(var(--color-secondary-500));"/>
+							<span
+								class="divider-vertical h-6"
+								style="border-color:rgb(var(--color-secondary-500));"
+							/>
 							<a href="/sign_up"><button type="button" class="">Sign up!</button></a>
 						</div>
 					{:else}
-						<div class="btn-sm btn variant-ghost-secondary material-symbols-outlined" style="margin:0;">
-							<button on:click={changeDarkMode} style="font-size: {navHeight}rem">{($modeCurrent ? "dark_mode" : "light_mode")}</button>
-							<span class="divider-vertical h-8" style="border-color:rgb(var(--color-secondary-500)); margin:0; padding:0;"/>
-							<a href="/sign_out" style="margin:0;padding:0;"><button type="button" style="font-size: {navHeight}rem">logout</button></a>
+						<div
+							class="btn-sm btn variant-ghost-secondary material-symbols-outlined"
+							style="margin:0;"
+						>
+							<button on:click={changeDarkMode} style="font-size: {navHeight}rem"
+								>{$modeCurrent ? 'dark_mode' : 'light_mode'}</button
+							>
+							<span
+								class="divider-vertical h-8"
+								style="border-color:rgb(var(--color-secondary-500)); margin:0; padding:0;"
+							/>
+							<a href="/sign_out" style="margin:0;padding:0;"
+								><button type="button" style="font-size: {navHeight}rem">logout</button></a
+							>
 						</div>
 						{#if user.firstName && user.lastName}
-							<a href="/user"><Avatar initials ={getInitials()} src={getPictureUrl()} background="bg-primary-500" width="w-11" rounded="rounded-full" /></a>
+							<a href="/user"
+								><Avatar
+									initials={getInitials()}
+									src={getPictureUrl()}
+									background="bg-primary-500"
+									width="w-11"
+									rounded="rounded-full"
+								/></a
+							>
 						{:else}
-							<a href="/user"><div class="placeholder-circle w-11"/></a>
+							<a href="/user"><div class="placeholder-circle w-11" /></a>
 						{/if}
 					{/if}
 				</svelte:fragment>
@@ -72,8 +92,11 @@
 	</svelte:fragment>
 	<slot />
 	<svelte:fragment slot="pageFooter">
-			<div class="container rounded-t-3xl mx-auto justify-center bg-surface-100-800-token" style="text-align: center">
-				<a href="https://github.com/derGraph">&copy; derGraph</a>
-			</div>
-		</svelte:fragment>
+		<div
+			class="container rounded-t-3xl mx-auto justify-center bg-surface-100-800-token"
+			style="text-align: center"
+		>
+			<a href="https://github.com/derGraph">&copy; derGraph</a>
+		</div>
+	</svelte:fragment>
 </AppShell>

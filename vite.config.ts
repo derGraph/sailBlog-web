@@ -6,9 +6,7 @@ const config: UserConfig = {
 	plugins: [sveltekit(), purgeCss()],
 	build: {
 		rollupOptions: {
-			external: [
-				"sharp"
-			]
+			external: ['sharp']
 		}
 	}
 };
