@@ -1,3 +1,3 @@
 #!/bin/sh
-npx prisma db push 
+npx prisma db push -skip-generate
 node build
