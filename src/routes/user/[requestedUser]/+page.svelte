@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Avatar, ListBox } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
+	import errorStore from '$lib/errorStore.js';
 	import Tiptap from '$lib/Tiptap/+Tiptap.svelte';
 
 	export let data;
@@ -8,8 +9,6 @@
 	let newLastName = '';
 
 	$: requestedUserName = data.requestedUser;
-
-	let error = new Response();
 
 	let requestedUser = {
 		firstName: '',
@@ -28,7 +27,7 @@
 					requestedUser.username = Object.keys(response_data)[0];
 				});
 			} else {
-				error = response;
+				$errorStore = response;
 			}
 		});
 	});
@@ -75,7 +74,7 @@
 				if (response_data.ok) {
 					return true;
 				} else {
-					error = response_data;
+					$errorStore = response_data;
 					return false;
 				}
 			})
@@ -84,32 +83,10 @@
 				return false;
 			});
 	};
-	function resetError() {
-		error = new Response();
-	}
 </script>
 
 <div class="md:container md:mx-auto py-3 h-full w-full flex flex-row">
 	<div class="flex flex-col w-full bg-surface-100-800-token rounded-3xl items-center">
-		{#if error.status && error.status != 200}
-			<aside class="alert variant-ghost-warning text-warning-400-500-token">
-				<div class="material-symbols-outlined">warning</div>
-				<div class="alert-message">
-					{#await error.json()}
-						<h3 class="h3">"Loading..."</h3>
-					{:then parsed}
-						<h3 class="h3">{error.status} {error.statusText}: {parsed.message}</h3>
-					{:catch parsingError}
-						<h3 class="h3">Error in response: {parsingError}</h3>
-					{/await}
-				</div>
-				<div class="alert-actions">
-					<button class="btn variant-filled-warning" on:click={resetError}>
-						<span>Ok</span>
-					</button>
-				</div>
-			</aside>
-		{/if}
 		{#if requestedUser.firstName && requestedUser.lastName}
 			<Avatar
 				initials={getInitials(requestedUser)}

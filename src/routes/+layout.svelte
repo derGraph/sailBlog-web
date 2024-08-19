@@ -5,6 +5,7 @@
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import { setModeCurrent, setModeUserPrefers, modeCurrent } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
+	import errorStore from '$lib/errorStore';
 	import { storePopup } from '@skeletonlabs/skeleton';
 
 	let navHeight = 2;
@@ -27,6 +28,10 @@
 
 	function getPictureUrl() {
 		return 'htstps://upload.wikimedia.org/wikipedia/en/9/9a/Trollface_non-free.png';
+	}
+
+	function resetError() {
+		$errorStore = new Response();
 	}
 
 	$: user = data.user;
@@ -90,6 +95,27 @@
 			</AppBar>
 		</div>
 	</svelte:fragment>
+	{#if $errorStore.status && $errorStore.status != 200}
+		<div class="md:container md:mx-auto flex flex-row flex flex-col pt-3 rounded-t-3xl">
+			<aside class="alert variant-ghost-warning text-warning-400-500-token">
+				<div class="material-symbols-outlined">warning</div>
+				<div class="alert-message">
+					{#await $errorStore.json()}
+						<h3 class="h3">"Loading..."</h3>
+					{:then parsed}
+						<h3 class="h3">{$errorStore.status} {$errorStore.statusText}: {parsed.message}</h3>
+					{:catch parsingError}
+						<h3 class="h3">Error in response: {parsingError}</h3>
+					{/await}
+				</div>
+				<div class="alert-actions">
+					<button class="btn variant-filled-warning" on:click={resetError}>
+						<span>Ok</span>
+					</button>
+				</div>
+			</aside>
+		</div>
+	{/if}
 	<slot />
 	<svelte:fragment slot="pageFooter">
 		<div
