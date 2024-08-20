@@ -27,5 +27,6 @@
 </script>
 
 <div class="md:container md:mx-auto py-3 h-full rounded">
+	console.log($tracks);
 	<Leaflet view={initialView} zoom={8} tracks={$tracks}/>
 </div>
