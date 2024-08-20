@@ -1,6 +1,5 @@
-import { updated } from '$app/stores';
 import { prisma } from '$lib/server/prisma';
-import { error, fail, json } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
 
 interface Datapoint {
 	id?: string;
@@ -52,12 +51,18 @@ export async function POST(event: {
 
 		for (const k of Object.keys(input)) {
 			try {
+				input[k].id = k;
+				if(k == ""){
+					input[k].id = undefined;
+				}
 				let datapoint = checkDatapoint(input[k]);
 				datapoint.tripId = activeUser.activeTripId;
-				datapoint.id = k;
-				let existingPoint = await prisma.datapoint.findFirst({
-					where: { id: datapoint.id }
-				});
+				let existingPoint = null;
+				if(datapoint.id){
+					existingPoint = await prisma.datapoint.findFirst({
+						where: { id: datapoint.id }
+					});
+				}
 				if (existingPoint != null) {
 					compareObjects(datapoint, existingPoint);
 				}
@@ -139,7 +144,7 @@ function checkDatapoint(rawData: {
 	const cuidRegex = /^c[a-z0-9]{24}$/;
 	if (id != null) {
 		if (!cuidRegex.test(id)) {
-			throw new Error('Invalid Id!');
+			id = null;
 		}
 	}
 
@@ -262,4 +267,80 @@ function compareObjects(
 		);
 	}
 	return;
+}
+
+export async function GET(event) {
+	locals: { user: { username: String } };
+
+	let requestedTrip = event.url.searchParams.get('tripId');
+	let unparsed_start = event.url.searchParams.get('start');
+	let unparsed_end = event.url.searchParams.get('end');
+	let start = new Date(0);
+	let end = new Date(Date.now());
+
+	if (requestedTrip == null || requestedTrip == '') {
+		error(400, {
+			message: 'No tripId requested!'
+		});
+	}else{
+		const cuidRegex = /^c[a-z0-9]{24}$/;
+		if (requestedTrip != null) {
+			if (!cuidRegex.test(requestedTrip)) {
+				error(400, 'Invalid Id!');
+			}
+		}	
+	}
+
+	try{
+		if (unparsed_start != null) {
+			start = new Date(parseInt(unparsed_start));
+		} else {
+			start = new Date(0);
+		}
+	} catch (error_message) {
+		error(400, { message: 'Invalid start Timestamp!' });
+	}
+
+	try{
+		if (unparsed_end != null) {
+			end = new Date(parseInt(unparsed_end));
+		} else {
+			end = new Date(Date.now());
+		}
+	} catch (error_message) {
+		error(400, { message: 'Invalid end Timestamp!' });
+	}
+	
+	try {
+		if(!event.locals.user?.username){
+			let tripData = await prisma.trip.findFirstOrThrow({
+				where: {
+					voyage: {
+						public: true,
+					}
+				}
+			});
+
+		}
+		let datapoints = await prisma.datapoint.findMany({
+			where: {
+				tripId: requestedTrip,
+				time: {
+					lte: end,
+					gte: start,
+				}
+			}
+		});
+		return new Response(JSON.stringify(datapoints));
+	} catch (error_message) {
+		if (error_message instanceof Error) {
+			error(404, {
+				message: error_message.message
+			});
+		} else {
+			error(500, {
+				message: 'ERROR'
+			});
+		}
+	}
 }
