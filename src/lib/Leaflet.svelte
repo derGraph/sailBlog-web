@@ -36,7 +36,7 @@
 		});
 
 		osmLayer.addTo(map);
-		//seamarkLayer.addTo(map);
+		seamarkLayer.addTo(map);
 	});
 
 	onDestroy(() => {
