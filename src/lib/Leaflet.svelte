@@ -72,6 +72,7 @@
 			}
 			let polyline = L.polyline(latlngs, {color: 'red'}).addTo(map);
 		}
+		console.log(tracks);
 
 	}
 </script>
