@@ -6,7 +6,7 @@
 	import errorStore from '$lib/errorStore.js';
 
 	export let data;
-	let tracks: null = null;
+	let tracks: Datapoint[]|null = null;
 
 	const initialView: LatLngExpression = [43.95, 14.79];
 
@@ -30,7 +30,7 @@
 			$errorStore = response;
 		}
 		let tracksJson = await response.json();
-		const tracks: Datapoint[] = tracksJson.map((data: { id: any; time: string | number | Date; tripId: any; lat: string; long: string; speed: null; heading: null; depth: null; h_accuracy: null; v_accuracy: null; propulsion: null; }) => ({
+		$tracks = tracksJson.map((data: { id: any; time: string | number | Date; tripId: any; lat: string; long: string; speed: null; heading: null; depth: null; h_accuracy: null; v_accuracy: null; propulsion: null; }) => ({
 			id: data.id,
 			time: new Date(data.time),
 			tripId: data.tripId,
@@ -43,6 +43,7 @@
 			v_accuracy: data.v_accuracy !== null ? data.v_accuracy : undefined,
 			propulsion: data.propulsion !== null ? data.propulsion : undefined
 		}));
+		$: console.log(tracks);
 	}
 
 	onMount(()=>{
