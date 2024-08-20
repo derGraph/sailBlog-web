@@ -1,10 +1,25 @@
 <script lang="ts">
 	import L from 'leaflet';
+	import 'leaflet/dist/leaflet.css';
 	import { onDestroy, onMount, setContext } from 'svelte';
 	import { modeCurrent } from '@skeletonlabs/skeleton';
 
 	let map: L.Map | undefined;
 	let mapElement: HTMLDivElement;
+
+	interface Datapoint {
+		id?: string;
+		time?: Date;
+		tripId: string;
+		lat: number;
+		long: number;
+		speed?: number;
+		heading?: number;
+		depth?: number;
+		h_accuracy?: number;
+		v_accuracy?: number;
+		propulsion?: number;
+	}
 
 	onMount(() => {
 		map = L.map(mapElement);
@@ -21,7 +36,7 @@
 		});
 
 		osmLayer.addTo(map);
-		seamarkLayer.addTo(map);
+		//seamarkLayer.addTo(map);
 	});
 
 	onDestroy(() => {
@@ -36,6 +51,7 @@
 	export let bounds: L.LatLngBoundsExpression | undefined = undefined;
 	export let view: L.LatLngExpression | undefined = undefined;
 	export let zoom: number | undefined = undefined;
+	export let tracks: Datapoint[]  | null = null;
 
 	onMount(() => {
 		if (!bounds && (!view || !zoom)) {
@@ -49,6 +65,14 @@
 		} else if (view && zoom) {
 			map.setView(view, zoom);
 		}
+		let latlngs: L.LatLng[] = [];
+		if(tracks != null){
+			for(let point of tracks){
+				latlngs.push(new L.LatLng(point.lat, point.long))
+			}
+			let polyline = L.polyline(latlngs, {color: 'red'}).addTo(map);
+		}
+
 	}
 </script>
 
