@@ -1,6 +1,5 @@
 <script lang="ts">
 	import L from 'leaflet';
-	import 'leaflet/dist/leaflet.css';
 	import { onDestroy, onMount, setContext } from 'svelte';
 	import { modeCurrent } from '@skeletonlabs/skeleton';
 
