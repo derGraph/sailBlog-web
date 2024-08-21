@@ -331,7 +331,11 @@ export async function GET(event) {
 				}
 			}
 		});
-		return new Response(JSON.stringify(datapoints));
+		let responseData: { [k: string]: any } = {};
+		datapoints.forEach((datapoint) => {
+			responseData[datapoint.id] = { ...datapoint, id: undefined };
+		});
+		return new Response(JSON.stringify(responseData));
 	} catch (error_message) {
 		if (error_message instanceof Error) {
 			error(404, {
