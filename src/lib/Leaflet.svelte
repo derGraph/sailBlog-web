@@ -3,23 +3,11 @@
 	import 'leaflet/dist/leaflet.css';
 	import { onDestroy, onMount, setContext } from 'svelte';
 	import { modeCurrent } from '@skeletonlabs/skeleton';
+	import errorStore from './errorStore';
 
 	let map: L.Map | undefined;
 	let mapElement: HTMLDivElement;
-
-	interface Datapoint {
-		id?: string;
-		time?: Date;
-		tripId: string;
-		lat: number;
-		long: number;
-		speed?: number;
-		heading?: number;
-		depth?: number;
-		h_accuracy?: number;
-		v_accuracy?: number;
-		propulsion?: number;
-	}
+	let lines: L.Polyline[] = [];
 
 	onMount(() => {
 		map = L.map(mapElement);
@@ -51,7 +39,7 @@
 	export let bounds: L.LatLngBoundsExpression | undefined = undefined;
 	export let view: L.LatLngExpression | undefined = undefined;
 	export let zoom: number | undefined = undefined;
-	export let tracks: Datapoint[]  | null = null;
+	export let tracks: String[] | null = null;
 
 	onMount(() => {
 		if (!bounds && (!view || !zoom)) {
@@ -65,13 +53,40 @@
 		} else if (view && zoom) {
 			map.setView(view, zoom);
 		}
-		let latlngs: L.LatLng[] = [];
+	}
+	$: onTracksChange(tracks);
+	function onTracksChange(tracks: any[] | null){
 		if(tracks != null){
-			for(let point of tracks){
-				latlngs.push(new L.LatLng(point.lat, point.long))
-			}
-			let polyline = L.polyline(latlngs, {color: 'red'}).addTo(map);
+			tracks.forEach(async trackId => {
+				let tripData = await getTrip(trackId);
+				let latlngs: L.LatLng[] = [];
+				for (const key of Object.keys(tripData)){
+					latlngs.push(new L.LatLng(tripData[key].lat, tripData[key].long));
+				}
+				console.log("PUSH");
+				lines = [...lines, L.polyline(latlngs, {color: 'red'})];
+			});
 		}
+	}
+	
+
+	$:	onLineChange(lines);
+	function onLineChange(lines: any[]){
+		if(lines.length != 0){
+			lines.forEach(line => {
+				line.remove();
+				line.addTo(map!);
+			});
+			console.log("add");
+		}
+	}
+
+	async function getTrip(tripId: String) {
+		let response = await fetch('/api/Datapoints?tripId='+tripId);
+		if(!response.ok){
+			$errorStore = response;
+		}
+		return await response.json();
 	}
 </script>
 

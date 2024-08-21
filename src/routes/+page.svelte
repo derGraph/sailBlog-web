@@ -6,7 +6,7 @@
 	import errorStore from '$lib/errorStore.js';
 
 	export let data;
-	let tracks: Datapoint[]|null = null;
+	let tracks: String[]|null = null;
 
 	const initialView: LatLngExpression = [43.95, 14.79];
 
@@ -24,35 +24,14 @@
 		propulsion?: number;
 	}
 
-	async function getTrip(tripId: String) {
-		let response = await fetch('/api/Datapoints?tripId='+tripId);
-		if(!response.ok){
-			$errorStore = response;
-		}
-		let tracksJson = await response.json();
-		$tracks = tracksJson.map((data: { id: any; time: string | number | Date; tripId: any; lat: string; long: string; speed: null; heading: null; depth: null; h_accuracy: null; v_accuracy: null; propulsion: null; }) => ({
-			id: data.id,
-			time: new Date(data.time),
-			tripId: data.tripId,
-			lat: parseFloat(data.lat),
-			long: parseFloat(data.long),
-			speed: data.speed !== null ? data.speed : undefined,
-			heading: data.heading !== null ? data.heading : undefined,
-			depth: data.depth !== null ? data.depth : undefined,
-			h_accuracy: data.h_accuracy !== null ? data.h_accuracy : undefined,
-			v_accuracy: data.v_accuracy !== null ? data.v_accuracy : undefined,
-			propulsion: data.propulsion !== null ? data.propulsion : undefined
-		}));
-		$: console.log(tracks);
-	}
-
 	onMount(()=>{
 		if(data.user){
-			getTrip(data.user?.activeTripId);
+			tracks = [data.user?.activeTripId];
 		}
 	});
+	$: console.log(tracks);
 </script>
 
 <div class="md:container md:mx-auto py-3 h-full rounded">
-	<Leaflet view={initialView} zoom={8} tracks={$tracks}/>
+	<Leaflet view={initialView} zoom={8} tracks={tracks}/>
 </div>
