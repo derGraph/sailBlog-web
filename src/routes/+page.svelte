@@ -29,7 +29,6 @@
 			tracks = [data.user?.activeTripId];
 		}
 	});
-	$: console.log(tracks);
 </script>
 
 <div class="md:container md:mx-auto py-3 h-full rounded">

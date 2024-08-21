@@ -8,6 +8,7 @@
 	let map: L.Map | undefined;
 	let mapElement: HTMLDivElement;
 	let lines: L.Polyline[] = [];
+	let oldBounds: L.LatLngBoundsExpression | undefined;
 
 	onMount(() => {
 		map = L.map(mapElement);
@@ -50,8 +51,10 @@
 	$: if (map) {
 		if (bounds) {
 			map.fitBounds(bounds);
+			oldBounds = map.getBounds();
 		} else if (view && zoom) {
 			map.setView(view, zoom);
+			oldBounds = map.getBounds();
 		}
 	}
 	$: onTracksChange(tracks);
@@ -63,7 +66,6 @@
 				for (const key of Object.keys(tripData)){
 					latlngs.push(new L.LatLng(tripData[key].lat, tripData[key].long));
 				}
-				console.log("PUSH");
 				lines = [...lines, L.polyline(latlngs, {color: 'red'})];
 			});
 		}
@@ -73,11 +75,16 @@
 	$:	onLineChange(lines);
 	function onLineChange(lines: any[]){
 		if(lines.length != 0){
+			var maxBounds = lines[0].getBounds();
 			lines.forEach(line => {
 				line.remove();
 				line.addTo(map!);
+				maxBounds.extend(line.getBounds());
 			});
-			console.log("add");
+			if(map?.getBounds().equals(oldBounds!)){
+				map?.fitBounds(maxBounds);
+				oldBounds = maxBounds;
+			}
 		}
 	}
 
