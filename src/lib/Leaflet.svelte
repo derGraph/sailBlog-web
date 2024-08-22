@@ -7,7 +7,7 @@
 
 	let map: L.Map | undefined;
 	let mapElement: HTMLDivElement;
-	let lines: L.Polyline[] = [];
+	let lines: L.Polyline[][] = [];
 	let oldBounds: L.LatLngBoundsExpression | undefined;
 
 	onMount(() => {
@@ -57,42 +57,96 @@
 			oldBounds = map.getBounds();
 		}
 	}
+
 	$: onTracksChange(tracks);
-	function onTracksChange(tracks: any[] | null){
-		if(tracks != null){
-			tracks.forEach(async trackId => {
-				let tripData = await getTrip(trackId);
-				let latlngs: L.LatLng[] = [];
-				for (const key of Object.keys(tripData)){
-					latlngs.push(new L.LatLng(tripData[key].lat, tripData[key].long));
-				}
-				lines = [...lines, L.polyline(latlngs, {color: 'red'})];
-			});
+
+	function getColorByPropulsion(propulsion: number): string {
+		switch (propulsion) {
+			case 0:
+				// anchoring
+				return "#4682B4";
+			case 1:
+				// motoring
+				return '#FF6600';
+			case 2:
+				// sailing
+				return '#2E8B57';
+			default:
+				return 'red'; // Fallback color
 		}
 	}
-	
 
-	$:	onLineChange(lines);
-	function onLineChange(lines: any[]){
-		if(lines.length != 0){
-			var maxBounds = lines[0].getBounds();
-			lines.forEach(line => {
-				line.remove();
-				line.addTo(map!);
-				maxBounds.extend(line.getBounds());
-			});
-			if(map?.getBounds().isValid()){
-				if(map?.getBounds().equals(oldBounds!) && maxBounds.isValid()){
-				map?.fitBounds(maxBounds);
-				oldBounds = maxBounds;
+	async function onTracksChange(tracks: any[] | null) {
+		lines = []; // Reset the lines2D array
+
+		if (tracks != null) {
+			for (const trackId of tracks) {
+				let tripData = await getTrip(trackId);
+				let trackLines: L.Polyline[] = [];
+				let currentLine: L.LatLng[] = [];
+				let currentPropulsion: number | null = null;
+
+				for (const key of Object.keys(tripData)) {
+					let point = new L.LatLng(tripData[key].lat, tripData[key].long);
+					let propulsionType = tripData[key].propulsion;
+
+					if (currentPropulsion === null) {
+						// First point
+						currentPropulsion = propulsionType;
+						currentLine.push(point);
+					} else if (propulsionType === currentPropulsion) {
+						// Same propulsion, continue current line
+						currentLine.push(point);
+					} else {
+						// Propulsion type changed
+						// Finish the current segment
+						const color = getColorByPropulsion(currentPropulsion);
+						let polyline = L.polyline(currentLine, { color });
+						trackLines.push(polyline);
+
+						// Start a new segment with the old line extending to the new point
+						currentLine = [currentLine[currentLine.length - 1], point];
+						currentPropulsion = propulsionType;
+					}
+				}
+
+				// Push the last segment
+				if (currentLine.length > 0) {
+					const color = getColorByPropulsion(currentPropulsion!);
+					let polyline = L.polyline(currentLine, { color });
+					trackLines.push(polyline);
+				}
+
+				// Add the trackLines to the lines2D array
+				lines = [...lines, trackLines];
 			}
+		}
+	}
+
+	$: onLineChange(lines);
+
+	function onLineChange(lines2D: L.Polyline[][]) {
+		if (lines2D.length != 0) {
+			var maxBounds = lines2D[0][0].getBounds();
+			lines2D.forEach(trackLines => {
+				trackLines.forEach(line => {
+					line.remove();
+					line.addTo(map!);
+					maxBounds.extend(line.getBounds());
+				});
+			});
+			if (map?.getBounds().isValid()) {
+				if (map?.getBounds().equals(oldBounds!) && maxBounds.isValid()) {
+					map?.fitBounds(maxBounds);
+					oldBounds = maxBounds;
+				}
 			}
 		}
 	}
 
 	async function getTrip(tripId: String) {
-		let response = await fetch('/api/Datapoints?tripId='+tripId);
-		if(!response.ok){
+		let response = await fetch('/api/Datapoints?tripId=' + tripId);
+		if (!response.ok) {
 			$errorStore = response;
 		}
 		return await response.json();
