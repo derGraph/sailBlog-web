@@ -81,9 +81,11 @@
 				line.addTo(map!);
 				maxBounds.extend(line.getBounds());
 			});
-			if(map?.getBounds().equals(oldBounds!)){
+			if(map?.getBounds().isValid()){
+				if(map?.getBounds().equals(oldBounds!) && maxBounds.isValid()){
 				map?.fitBounds(maxBounds);
 				oldBounds = maxBounds;
+			}
 			}
 		}
 	}
