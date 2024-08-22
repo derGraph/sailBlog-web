@@ -15,11 +15,11 @@
 
 		var osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			maxZoom: 19,
-			attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 			className: 'osm-layer'
 		});
 
-		var seamarkLayer = L.tileLayer('http://t1.openseamap.org/seamark/{z}/{x}/{y}.png', {
+		var seamarkLayer = L.tileLayer('https://t1.openseamap.org/seamark/{z}/{x}/{y}.png', {
 			maxZoom: 19,
 			attribution: '&copy; <a href="https://www.openseamap.org/">OpenSeaMap</a>'
 		});
