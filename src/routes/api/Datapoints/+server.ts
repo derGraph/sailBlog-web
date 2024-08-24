@@ -312,15 +312,34 @@ export async function GET(event) {
 	}
 	
 	try {
-		if(!event.locals.user?.username){
+		if(event.locals.user?.username){
 			let tripData = await prisma.trip.findFirstOrThrow({
 				where: {
-					voyage: {
-						public: true,
-					}
+					OR: [{
+						id: requestedTrip,
+						visibility: 1
+					},
+					{
+						id: requestedTrip,
+						visibility: 2
+					},
+					{
+						id: requestedTrip,
+						crew: {
+							some: {
+								username: event.locals.user?.username
+							}
+						}
+					}]
 				}
 			});
-
+		}else{
+			let tripData = await prisma.trip.findFirstOrThrow({
+				where: {
+					id: requestedTrip,
+					visibility: 2
+				}
+			});
 		}
 		let datapoints = await prisma.datapoint.findMany({
 			where: {

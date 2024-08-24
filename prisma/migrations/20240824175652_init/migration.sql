@@ -47,21 +47,8 @@ CREATE TABLE `Key` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Voyage` (
-    `id` VARCHAR(191) NOT NULL,
-    `name` VARCHAR(191) NOT NULL,
-    `description` VARCHAR(191) NULL,
-    `start` DATETIME(3) NULL,
-    `end` DATETIME(3) NULL,
-    `public` BOOLEAN NOT NULL,
-
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
 CREATE TABLE `Trip` (
     `id` VARCHAR(191) NOT NULL,
-    `voyageId` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
     `description` VARCHAR(191) NULL,
     `startPointId` VARCHAR(191) NULL,
@@ -71,6 +58,7 @@ CREATE TABLE `Trip` (
     `last_update` DATETIME(3) NOT NULL,
     `length` DECIMAL(65, 30) NULL,
     `skipperName` VARCHAR(191) NULL,
+    `visibility` BOOLEAN NOT NULL DEFAULT false,
 
     UNIQUE INDEX `Trip_startPointId_key`(`startPointId`),
     UNIQUE INDEX `Trip_endPointId_key`(`endPointId`),
@@ -90,6 +78,7 @@ CREATE TABLE `Datapoint` (
     `h_accuracy` DECIMAL(65, 30) NULL,
     `v_accuracy` DECIMAL(65, 30) NULL,
     `propulsion` INTEGER NULL,
+    `optimized` INTEGER NOT NULL DEFAULT 0,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -126,9 +115,6 @@ ALTER TABLE `Session` ADD CONSTRAINT `Session_userId_fkey` FOREIGN KEY (`userId`
 
 -- AddForeignKey
 ALTER TABLE `Key` ADD CONSTRAINT `Key_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`username`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Trip` ADD CONSTRAINT `Trip_voyageId_fkey` FOREIGN KEY (`voyageId`) REFERENCES `Voyage`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Trip` ADD CONSTRAINT `Trip_startPointId_fkey` FOREIGN KEY (`startPointId`) REFERENCES `Datapoint`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;

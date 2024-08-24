@@ -104,14 +104,16 @@ export const actions: Actions = {
 					activeTrip: {
 						create: {
 							name: 'newTrip',
-							voyage: {
-								create: {
-									name: 'newVoyage',
-									public: false
-								}
-							}
 						}
 					}
+				}
+			});
+			await prisma.user.update({
+				where: {
+					username: username,
+				},
+				data: {
+					crewedTrips: {connect: {id: (await prisma.user.findFirstOrThrow({where: {username: username}})).activeTripId}}
 				}
 			});
 		} catch (error) {

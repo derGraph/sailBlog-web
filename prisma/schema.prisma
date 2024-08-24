@@ -54,20 +54,8 @@ model Key {
   @@index([userId])
 }
 
-model Voyage {
-  id                String    @id @default(cuid())
-  name              String
-  description       String?
-  trips             Trip[]
-  start             DateTime?
-  end               DateTime?
-  public            Boolean
-}
-
 model Trip {
   id                String    @id @default(cuid())
-  voyage            Voyage    @relation(fields: [voyageId], references: [id])
-  voyageId          String
   name              String
   description       String?
   startPoint        Datapoint?@relation("startPoint", fields: [startPointId], references: [id])
@@ -83,7 +71,10 @@ model Trip {
   skipper           User?     @relation("skipper", fields: [skipperName], references: [username])
   skipperName       String?
   crew              User[]    @relation("crew")
-}
+  visibility        Int       @default(1) // 0: private
+                                          // 1: logged in
+                                          // 2: public 
+  }
 
 model Datapoint {
   id                String    @id @default(cuid())
@@ -102,6 +93,9 @@ model Datapoint {
   propulsion        Int? // 0: anchor
                             // 1: motor
                             // 2: sailing
+  optimized         Int     @default(0) // 0: to optimize
+                                        // 1: deleted
+                                        // 2: needed
 }
 
 model Media {
