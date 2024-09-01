@@ -25,7 +25,7 @@ export async function simplifyGps(trip: string, amount: number){
 
 
 
-        if(crosstrackError < 10 && Math.abs(turnRate) < 40){
+        if(crosstrackError < 10 && Math.abs(turnRate) < 30){
             // Delete Datapoint
             await prisma.datapoint.update({
                 where: {id: inputData[i].id},
