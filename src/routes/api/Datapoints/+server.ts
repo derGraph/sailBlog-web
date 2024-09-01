@@ -1,6 +1,6 @@
 import { prisma } from '$lib/server/prisma';
 import { error, json } from '@sveltejs/kit';
-import  '$lib/server/simplifyGps.js';
+import '$lib/server/simplifyGps.js';
 import { simplifyGps } from '$lib/server/simplifyGps.js';
 
 interface Datapoint {
@@ -30,7 +30,7 @@ export async function POST(event: {
 		error(400, result.name + ': ' + result.message);
 	}
 
-	if(Object.keys(input).length > 500){
+	if (Object.keys(input).length > 500) {
 		error(413, 'Payload to large: Maximum of 500 Datapoints per request are allowed!');
 	}
 
@@ -58,13 +58,13 @@ export async function POST(event: {
 		for (const k of Object.keys(input)) {
 			try {
 				input[k].id = k;
-				if(k == ""){
+				if (k == '') {
 					input[k].id = undefined;
 				}
 				let datapoint = checkDatapoint(input[k]);
 				datapoint.tripId = activeUser.activeTripId;
 				let existingPoint = null;
-				if(datapoint.id){
+				if (datapoint.id) {
 					existingPoint = await prisma.datapoint.findFirst({
 						where: { id: datapoint.id }
 					});
@@ -277,7 +277,11 @@ function compareObjects(
 }
 
 export async function GET(event) {
-	locals: { user: { username: String } };
+	locals: {
+		user: {
+			username: String;
+		}
+	}
 
 	let requestedTrip = event.url.searchParams.get('tripId');
 	let unparsed_start = event.url.searchParams.get('start');
@@ -289,16 +293,16 @@ export async function GET(event) {
 		error(400, {
 			message: 'No tripId requested!'
 		});
-	}else{
+	} else {
 		const cuidRegex = /^c[a-z0-9]{24}$/;
 		if (requestedTrip != null) {
 			if (!cuidRegex.test(requestedTrip)) {
 				error(400, 'Invalid Id!');
 			}
-		}	
+		}
 	}
 
-	try{
+	try {
 		if (unparsed_start != null) {
 			start = new Date(parseInt(unparsed_start));
 		} else {
@@ -308,7 +312,7 @@ export async function GET(event) {
 		error(400, { message: 'Invalid start Timestamp!' });
 	}
 
-	try{
+	try {
 		if (unparsed_end != null) {
 			end = new Date(parseInt(unparsed_end));
 		} else {
@@ -317,30 +321,32 @@ export async function GET(event) {
 	} catch (error_message) {
 		error(400, { message: 'Invalid end Timestamp!' });
 	}
-	
+
 	try {
-		if(event.locals.user?.username){
+		if (event.locals.user?.username) {
 			let tripData = await prisma.trip.findFirstOrThrow({
 				where: {
-					OR: [{
-						id: requestedTrip,
-						visibility: 1
-					},
-					{
-						id: requestedTrip,
-						visibility: 2
-					},
-					{
-						id: requestedTrip,
-						crew: {
-							some: {
-								username: event.locals.user?.username
+					OR: [
+						{
+							id: requestedTrip,
+							visibility: 1
+						},
+						{
+							id: requestedTrip,
+							visibility: 2
+						},
+						{
+							id: requestedTrip,
+							crew: {
+								some: {
+									username: event.locals.user?.username
+								}
 							}
 						}
-					}]
+					]
 				}
 			});
-		}else{
+		} else {
 			let tripData = await prisma.trip.findFirstOrThrow({
 				where: {
 					id: requestedTrip,
@@ -353,13 +359,16 @@ export async function GET(event) {
 				tripId: requestedTrip,
 				time: {
 					lte: end,
-					gte: start,
+					gte: start
 				},
-				OR: [{
-					optimized: 0
-				},{
-					optimized: 2
-				}]
+				OR: [
+					{
+						optimized: 0
+					},
+					{
+						optimized: 2
+					}
+				]
 			}
 		});
 		let responseData: { [k: string]: any } = {};

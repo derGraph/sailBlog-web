@@ -64,7 +64,7 @@
 		switch (propulsion) {
 			case 0:
 				// anchoring
-				return "#4682B4";
+				return '#4682B4';
 			case 1:
 				// motoring
 				return '#FF6600';
@@ -128,8 +128,8 @@
 	function onLineChange(lines2D: L.Polyline[][]) {
 		if (lines2D.length != 0) {
 			var maxBounds = lines2D[0][0].getBounds();
-			lines2D.forEach(trackLines => {
-				trackLines.forEach(line => {
+			lines2D.forEach((trackLines) => {
+				trackLines.forEach((line) => {
 					line.remove();
 					line.addTo(map!);
 					maxBounds.extend(line.getBounds());

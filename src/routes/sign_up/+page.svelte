@@ -3,13 +3,16 @@
 
 	export let form;
 
-	$: if(form?.error){
-		$errorStore = new Response(JSON.stringify({
-			message: form.error
-		}), {
-			statusText: "Bad request!",
-			status: 400
-		});
+	$: if (form?.error) {
+		$errorStore = new Response(
+			JSON.stringify({
+				message: form.error
+			}),
+			{
+				statusText: 'Bad request!',
+				status: 400
+			}
+		);
 	}
 </script>
 
