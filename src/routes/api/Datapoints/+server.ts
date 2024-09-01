@@ -1,5 +1,7 @@
 import { prisma } from '$lib/server/prisma';
 import { error, json } from '@sveltejs/kit';
+import  '$lib/server/simplifyGps.js';
+import { simplifyGps } from '$lib/server/simplifyGps.js';
 
 interface Datapoint {
 	id?: string;
@@ -26,6 +28,10 @@ export async function POST(event: {
 	} catch (errorMessage: unknown) {
 		let result = errorMessage as Error;
 		error(400, result.name + ': ' + result.message);
+	}
+
+	if(Object.keys(input).length > 500){
+		error(413, 'Payload to large: Maximum of 500 Datapoints per request are allowed!');
 	}
 
 	if (event.locals.user?.username) {
@@ -89,6 +95,7 @@ export async function POST(event: {
 				return error(400, 'Internal Error!');
 			}
 		}
+		simplifyGps(activeUser.activeTripId, 500);
 		return json(results, { status: 200 });
 	} else {
 		error(401, 'Not logged in!');
@@ -347,7 +354,12 @@ export async function GET(event) {
 				time: {
 					lte: end,
 					gte: start,
-				}
+				},
+				OR: [{
+					optimized: 0
+				},{
+					optimized: 2
+				}]
 			}
 		});
 		let responseData: { [k: string]: any } = {};
