@@ -375,7 +375,7 @@ export async function GET(event) {
 		datapoints.forEach((datapoint) => {
 			responseData[datapoint.id] = { ...datapoint, id: undefined };
 		});
-		simplifyGps(requestedTrip, 500);
+		simplifyGps(requestedTrip, 100000);
 		return new Response(JSON.stringify(responseData));
 	} catch (error_message) {
 		if (error_message instanceof Error) {
