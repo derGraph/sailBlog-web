@@ -56,7 +56,6 @@ export async function simplifyGps(trip: string, amount: number) {
 			}
 		}
 		totalAmount += take;
-		console.log("Simplified " + totalAmount + " of " + amount + " " + totalAmount*100/amount + "%");
 	}
 }
 
