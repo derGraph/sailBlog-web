@@ -17,5 +17,7 @@ COPY package.json .
 EXPOSE 3000
 ENV NODE_ENV=production
 
+COPY index.js /app/index.js
+
 ENTRYPOINT ["/docker-entrypoint.sh"]
 RUN ["chmod", "+x", "/docker-entrypoint.sh"]
