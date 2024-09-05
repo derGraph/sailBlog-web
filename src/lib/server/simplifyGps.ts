@@ -1,6 +1,6 @@
 import { prisma } from '$lib/server/prisma';
 import type { Decimal } from '@prisma/client/runtime/library';
-import { getDistanceFromLine } from 'geolib';
+import { getDistance, getDistanceFromLine } from 'geolib';
 
 export async function simplifyGps(trip: string, amount: number) {
 	let totalAmount = 0;
@@ -35,8 +35,13 @@ export async function simplifyGps(trip: string, amount: number) {
 			if ((inputData[i].heading != null, inputData[i - 1].heading != null)) {
 				turnRate = Number(inputData[i - 1].heading) - Number(inputData[i].heading);
 			}
+
+			let distFromLastPoint = getDistance(
+				{ lat: Number(inputData[i].lat), lng: Number(inputData[i].long)} ,
+				{ lat: Number(lastPoint.lat), lng: Number(lastPoint.long) }
+			);
 	
-			if (crosstrackError < 5 && Math.abs(turnRate) < 20) {
+			if (crosstrackError < 8 && Math.abs(turnRate) < 20 && distFromLastPoint > 50) {
 				// Delete Datapoint
 				await prisma.datapoint.update({
 					where: { id: inputData[i].id },
