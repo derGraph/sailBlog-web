@@ -8,7 +8,7 @@
 	let map: L.Map | undefined;
 	let mapElement: HTMLDivElement;
 	let lines: L.Polyline[][] = [];
-	let oldBounds: L.LatLngBoundsExpression | undefined;
+	let mapMoved: Boolean = false;
 
 	onMount(() => {
 		map = L.map(mapElement);
@@ -51,11 +51,14 @@
 	$: if (map) {
 		if (bounds) {
 			map.fitBounds(bounds);
-			oldBounds = map.getBounds();
 		} else if (view && zoom) {
 			map.setView(view, zoom);
-			oldBounds = map.getBounds();
 		}
+		map?.on("mousedown", onMouseDown);
+	}
+
+	function onMouseDown(ev: {}){
+		mapMoved = true;
 	}
 
 	$: onTracksChange(tracks);
@@ -141,10 +144,9 @@
 					maxBounds.extend(line.getBounds());
 				});
 			});
-			if (map?.getBounds().isValid()) {
-				if (map?.getBounds().equals(oldBounds!) && maxBounds.isValid()) {
+			if (map?.getBounds().isValid() && !mapMoved) {
+				if (maxBounds.isValid()) {
 					map?.fitBounds(maxBounds);
-					oldBounds = maxBounds;
 				}
 			}
 		}
