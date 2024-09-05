@@ -81,44 +81,50 @@
 
 		if (tracks != null) {
 			for (const trackId of tracks) {
-				let tripData = await getTrip(trackId);
-				let trackLines: L.Polyline[] = [];
-				let currentLine: L.LatLng[] = [];
-				let currentPropulsion: number | null = null;
+				let tripLength = 0;
+				let oldStartDate = 0;
+				do{
+					let tripData = await getTrip(trackId, oldStartDate);
+					tripLength = Object.keys(tripData).length;
+					let trackLines: L.Polyline[] = [];
+					let currentLine: L.LatLng[] = [];
+					let currentPropulsion: number | null = null;
 
-				for (const key of Object.keys(tripData)) {
-					let point = new L.LatLng(tripData[key].lat, tripData[key].long);
-					let propulsionType = tripData[key].propulsion;
+					for (const key of Object.keys(tripData)) {
+						let point = new L.LatLng(tripData[key].lat, tripData[key].long);
+						let propulsionType = tripData[key].propulsion;
+						oldStartDate = new Date(tripData[key].time).getTime();
 
-					if (currentPropulsion === null) {
-						// First point
-						currentPropulsion = propulsionType;
-						currentLine.push(point);
-					} else if (propulsionType === currentPropulsion) {
-						// Same propulsion, continue current line
-						currentLine.push(point);
-					} else {
-						// Propulsion type changed
-						// Finish the current segment
-						const color = getColorByPropulsion(currentPropulsion);
+						if (currentPropulsion === null) {
+							// First point
+							currentPropulsion = propulsionType;
+							currentLine.push(point);
+						} else if (propulsionType === currentPropulsion) {
+							// Same propulsion, continue current line
+							currentLine.push(point);
+						} else {
+							// Propulsion type changed
+							// Finish the current segment
+							const color = getColorByPropulsion(currentPropulsion);
+							let polyline = L.polyline(currentLine, { color });
+							trackLines.push(polyline);
+
+							// Start a new segment with the old line extending to the new point
+							currentLine = [currentLine[currentLine.length - 1], point];
+							currentPropulsion = propulsionType;
+						}
+					}
+
+					// Push the last segment
+					if (currentLine.length > 0) {
+						const color = getColorByPropulsion(currentPropulsion!);
 						let polyline = L.polyline(currentLine, { color });
 						trackLines.push(polyline);
-
-						// Start a new segment with the old line extending to the new point
-						currentLine = [currentLine[currentLine.length - 1], point];
-						currentPropulsion = propulsionType;
 					}
-				}
 
-				// Push the last segment
-				if (currentLine.length > 0) {
-					const color = getColorByPropulsion(currentPropulsion!);
-					let polyline = L.polyline(currentLine, { color });
-					trackLines.push(polyline);
-				}
-
-				// Add the trackLines to the lines2D array
-				lines = [...lines, trackLines];
+					// Add the trackLines to the lines2D array
+					lines = [...lines, trackLines];
+				}while(tripLength >= 100);
 			}
 		}
 	}
@@ -144,10 +150,14 @@
 		}
 	}
 
-	async function getTrip(tripId: String) {
-		let response = await fetch('/api/Datapoints?tripId=' + tripId);
+	async function getTrip(tripId: String, startDate?: Number) {
+		if(startDate == null){
+			startDate = 0;
+		}
+		let response = await fetch('/api/Datapoints?tripId=' + tripId + "&start=" + startDate + "&amount=100");
 		if (!response.ok) {
 			$errorStore = response;
+			return;
 		}
 		return await response.json();
 	}
