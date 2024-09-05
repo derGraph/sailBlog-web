@@ -326,16 +326,16 @@ export async function GET(event) {
 
 	try {
 		if(unparsedAmount != null){
-			if(parseInt(unparsedAmount) > 100){
-				error(400, { message: 'Invalid max Amount, only 100 are allowed!' });
+			if(parseInt(unparsedAmount) > 200){
+				error(400, { message: 'Invalid max Amount, only 200 are allowed!' });
 			}else{
 				maxAmount = parseInt(unparsedAmount);
 			}
 		}else{
-			maxAmount = 100;
+			maxAmount = 200;
 		}
 	}catch (error_message) {
-		error(400, { message: 'Invalid max Amount, only 100 are allowed!' });
+		error(400, { message: 'Invalid max Amount, only 200 are allowed!' });
 	}
 
 	try {
