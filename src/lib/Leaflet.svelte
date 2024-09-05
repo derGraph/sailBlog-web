@@ -9,6 +9,7 @@
 	let mapElement: HTMLDivElement;
 	let lines: L.Polyline[][] = [];
 	let mapMoved: Boolean = false;
+	let myEvent: number = 0;
 
 	onMount(() => {
 		map = L.map(mapElement);
@@ -54,10 +55,29 @@
 		} else if (view && zoom) {
 			map.setView(view, zoom);
 		}
+		map?.dragging.enable();
+		map?.scrollWheelZoom.enable();
+		map?.touchZoom.enable();
 		map?.on("mousedown", onMouseDown);
+		map?.on("zoomstart", onZoomStart);
+		map?.on("dragstart", onDrag);
+		console.log(map?.scrollWheelZoom.enabled());
+		
 	}
 
 	function onMouseDown(ev: {}){
+		mapMoved = true;
+	}
+
+	function onZoomStart(ev: {}){
+		if(myEvent>0){
+			myEvent -= 1;
+		}else{
+			mapMoved = true;
+		}
+	}
+
+	function onDrag(ev: {}){
 		mapMoved = true;
 	}
 
@@ -146,6 +166,7 @@
 			});
 			if (map?.getBounds().isValid() && !mapMoved) {
 				if (maxBounds.isValid()) {
+					myEvent += 1;
 					map?.fitBounds(maxBounds);
 				}
 			}
