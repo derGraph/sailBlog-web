@@ -284,10 +284,12 @@ export async function GET(event) {
 	}
 
 	let requestedTrip = event.url.searchParams.get('tripId');
-	let unparsed_start = event.url.searchParams.get('start');
-	let unparsed_end = event.url.searchParams.get('end');
+	let unparsedStart = event.url.searchParams.get('start');
+	let unparsedEnd = event.url.searchParams.get('end');
+	let unparsedAmount = event.url.searchParams.get('amount');
 	let start = new Date(0);
 	let end = new Date(Date.now());
+	let maxAmount;
 
 	if (requestedTrip == null || requestedTrip == '') {
 		error(400, {
@@ -303,8 +305,8 @@ export async function GET(event) {
 	}
 
 	try {
-		if (unparsed_start != null) {
-			start = new Date(parseInt(unparsed_start));
+		if (unparsedStart != null) {
+			start = new Date(parseInt(unparsedStart));
 		} else {
 			start = new Date(0);
 		}
@@ -313,13 +315,27 @@ export async function GET(event) {
 	}
 
 	try {
-		if (unparsed_end != null) {
-			end = new Date(parseInt(unparsed_end));
+		if (unparsedEnd != null) {
+			end = new Date(parseInt(unparsedEnd));
 		} else {
 			end = new Date(Date.now());
 		}
 	} catch (error_message) {
 		error(400, { message: 'Invalid end Timestamp!' });
+	}
+
+	try {
+		if(unparsedAmount != null){
+			if(parseInt(unparsedAmount) > 100){
+				error(400, { message: 'Invalid max Amount, only 100 are allowed!' });
+			}else{
+				maxAmount = parseInt(unparsedAmount);
+			}
+		}else{
+			maxAmount = 100;
+		}
+	}catch (error_message) {
+		error(400, { message: 'Invalid max Amount, only 100 are allowed!' });
 	}
 
 	try {
@@ -369,7 +385,8 @@ export async function GET(event) {
 						optimized: 2
 					}
 				]
-			}
+			},
+			take: maxAmount
 		});
 		let responseData: { [k: string]: any } = {};
 		datapoints.forEach((datapoint) => {
