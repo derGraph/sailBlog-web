@@ -1,5 +1,5 @@
 <script lang="ts">
-	import L from 'leaflet';
+	import L, { LatLngBounds } from 'leaflet';
 	import 'leaflet/dist/leaflet.css';
 	import { onDestroy, onMount, setContext } from 'svelte';
 	import { modeCurrent } from '@skeletonlabs/skeleton';
@@ -10,6 +10,36 @@
 	let lines: L.Polyline[][] = [];
 	let mapMoved: Boolean = false;
 	let myEvent: number = 0;
+	let maxBounds: LatLngBounds;
+
+	let recenterButtonStructure = L.Control.extend({
+		options: {
+			position: 'topleft'
+		},
+		onAdd: function () {
+			var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+			var button = L.DomUtil.create('a', 'leaflet-control-button material-symbols-outlined', container);
+			button.ariaHidden = "true";
+			button.href = "#"
+			button.innerText = "filter_center_focus";
+			L.DomEvent.disableClickPropagation(button);
+			L.DomEvent.on(button, 'click', function(){
+				if (map?.getBounds().isValid()) {
+					if (maxBounds.isValid()) {
+						map?.fitBounds(maxBounds);
+						mapMoved = false;
+					}
+				}
+			});
+
+			container.title = "Recenter!";
+
+			return container;
+		},
+		onRemove: function(map) {},
+	});
+
+	let recenterButton = new recenterButtonStructure();
 
 	onMount(() => {
 		map = L.map(mapElement);
@@ -56,13 +86,9 @@
 			map.setView(view, zoom);
 		}
 		map?.dragging.enable();
-		map?.scrollWheelZoom.enable();
-		map?.touchZoom.enable();
 		map?.on("mousedown", onMouseDown);
 		map?.on("zoomstart", onZoomStart);
-		map?.on("dragstart", onDrag);
-		console.log(map?.scrollWheelZoom.enabled());
-		
+		map?.on("dragstart", onDrag);		
 	}
 
 	function onMouseDown(ev: {}){
@@ -101,8 +127,8 @@
 
 	async function onTracksChange(tracks: any[] | null) {
 		lines = []; // Reset the lines2D array
-
 		if (tracks != null) {
+			recenterButton.addTo(map!);
 			for (const trackId of tracks) {
 				let tripLength = 0;
 				let oldStartDate = 0;
@@ -149,6 +175,8 @@
 					lines = [...lines, trackLines];
 				}while(tripLength >= 100);
 			}
+		}else{
+			recenterButton.remove();
 		}
 	}
 
@@ -156,7 +184,7 @@
 
 	function onLineChange(lines2D: L.Polyline[][]) {
 		if (lines2D.length != 0) {
-			var maxBounds = lines2D[0][0].getBounds();
+			maxBounds = lines2D[0][0].getBounds();
 			lines2D.forEach((trackLines) => {
 				trackLines.forEach((line) => {
 					line.remove();
@@ -197,6 +225,7 @@
 		.osm-layer,
 		.leaflet-control-zoom-in,
 		.leaflet-control-zoom-out,
+		.leaflet-control-button,
 		.leaflet-control-attribution {
 			filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 		}
