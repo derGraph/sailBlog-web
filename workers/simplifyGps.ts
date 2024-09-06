@@ -7,8 +7,8 @@ export async function simplifyGps(trip: string, amount: number) {
 	while(totalAmount < amount){
 		let take = amount;
 
-		if(amount>500){
-			take = 500;
+		if(amount>10000){
+			take = 10000;
 		}
 
 		let inputData = await prisma.datapoint.findMany({
@@ -24,7 +24,10 @@ export async function simplifyGps(trip: string, amount: number) {
 		}
 
 		let lastPoint: Datapoint = inputData[0];
-	
+		let deletedPoints: string[] = [];
+		let optimizedPoints: string[] = [];
+
+		
 		for (let i = 1; i < inputData.length - 1; i++) {
 			let crosstrackError = getDistanceFromLine(
 				{ lat: Number(inputData[i].lat), lng: Number(inputData[i].long) },
@@ -44,23 +47,29 @@ export async function simplifyGps(trip: string, amount: number) {
 	
 			if (crosstrackError < 10 && Math.abs(turnRate) < 20 && distFromLastPoint < 50) {
 				// Delete Datapoint
-				await prisma.datapoint.update({
-					where: { id: inputData[i].id },
-					data: {
-						optimized: 1
-					}
-				});
+				deletedPoints.push(inputData[i].id);
 			} else {
 				// Change Datapoint to optimized
 				lastPoint = inputData[i];
-				await prisma.datapoint.update({
-					where: { id: inputData[i].id },
-					data: {
-						optimized: 2
-					}
-				});
+				optimizedPoints.push(inputData[i].id);
 			}
 		}
+		await prisma.datapoint.updateMany({
+			where:  {
+				id: {in: deletedPoints}
+			},
+			data: {
+				optimized: 1
+			}
+		});
+		await prisma.datapoint.updateMany({
+			where:  {
+				id: {in: optimizedPoints}
+			},
+			data: {
+				optimized: 2
+			}
+		});
 		totalAmount += take;
 		console.log("Trip "+ trip +": Simplified " + totalAmount + " of " + amount);
 	}
@@ -70,7 +79,7 @@ export async function simplify(){
 	let trips = await prisma.trip.findMany({});
 	for (var trip in trips){
 		console.log("Optimizing "+ trips[trip].id);
-		await simplifyGps(trips[trip].id, 1000);
+		await simplifyGps(trips[trip].id, 100000);
 	}
 	return;
 }
