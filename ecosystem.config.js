@@ -9,7 +9,7 @@ module.exports = {
         },
         {
             name: "simplifier",
-            script: "/app/workers/simplifyGps.js",
+            script: "/app/workers/workers/index.js",
             env_production: {
                 NODE_ENV: "production"
             }
