@@ -9,8 +9,8 @@ RUN npm prune --production
 
 WORKDIR /app/workers
 RUN npm i
-RUN tsc
-RUN tsc-alias
+RUN npx tsc
+RUN npx tsc-alias
 
 FROM node:22-alpine
 WORKDIR /app
