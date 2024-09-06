@@ -1,7 +1,5 @@
 import { prisma } from '$lib/server/prisma';
 import { error, json } from '@sveltejs/kit';
-import '$lib/server/simplifyGps.js';
-import { simplifyGps } from '$lib/server/simplifyGps.js';
 
 interface Datapoint {
 	id?: string;
@@ -95,7 +93,6 @@ export async function POST(event: {
 				return error(400, 'Internal Error!');
 			}
 		}
-		simplifyGps(activeUser.activeTripId, 500);
 		return json(results, { status: 200 });
 	} else {
 		error(401, 'Not logged in!');
@@ -392,7 +389,6 @@ export async function GET(event) {
 		datapoints.forEach((datapoint) => {
 			responseData[datapoint.id] = { ...datapoint, id: undefined };
 		});
-		simplifyGps(requestedTrip, 100000);
 		return new Response(JSON.stringify(responseData));
 	} catch (error_message) {
 		if (error_message instanceof Error) {

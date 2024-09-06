@@ -1,4 +1,4 @@
-import { prisma } from '$lib/server/prisma';
+import { prisma } from '../src/lib/server/prisma';
 import type { Decimal } from '@prisma/client/runtime/library';
 import { getDistance, getDistanceFromLine } from 'geolib';
 
@@ -19,6 +19,7 @@ export async function simplifyGps(trip: string, amount: number) {
 			take: take
 		});
 		if(inputData.length <= 2){
+			console.log("Finished "+ trip +"!");
 			return;
 		}
 
@@ -61,8 +62,19 @@ export async function simplifyGps(trip: string, amount: number) {
 			}
 		}
 		totalAmount += take;
+		console.log("Trip "+ trip +": Simplified " + totalAmount + " of " + amount);
 	}
 }
+
+export async function simplify(){
+	let trips = await prisma.trip.findMany({});
+	for (var trip in trips){
+		console.log("Optimizing "+ trips[trip].id);
+		await simplifyGps(trips[trip].id, 1000);
+	}
+	return;
+}
+
 
 interface Datapoint {
 	id: string;
