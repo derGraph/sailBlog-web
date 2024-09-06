@@ -20,6 +20,7 @@ COPY --from=builder /app/workers/build /app/workers
 COPY prisma /app/prisma/
 COPY docker-entrypoint.sh /
 COPY package.json .
+COPY pm2.config.js /app/
 EXPOSE 3000
 ENV NODE_ENV=production
 
