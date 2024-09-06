@@ -36,7 +36,7 @@
 
 			return container;
 		},
-		onRemove: function(map) {},
+		onRemove: function() {},
 	});
 
 	let recenterButton = new recenterButtonStructure();
@@ -173,7 +173,7 @@
 
 					// Add the trackLines to the lines2D array
 					lines = [...lines, trackLines];
-				}while(tripLength >= 166);
+				}while(tripLength >= 500);
 			}
 		}else{
 			recenterButton.remove();
@@ -205,7 +205,7 @@
 		if(startDate == null){
 			startDate = 0;
 		}
-		let response = await fetch('/api/Datapoints?tripId=' + tripId + "&start=" + startDate + "&amount=166");
+		let response = await fetch('/api/Datapoints?tripId=' + tripId + "&start=" + startDate + "&amount=500");
 		if (!response.ok) {
 			$errorStore = response;
 			return;
