@@ -13,6 +13,7 @@
     "workers": "file:"
   },
   "devDependencies": {
-    "@prisma/client": "^5.19.1"
+    "@prisma/client": "^5.19.1",
+    "typescript": "^5.5.4"
   }
 }
