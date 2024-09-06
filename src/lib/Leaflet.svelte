@@ -173,7 +173,7 @@
 
 					// Add the trackLines to the lines2D array
 					lines = [...lines, trackLines];
-				}while(tripLength >= 500);
+				}while(tripLength >= 10000);
 			}
 		}else{
 			recenterButton.remove();
@@ -205,7 +205,7 @@
 		if(startDate == null){
 			startDate = 0;
 		}
-		let response = await fetch('/api/Datapoints?tripId=' + tripId + "&start=" + startDate + "&amount=500");
+		let response = await fetch('/api/Datapoints?tripId=' + tripId + "&start=" + startDate + "&amount=10000");
 		if (!response.ok) {
 			$errorStore = response;
 			return;

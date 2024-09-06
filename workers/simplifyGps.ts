@@ -45,7 +45,7 @@ export async function simplifyGps(trip: string, amount: number) {
 				{ lat: Number(lastPoint.lat), lng: Number(lastPoint.long) }
 			);
 	
-			if (crosstrackError < 10 && Math.abs(turnRate) < 20 && distFromLastPoint < 50) {
+			if (crosstrackError < 15 && Math.abs(turnRate) < 40 && distFromLastPoint < 1000) {
 				// Delete Datapoint
 				deletedPoints.push(inputData[i].id);
 			} else {
