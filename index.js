@@ -5,8 +5,7 @@ import compression from 'compression';
 let server = express();
 server.use(compression({
 	gzip: true,
-	threshold: 5120,
-	level: 9
+	threshold: 5120
 }));
 server.use(handler);
 
