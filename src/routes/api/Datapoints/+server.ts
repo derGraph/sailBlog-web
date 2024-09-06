@@ -323,7 +323,7 @@ export async function GET(event) {
 
 	try {
 		if(unparsedAmount != null){
-			if(parseInt(unparsedAmount) > 500){
+			if(parseInt(unparsedAmount) > 10000){
 				error(400, { message: 'Invalid max Amount, only 500 are allowed!' });
 			}else{
 				maxAmount = parseInt(unparsedAmount);
