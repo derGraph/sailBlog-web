@@ -78,7 +78,7 @@
 							>
 						</div>
 						{#if user.firstName && user.lastName}
-							<a href="/user"
+							<a href="/user" aria-label="Get to the Users page!"
 								><Avatar
 									initials={getInitials()}
 									src={getPictureUrl()}
