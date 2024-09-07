@@ -19,7 +19,8 @@
 		onAdd: function () {
 			var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
 			var button = L.DomUtil.create('a', 'leaflet-control-button material-symbols-outlined', container);
-			button.ariaHidden = "true";
+			button.ariaDisabled = "false";
+			button.ariaLabel = "Center"
 			button.href = "#"
 			button.innerText = "filter_center_focus";
 			L.DomEvent.disableClickPropagation(button);

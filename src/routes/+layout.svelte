@@ -27,7 +27,7 @@
 	}
 
 	function getPictureUrl() {
-		return 'htstps://upload.wikimedia.org/wikipedia/en/9/9a/Trollface_non-free.png';
+		return 'https://uapload.wikimedia.org/wikipedia/en/9/9a/Trollface_non-free.png';
 	}
 
 	function resetError() {
@@ -84,6 +84,7 @@
 									src={getPictureUrl()}
 									background="bg-primary-500"
 									width="w-11"
+									link
 									rounded="rounded-full"
 								/></a
 							>
