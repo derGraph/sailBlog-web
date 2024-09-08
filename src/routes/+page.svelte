@@ -3,7 +3,6 @@
 	import type { LatLngExpression } from 'leaflet';
 	import Leaflet from '$lib/Leaflet.svelte';
 	import { onMount } from 'svelte';
-	import errorStore from '$lib/errorStore.js';
 
 	export let data;
 	let tracks: String[] | null = null;
