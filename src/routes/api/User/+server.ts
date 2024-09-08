@@ -79,6 +79,7 @@ export async function PUT(event) {
 	let unparsedDateOfBirth = null;
 	let dateOfBirth = null;
 	let description = null;
+	let activeTrip = null;
 
 	if (event.locals.user?.username) {
 		let username = event.locals.user?.username;
@@ -89,6 +90,7 @@ export async function PUT(event) {
 		lastName = event.url.searchParams.get('lastName');
 		unparsedDateOfBirth = event.url.searchParams.get('dateOfBirth');
 		description = event.url.searchParams.get('description');
+		activeTrip = event.url.searchParams.get('activeTrip');
 
 		if (
 			firstName != null &&
@@ -125,6 +127,20 @@ export async function PUT(event) {
 		} catch (error_message) {
 			error(400, { message: 'Invalid Date of Birth!' });
 		}
+
+		try {
+			if(activeTrip){
+				await prisma.trip.findFirstOrThrow({
+					where: {
+						id: activeTrip,
+						skipperName: username
+					}
+				});
+			}
+		} catch (error_message) {
+			error(400, {message: 'Invalid activeTrip! Only the skipper can choose a trip as active!'});
+		}
+
 		await prisma.user.update({
 			where: {
 				username: username
@@ -133,7 +149,8 @@ export async function PUT(event) {
 				...(dateOfBirth && { dateOfBirth }),
 				...(firstName && { firstName }),
 				...(lastName && { lastName }),
-				...(description && { description })
+				...(description && { description }),
+				...(activeTrip && {activeTrip:{connect:{id:activeTrip}}})
 			}
 		});
 		return new Response('200');
