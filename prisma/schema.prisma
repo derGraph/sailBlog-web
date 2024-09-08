@@ -64,8 +64,6 @@ model Trip {
   endPointId        String?   @unique
   datapoints        Datapoint[]
   activeUser        User[]
-  start             DateTime?
-  end               DateTime?
   last_update       DateTime  @updatedAt
   length            Decimal?
   skipper           User?     @relation("skipper", fields: [skipperName], references: [username])
@@ -74,6 +72,7 @@ model Trip {
   visibility        Int       @default(1) // 0: private
                                           // 1: logged in
                                           // 2: public 
+  recalculate       Boolean   @default(true)
   }
 
 model Datapoint {

@@ -48,16 +48,24 @@
 			<AppBar class="rounded-b-3xl">
 				<svelte:fragment slot="lead">
 					<a href="/" class="material-symbols-outlined" style="font-size: {navHeight}rem">map</a>
-					<a href="/" style="font-size: {(navHeight * 2) / 3}rem">sailBlog</a>
+					<a href="/" class="text-2xl">sailBlog</a>
 				</svelte:fragment>
-				<svelte:fragment slot="default"></svelte:fragment>
+				<svelte:fragment slot="default">
+					{#if user}
+						{#if user.firstName && user.lastName}
+							<a href="/trips"><button type="button" class="text-xl">Trips</button></a>
+							<span
+								class="divider-vertical h-3"
+							/>
+						{/if}
+					{/if}
+				</svelte:fragment>
 				<svelte:fragment slot="trail">
 					{#if !user}
 						<div class="btn-md btn variant-ghost-secondary">
 							<a href="/sign_in"><button type="button" class="">Sign in!</button></a>
 							<span
 								class="divider-vertical h-6"
-								style="border-color:rgb(var(--color-secondary-500));"
 							/>
 							<a href="/sign_up"><button type="button" class="">Sign up!</button></a>
 						</div>
