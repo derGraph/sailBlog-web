@@ -121,6 +121,15 @@ export const actions: Actions = {
 					}
 				}
 			});
+			await prisma.trip.update({
+				where: {
+					id: (await prisma.user.findFirstOrThrow({ where: { username: username } }))
+					.activeTripId
+				},
+				data : {
+					skipperName: username
+				}
+			})
 		} catch (error) {
 			if (error instanceof Error) {
 				console.log(error);
