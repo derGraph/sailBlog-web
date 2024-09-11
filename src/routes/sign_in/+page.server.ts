@@ -82,6 +82,17 @@ export const actions: Actions = {
 			...sessionCookie.attributes
 		});
 
+		await prisma.session.update({
+			where:{
+				id: session.id
+			},
+			data: {
+				last_use: new Date(Date.now()),
+				ip: event.getClientAddress(),
+				session_created: new Date(Date.now())
+			}
+		});
+
 		redirect(302, '/');
 	}
 };
