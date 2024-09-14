@@ -58,6 +58,8 @@
 
 		osmLayer.addTo(map);
 		seamarkLayer.addTo(map);
+
+		L.control.scale().addTo(map)
 	});
 
 	onDestroy(() => {
