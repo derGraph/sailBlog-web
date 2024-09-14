@@ -56,10 +56,11 @@
 			attribution: '&copy; <a href="https://www.openseamap.org/">OpenSeaMap</a>'
 		});
 
+		var controlLayer = L.control.scale();
+
 		osmLayer.addTo(map);
 		seamarkLayer.addTo(map);
-
-		L.control.scale().addTo(map)
+		controlLayer.addTo(map);
 	});
 
 	onDestroy(() => {
@@ -233,6 +234,9 @@
 		.leaflet-control-zoom-out,
 		.leaflet-control-button,
 		.leaflet-control-attribution {
+			filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+		},
+		.leaflet-control-scale {
 			filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 		}
 	</style>
