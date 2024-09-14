@@ -233,10 +233,8 @@
 		.leaflet-control-zoom-in,
 		.leaflet-control-zoom-out,
 		.leaflet-control-button,
+		.leaflet-control-scale,
 		.leaflet-control-attribution {
-			filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
-		},
-		.leaflet-control-scale {
 			filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 		}
 	</style>
