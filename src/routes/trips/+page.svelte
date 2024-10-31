@@ -97,13 +97,13 @@
 			{#each tableArr as row, i}
                     <tr>
                         <td on:click={() => selectActiveTrip(row.id)}><button type="button" class="material-symbols-outlined !align-middle">{@html parseActiveTrip(row.id)}</button></td>
-                        <td on:click="{()=>{window.location.href='/trips?trip='+row.id}}" class="!align-middle">{row.name}</td>
-                        <td on:click="{()=>{window.location.href='/trips?trip='+row.id}}" class="!align-middle">{parseDate(row.startPoint)}</td>
-                        <td on:click="{()=>{window.location.href='/trips?trip='+row.id}}" class="!align-middle">{parseDate(row.endPoint)}</td>
-                        <td on:click="{()=>{window.location.href='/trips?trip='+row.id}}" class="!align-middle">{row.length}</td>
-                        <td on:click="{()=>{window.location.href='/trips?trip='+row.id}}" class="!align-middle">{row.skipperName}</td>
-                        <td on:click="{()=>{window.location.href='/trips?trip='+row.id}}" class="!align-middle">{parseCrew(row.crew)}</td>
-                        <td on:click="{()=>{window.location.href='/trips?trip='+row.id}}" class="!align-middle">{parseVisibility(row.visibility)}</td>
+                        <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{row.name}</td>
+                        <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{parseDate(row.startPoint)}</td>
+                        <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{parseDate(row.endPoint)}</td>
+                        <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{row.length}</td>
+                        <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{row.skipperName}</td>
+                        <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{parseCrew(row.crew)}</td>
+                        <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{parseVisibility(row.visibility)}</td>
                     </tr>
 			{/each}
 		</tbody>
