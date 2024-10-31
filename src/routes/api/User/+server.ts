@@ -79,6 +79,7 @@ export async function PUT(event) {
 	let unparsedDateOfBirth = null;
 	let dateOfBirth = null;
 	let description = null;
+	let activeTripId = null;
 
 	if (event.locals.user?.username) {
 		let username = event.locals.user?.username;
@@ -89,6 +90,7 @@ export async function PUT(event) {
 		lastName = event.url.searchParams.get('lastName');
 		unparsedDateOfBirth = event.url.searchParams.get('dateOfBirth');
 		description = event.url.searchParams.get('description');
+		activeTripId = event.url.searchParams.get('activeTrip');
 
 		if (
 			firstName != null &&
@@ -116,6 +118,23 @@ export async function PUT(event) {
 			}
 		}
 
+		if(activeTripId != null) {
+			try {
+				await prisma.trip.findFirstOrThrow({
+					where: {
+						id: activeTripId,
+						crew: {
+							some: {
+								username: username
+							}
+						}
+					}
+				});
+			} catch (error_message) {
+				return error(400, 'Invalid trip!');
+			}
+		}
+
 		try {
 			if (unparsedDateOfBirth != null) {
 				dateOfBirth = new Date(parseInt(unparsedDateOfBirth));
@@ -133,7 +152,8 @@ export async function PUT(event) {
 				...(dateOfBirth && { dateOfBirth }),
 				...(firstName && { firstName }),
 				...(lastName && { lastName }),
-				...(description && { description })
+				...(description && { description }),
+				...(activeTripId && { activeTripId }),
 			}
 		});
 		return new Response('200');
