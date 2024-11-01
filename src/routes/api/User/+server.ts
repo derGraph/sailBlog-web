@@ -77,6 +77,7 @@ export async function PUT(event) {
 	let firstName = null;
 	let lastName = null;
 	let unparsedDateOfBirth = null;
+	let usernameToChange = null;
 	let dateOfBirth = null;
 	let description = null;
 	let activeTripId = null;
@@ -87,10 +88,15 @@ export async function PUT(event) {
 		const mardownRegex =
 			/(((\|)([a-zA-Z\d+\s#!@'"():;\\\/.\[\]\^<={$}>?(?!-))]+))+(\|))(?:\n)?((\|)(-+))+(\|)(\n)((\|)(\W+|\w+|\S+))+(\|$)/;
 		firstName = event.url.searchParams.get('firstName');
+		usernameToChange = event.url.searchParams.get("username");
 		lastName = event.url.searchParams.get('lastName');
 		unparsedDateOfBirth = event.url.searchParams.get('dateOfBirth');
 		description = event.url.searchParams.get('description');
 		activeTripId = event.url.searchParams.get('activeTrip');
+
+		if(usernameToChange != username){
+			return error(400, 'Only changing your own userdata is allowed!');
+		}
 
 		if (
 			firstName != null &&
