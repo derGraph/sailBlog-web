@@ -33,6 +33,7 @@
                         delete tableArr[tableArr.indexOf(element)];
                     }
                 }
+                tableArr = tableArr.flat();
             });
         });
     }
