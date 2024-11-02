@@ -57,9 +57,12 @@
 			attribution: '&copy; <a href="https://www.openseamap.org/">OpenSeaMap</a>'
 		});
 
+		var controlLayer = L.control.scale();
+
 		osmLayer.addTo(map);
 		seamarkLayer.addTo(map);
-		map.invalidateSize();
+		controlLayer.addTo(map);
+    map.invalidateSize();
 	});
 
 	onDestroy(() => {
@@ -194,19 +197,22 @@
 	$: onLineChange(lines);
 
 	function onLineChange(lines2D: L.Polyline[][]) {
+		
 		if (lines2D.length != 0) {
-			maxBounds = lines2D[0][0].getBounds();
-			lines2D.forEach((trackLines) => {
-				trackLines.forEach((line) => {
-					line.remove();
-					line.addTo(map!);
-					maxBounds.extend(line.getBounds());
+			if(lines2D[0].length != 0){
+				maxBounds = lines2D[0][0].getBounds();
+				lines2D.forEach((trackLines) => {
+					trackLines.forEach((line) => {
+						line.remove();
+						line.addTo(map!);
+						maxBounds.extend(line.getBounds());
+					});
 				});
-			});
-			if (map?.getBounds().isValid() && !mapMoved) {
-				if (maxBounds.isValid()) {
-					myEvent += 1;
-					map?.fitBounds(maxBounds);
+				if (map?.getBounds().isValid() && !mapMoved) {
+					if (maxBounds.isValid()) {
+						myEvent += 1;
+						map?.fitBounds(maxBounds);
+					}
 				}
 			}
 		}
@@ -237,6 +243,7 @@
 		.leaflet-control-zoom-in,
 		.leaflet-control-zoom-out,
 		.leaflet-control-button,
+		.leaflet-control-scale,
 		.leaflet-control-attribution {
 			filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 		}

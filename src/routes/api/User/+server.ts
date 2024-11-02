@@ -81,6 +81,7 @@ export async function PUT(event) {
 	let dateOfBirth = null;
 	let description = null;
 	let activeTripId = null;
+	let activeTrip = null;
 
 	if (event.locals.user?.username) {
 		let username = event.locals.user?.username;
@@ -150,6 +151,20 @@ export async function PUT(event) {
 		} catch (error_message) {
 			error(400, { message: 'Invalid Date of Birth!' });
 		}
+
+		try {
+			if(activeTrip){
+				await prisma.trip.findFirstOrThrow({
+					where: {
+						id: activeTrip,
+						skipperName: username
+					}
+				});
+			}
+		} catch (error_message) {
+			error(400, {message: 'Invalid activeTrip! Only the skipper can choose a trip as active!'});
+		}
+
 		await prisma.user.update({
 			where: {
 				username: username
@@ -159,7 +174,7 @@ export async function PUT(event) {
 				...(firstName && { firstName }),
 				...(lastName && { lastName }),
 				...(description && { description }),
-				...(activeTripId && { activeTripId }),
+				...(activeTrip && {activeTrip:{connect:{id:activeTrip}}})
 			}
 		});
 		return new Response('200');

@@ -37,6 +37,9 @@ model Session {
   userId            String
   expiresAt         DateTime
   user              User      @relation(references: [username], fields: [userId], onDelete: Cascade)
+  ip                String?
+  session_created   DateTime?
+  last_use          DateTime?
 }
 
 model Role {

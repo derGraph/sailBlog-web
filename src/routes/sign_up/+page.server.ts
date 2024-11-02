@@ -121,6 +121,15 @@ export const actions: Actions = {
 					}
 				}
 			});
+			await prisma.trip.update({
+				where: {
+					id: (await prisma.user.findFirstOrThrow({ where: { username: username } }))
+					.activeTripId
+				},
+				data : {
+					skipperName: username
+				}
+			})
 		} catch (error) {
 			if (error instanceof Error) {
 				console.log(error);
@@ -154,6 +163,17 @@ export const actions: Actions = {
 		event.cookies.set(sessionCookie.name, sessionCookie.value, {
 			path: '.',
 			...sessionCookie.attributes
+		});
+
+		await prisma.session.update({
+			where:{
+				id: session.id
+			},
+			data: {
+				last_use: new Date(Date.now()),
+				ip: event.getClientAddress(),
+				session_created: new Date(Date.now())
+			}
 		});
 
 		redirect(302, '/');
