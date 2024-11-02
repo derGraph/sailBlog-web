@@ -95,8 +95,10 @@ export async function PUT(event) {
 		description = event.url.searchParams.get('description');
 		activeTripId = event.url.searchParams.get('activeTrip');
 
-		if(usernameToChange != username){
-			return error(400, 'Only changing your own userdata is allowed!');
+		if(usernameToChange != null){
+			if(usernameToChange != username){
+				return error(400, 'Only changing your own userdata is allowed!');
+			}
 		}
 
 		if (
@@ -174,7 +176,7 @@ export async function PUT(event) {
 				...(firstName && { firstName }),
 				...(lastName && { lastName }),
 				...(description && { description }),
-				...(activeTrip && {activeTrip:{connect:{id:activeTrip}}})
+				...(activeTripId && {activeTripId})
 			}
 		});
 		return new Response('200');
