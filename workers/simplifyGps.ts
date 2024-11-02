@@ -19,9 +19,9 @@ export async function simplifyGps(trip: string, amount: number) {
 			take: take
 		});
 		if(inputData.length <= 2){
-			console.log("Finished "+ trip +"!");
 			return;
 		}
+		console.log("Optimizing "+ trip);
 
 		let lastPoint: Datapoint = inputData[0];
 		let deletedPoints: string[] = [];
@@ -75,10 +75,73 @@ export async function simplifyGps(trip: string, amount: number) {
 	}
 }
 
+export async function calculateDistance(trip: string){
+	let newDistanceSail: number = 0;
+	let newDistanceMotor: number = 0;
+
+	let inputTrips = await prisma.datapoint.findMany({
+		where: {
+			tripId: trip,
+			OR: [
+				{optimized: 0},
+				{optimized: 2}
+			]
+		}
+	});
+
+	for (let i = 0; i < inputTrips.length - 2; i++) {
+		let distance = getDistance(
+			{lat: Number(inputTrips[i].lat), lon: Number(inputTrips[i].long)},
+			{lat: Number(inputTrips[i+1].lat), lon: Number(inputTrips[i+1].long)},
+		);
+		// Add the Miles of this datapoint to the overall miles
+		if (inputTrips[i+1].propulsion == 1){
+			// length under motor
+			newDistanceMotor += distance;
+		}else if (inputTrips[i+1].propulsion == 2){
+			// length under sail
+			newDistanceSail += distance;
+		}
+	}
+
+	await prisma.trip.update({
+		where: {
+			id: trip
+		},
+		data: {
+			length_sail: newDistanceSail,
+			length_motor: newDistanceMotor
+		}
+	});
+	await prisma.trip.update({
+		where: {
+			id: trip
+		},
+		data: {
+			endPointId: (await prisma.datapoint.findFirst({where: {tripId: trip}, orderBy:{time: 'desc'}}))?.id,
+			startPointId: (await prisma.datapoint.findFirst({where: {tripId: trip}, orderBy:{time: 'asc'}}))?.id
+		}
+	});
+}
+
 export async function simplify(){
 	let trips = await prisma.trip.findMany({});
 	for (var trip in trips){
-		console.log("Optimizing "+ trips[trip].id);
+		if(trips[trip].recalculate){
+			console.log("calculating "+trips[trip].id);
+			await prisma.trip.update({
+				where: {
+					id: trips[trip].id
+				},
+				data: {
+					length_motor: 0,
+					length_sail: 0,
+					recalculate: false,
+				}
+			});
+			await calculateDistance(trips[trip].id);
+			console.log("FINISHED");
+		}
 		await simplifyGps(trips[trip].id, 100000);
 	}
 	return;

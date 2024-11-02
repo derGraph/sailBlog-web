@@ -22,5 +22,10 @@ export default {
 				custom: [ocean]
 			}
 		})
-	]
+	],
+	variants: {
+		extend: {
+			display: ["group-hover"],
+		},
+	},
 } satisfies Config;

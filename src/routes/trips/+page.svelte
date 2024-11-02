@@ -5,7 +5,9 @@
 	import type { User } from "@prisma/client";
 
     let tableArr: any[] = [];
-    let totalWeight = 0;
+    let totalLength = 0;
+    let totalSailedLength = 0;
+    let totalMotoredLength = 0;
 
     export let data;
 
@@ -22,9 +24,12 @@
             }
             tableArr = await response.json();
             tableArr.forEach(element => {
+                totalLength += Number(element.length_sail)+Number(element.length_motor);
+                totalSailedLength += Number(element.length_sail);
+                totalMotoredLength += Number(element.length_motor);
                 if(element.skipperName != data.user?.username){
                     let containsMe = false;
-                    element.crew.forEach(crewMember => {
+                    element.crew.forEach((crewMember: { username: string | undefined; }) => {
                         if(crewMember.username == data.user?.username){
                             containsMe = true;
                         }
@@ -88,7 +93,7 @@
 				<th>Trip name</th>
 				<th>Start Date</th>
 				<th>End Date</th>
-				<th>Length</th>
+				<th>Distance</th>
                 <th>Skipper</th>
                 <th>Crew</th>
                 <th>Visibilty</th>
@@ -96,12 +101,12 @@
 		</thead>
 		<tbody>
 			{#each tableArr as row, i}
-                    <tr>
-                        <td on:click={() => selectActiveTrip(row.id)}><button type="button" class="material-symbols-outlined !align-middle">{@html parseActiveTrip(row.id)}</button></td>
+                    <tr class="group">
+                        <td on:click={() => selectActiveTrip(row.id)} class="!align-middle"><button type="button" class="material-symbols-outlined !align-middle">{@html parseActiveTrip(row.id)}</button></td>
                         <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{row.name}</td>
                         <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{parseDate(row.startPoint)}</td>
                         <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{parseDate(row.endPoint)}</td>
-                        <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{row.length}</td>
+                        <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{((Number(row.length_sail) + Number(row.length_motor))/1853).toFixed(0)} NM<div class="hidden group-hover:block"><span class="!text-xs material-symbols-outlined">sailing</span>{(Number(row.length_sail)/1853).toFixed(0)} <span class="!text-xs material-symbols-outlined">mode_heat</span>{(Number(row.length_motor)/1853).toFixed(0)}</div></td>
                         <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{row.skipperName}</td>
                         <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{parseCrew(row.crew)}</td>
                         <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{parseVisibility(row.visibility)}</td>
@@ -109,9 +114,9 @@
 			{/each}
 		</tbody>
 		<tfoot>
-			<tr>
+			<tr class="group">
 				<th colspan="4">Total Miles</th>
-				<td>{totalWeight}</td>
+				<td>{(totalLength/1853).toFixed(0)} NM<div class="hidden group-hover:block"><span class="!text-xs material-symbols-outlined">sailing</span>{(totalSailedLength/1853).toFixed(0)} <span class="!text-xs material-symbols-outlined">mode_heat</span>{(totalMotoredLength/1853).toFixed(0)}</div></td>
 			</tr>
 		</tfoot>
 	</table>

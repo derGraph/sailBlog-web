@@ -68,7 +68,8 @@ model Trip {
   datapoints        Datapoint[]
   activeUser        User[]
   last_update       DateTime  @updatedAt
-  length            Decimal?
+  length_sail       Decimal?
+  length_motor      Decimal?
   skipper           User?     @relation("skipper", fields: [skipperName], references: [username])
   skipperName       String?
   crew              User[]    @relation("crew")
