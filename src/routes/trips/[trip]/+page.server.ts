@@ -5,4 +5,9 @@ export const load: PageServerLoad = async (event) => {
 	if (!event.locals.user) {
 		redirect(302, '/');
 	}
+    let trip = event.params.trip;
+	return {
+		requestedTrip: trip,
+		session: null
+	};
 };

@@ -16,7 +16,7 @@ model User {
   email             String    @unique
   firstName         String?
   lastName          String?
-  description       String?
+  description       String?   @db.Text
   profilePicture    Media?    @relation("profilePicture", fields: [profilePictureId], references: [id])
   profilePictureId  String?   @unique
   dateOfBirth       DateTime?
@@ -57,7 +57,7 @@ model Key {
 model Trip {
   id                String    @id @default(cuid())
   name              String
-  description       String?
+  description       String?   @db.Text
   startPoint        Datapoint?@relation("startPoint", fields: [startPointId], references: [id])
   startPointId      String?   @unique
   endPoint          Datapoint?@relation("endPoint", fields: [endPointId], references: [id])

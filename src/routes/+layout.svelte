@@ -42,9 +42,8 @@
 	rel="stylesheet"
 	href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0"
 />
-<AppShell>
-	<svelte:fragment slot="header">
-		<div class="md:container h-full md:mx-auto justify-center items-center">
+	<div class="h-screen flex flex-col">
+		<div class="md:container h-20 md:mx-auto justify-center items-center">
 			<AppBar class="rounded-b-3xl">
 				<svelte:fragment slot="lead">
 					<a href="/" class="material-symbols-outlined" style="font-size: {navHeight}rem">map</a>
@@ -53,7 +52,7 @@
 				<svelte:fragment slot="default">
 					{#if user}
 						{#if user.firstName && user.lastName}
-							<a href="/trips"><button type="button" class="text-xl">Trips</button></a>
+							<button type="button" class="text-xl" on:click={() => {window.location.href = "/trips"}}>Trips</button>
 							<span
 								class="divider-vertical h-3"
 							/>
@@ -103,35 +102,34 @@
 				</svelte:fragment>
 			</AppBar>
 		</div>
-	</svelte:fragment>
-	{#if $errorStore.status && $errorStore.status != 200}
-		<div class="md:container md:mx-auto flex flex-row flex flex-col pt-3 rounded-t-3xl">
-			<aside class="alert variant-ghost-warning text-warning-400-500-token">
-				<div class="material-symbols-outlined">warning</div>
-				<div class="alert-message">
-					{#await $errorStore.json()}
-						<h3 class="h3">"Loading..."</h3>
-					{:then parsed}
-						<h3 class="h3">{$errorStore.status} {$errorStore.statusText}: {parsed.message}</h3>
-					{:catch parsingError}
-						<h3 class="h3">Error in response: {parsingError}</h3>
-					{/await}
-				</div>
-				<div class="alert-actions">
-					<button class="btn variant-filled-warning" on:click={resetError}>
-						<span>Ok</span>
-					</button>
-				</div>
-			</aside>
+		{#if $errorStore.status && $errorStore.status != 200}
+			<div class="md:container md:mx-auto flex flex-row flex flex-col pt-3 rounded-t-3xl">
+				<aside class="alert variant-ghost-warning text-warning-400-500-token">
+					<div class="material-symbols-outlined">warning</div>
+					<div class="alert-message">
+						{#await $errorStore.json()}
+							<h3 class="h3">"Loading..."</h3>
+						{:then parsed}
+							<h3 class="h3">{$errorStore.status} {$errorStore.statusText}: {parsed.message}</h3>
+						{:catch parsingError}
+							<h3 class="h3">Error in response: {parsingError}</h3>
+						{/await}
+					</div>
+					<div class="alert-actions">
+						<button class="btn variant-filled-warning" on:click={resetError}>
+							<span>Ok</span>
+						</button>
+					</div>
+				</aside>
+			</div>
+		{/if}
+		<div class="flex-grow min-h-0 flex flex-col">
+			<slot />
 		</div>
-	{/if}
-	<slot />
-	<svelte:fragment slot="pageFooter">
 		<div
 			class="container rounded-t-3xl mx-auto justify-center bg-surface-100-800-token"
 			style="text-align: center"
 		>
 			<a href="https://github.com/derGraph">&copy; derGraph</a>
 		</div>
-	</svelte:fragment>
-</AppShell>
+	</div>
