@@ -11,6 +11,7 @@
 	let mapMoved: Boolean = false;
 	let myEvent: number = 0;
 	let maxBounds: LatLngBounds;
+	let changed = false;
 
 	let recenterButtonStructure = L.Control.extend({
 		options: {
@@ -61,6 +62,7 @@
 		osmLayer.addTo(map);
 		seamarkLayer.addTo(map);
 		controlLayer.addTo(map);
+    map.invalidateSize();
 	});
 
 	onDestroy(() => {
@@ -92,7 +94,11 @@
 		map?.dragging.enable();
 		map?.on("mousedown", onMouseDown);
 		map?.on("zoomstart", onZoomStart);
-		map?.on("dragstart", onDrag);		
+		map?.on("dragstart", onDrag);
+		if(changed){
+			changed = false;
+			onTracksChange(tracks);
+		}
 	}
 
 	function onMouseDown(ev: {}){
@@ -130,6 +136,10 @@
 	}
 
 	async function onTracksChange(tracks: any[] | null) {
+		if(!map){
+			changed = true;
+			return;
+		}
 		lines = []; // Reset the lines2D array
 		if (tracks != null) {
 			recenterButton.addTo(map!);

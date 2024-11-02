@@ -16,7 +16,7 @@ model User {
   email             String    @unique
   firstName         String?
   lastName          String?
-  description       String?
+  description       String?   @db.Text
   profilePicture    Media?    @relation("profilePicture", fields: [profilePictureId], references: [id])
   profilePictureId  String?   @unique
   dateOfBirth       DateTime?
@@ -60,15 +60,13 @@ model Key {
 model Trip {
   id                String    @id @default(cuid())
   name              String
-  description       String?
+  description       String?   @db.Text
   startPoint        Datapoint?@relation("startPoint", fields: [startPointId], references: [id])
   startPointId      String?   @unique
   endPoint          Datapoint?@relation("endPoint", fields: [endPointId], references: [id])
   endPointId        String?   @unique
   datapoints        Datapoint[]
   activeUser        User[]
-  start             DateTime?
-  end               DateTime?
   last_update       DateTime  @updatedAt
   length            Decimal?
   skipper           User?     @relation("skipper", fields: [skipperName], references: [username])
@@ -77,6 +75,7 @@ model Trip {
   visibility        Int       @default(1) // 0: private
                                           // 1: logged in
                                           // 2: public 
+  recalculate       Boolean   @default(true)
   }
 
 model Datapoint {

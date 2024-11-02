@@ -77,8 +77,10 @@ export async function PUT(event) {
 	let firstName = null;
 	let lastName = null;
 	let unparsedDateOfBirth = null;
+	let usernameToChange = null;
 	let dateOfBirth = null;
 	let description = null;
+	let activeTripId = null;
 	let activeTrip = null;
 
 	if (event.locals.user?.username) {
@@ -87,10 +89,15 @@ export async function PUT(event) {
 		const mardownRegex =
 			/(((\|)([a-zA-Z\d+\s#!@'"():;\\\/.\[\]\^<={$}>?(?!-))]+))+(\|))(?:\n)?((\|)(-+))+(\|)(\n)((\|)(\W+|\w+|\S+))+(\|$)/;
 		firstName = event.url.searchParams.get('firstName');
+		usernameToChange = event.url.searchParams.get("username");
 		lastName = event.url.searchParams.get('lastName');
 		unparsedDateOfBirth = event.url.searchParams.get('dateOfBirth');
 		description = event.url.searchParams.get('description');
-		activeTrip = event.url.searchParams.get('activeTrip');
+		activeTripId = event.url.searchParams.get('activeTrip');
+
+		if(usernameToChange != username){
+			return error(400, 'Only changing your own userdata is allowed!');
+		}
 
 		if (
 			firstName != null &&
@@ -115,6 +122,23 @@ export async function PUT(event) {
 				description = DOMPurify.sanitize(description);
 			} catch (error_message) {
 				return error(400, 'Invalid description!');
+			}
+		}
+
+		if(activeTripId != null) {
+			try {
+				await prisma.trip.findFirstOrThrow({
+					where: {
+						id: activeTripId,
+						crew: {
+							some: {
+								username: username
+							}
+						}
+					}
+				});
+			} catch (error_message) {
+				return error(400, 'Invalid trip!');
 			}
 		}
 

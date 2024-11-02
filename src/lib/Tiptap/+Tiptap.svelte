@@ -41,15 +41,15 @@
 						class: 'pl-3 border-l-8 border-secondary-500 bg-surface-300-600-token'
 					}
 				}),
-				Heading.configure({ levels: [1, 2] }).extend({
-					levels: [1, 2],
+				Heading.configure({ levels: [2, 3] }).extend({
+					levels: [2, 3],
 					renderHTML({ node, HTMLAttributes }) {
 						const level = this.options.levels.includes(node.attrs.level)
 							? node.attrs.level
 							: this.options.levels[0];
 						const classes = {
-							1: 'h1',
-							2: 'h2'
+							2: 'h2 break-words',
+							3: 'h3 break-words'
 						};
 						return [
 							`h${level}`,
@@ -120,14 +120,14 @@
 	{#if editing && editor}
 		<div class="btn-group variant-ghost-secondary m-1 [&>*+*]:border-secondary-500">
 			<button
-				on:click={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-				class:active={editor.isActive('heading', { level: 1 })}
+				on:click={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+				class:active={editor.isActive('heading', { level: 2 })}
 				class="!pl-1 !pr-1 !py-1 !text-end material-symbols-outlined"
 				style="font-size: 1.5rem">title</button
 			>
 			<button
-				on:click={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-				class:active={editor.isActive('heading', { level: 2 })}
+				on:click={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+				class:active={editor.isActive('heading', { level: 3 })}
 				class="!px-1 !py-1 material-symbols-outlined"
 				style="font-size: 1.25rem">title</button
 			>

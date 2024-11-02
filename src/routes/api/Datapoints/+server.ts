@@ -86,6 +86,17 @@ export async function POST(event: {
 
 		try {
 			await prisma.datapoint.createMany({ data: datapoints });
+			await prisma.trip.update({
+				where: {
+					id: activeUser.activeTripId
+				},
+				data: {
+					last_update: datapoints[datapoints.length-1].time,
+					recalculate: true,
+					endPointId: (await prisma.datapoint.findFirst({where: {tripId: activeUser.activeTripId}, orderBy:{time: 'desc'}}))?.id,
+					startPointId: (await prisma.datapoint.findFirst({where: {tripId: activeUser.activeTripId}, orderBy:{time: 'asc'}}))?.id
+				}
+			});
 		} catch (errorMessage) {
 			if (errorMessage instanceof Error) {
 				return error(400, errorMessage.name + ': ' + errorMessage.message);
