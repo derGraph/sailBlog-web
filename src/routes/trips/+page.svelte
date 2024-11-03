@@ -3,6 +3,7 @@
 	import { onMount } from "svelte";
     import { parseVisibility } from "$lib/visibility";
 	import type { User } from "@prisma/client";
+	import { parseDate, parseRadioButton } from "$lib/functions.js";
 
     let tableArr: any[] = [];
     let totalLength = 0;
@@ -10,7 +11,6 @@
     let totalMotoredLength = 0;
 
     export let data;
-
 
     onMount(()=>{
         reloadTable();
@@ -43,16 +43,6 @@
         });
     }
 
-    function parseDate(unparsedDate:any){
-        if(unparsedDate == null){
-            return;
-        }else if(unparsedDate.time == null){
-            return;
-        }
-        let parsedDate = new Date(unparsedDate.time);
-        return parsedDate.getDate()+"."+(parsedDate.getMonth()+1)+"."+parsedDate.getFullYear();
-    }
-
     function parseCrew(unparsedCrew:User[]){
         let crewHtml = "";
         unparsedCrew.forEach(member => {
@@ -72,16 +62,6 @@
             }
         }
     }
-    function parseActiveTrip(tripId:string){
-        if(tripId==data.user?.activeTripId){
-            //ACTIVE
-            return 'radio_button_checked';
-        }else{
-            //NOT ACTIVE
-            return 'radio_button_unchecked';
-        }
-    }
-
 
 </script>
 
@@ -102,7 +82,7 @@
 		<tbody>
 			{#each tableArr as row, i}
                     <tr class="group">
-                        <td on:click={() => selectActiveTrip(row.id)} class="!align-middle"><button type="button" class="material-symbols-outlined !align-middle">{@html parseActiveTrip(row.id)}</button></td>
+                        <td on:click={() => selectActiveTrip(row.id)} class="!align-middle"><button type="button" class="material-symbols-outlined !align-middle">{@html parseRadioButton(row.id, data.user)}</button></td>
                         <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{row.name}</td>
                         <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{parseDate(row.startPoint)}</td>
                         <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{parseDate(row.endPoint)}</td>

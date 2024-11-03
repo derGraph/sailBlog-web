@@ -43,6 +43,7 @@ export async function GET(event) {
                     },
                     include:{
                         crew: true,
+                        skipper: true,
                         startPoint: true,
                         endPoint: true
                     }
@@ -55,6 +56,7 @@ export async function GET(event) {
                     },
                     include:{
                         crew: true,
+                        skipper: true,
                         startPoint: true,
                         endPoint: true
                     }

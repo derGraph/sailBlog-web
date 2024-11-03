@@ -1,6 +1,7 @@
 <script lang="ts">
 	import errorStore from '$lib/errorStore.js';
 	import Leaflet from '$lib/Leaflet.svelte';
+	import { parseDate } from '$lib/functions.js';
 	import Tiptap from '$lib/Tiptap/+Tiptap.svelte';
 	import type { User } from '@prisma/client';
 	import { Avatar } from '@skeletonlabs/skeleton';
@@ -12,6 +13,9 @@
 	$: requestedTrip = data.requestedTrip;
 
 	let requestedTripData: {
+		endPoint: any;
+		startPoint: any;
+		skipper: any;
 		length_sail: any;
 		length_motor: any;
 		crew: [User];
@@ -19,10 +23,13 @@
 		description: any; 
 	} = {
 		description: "",
-		crew: [{username: "no", email: "no", firstName: null, lastName: null, description: null, profilePictureId: "", dateOfBirth: null, roleId: "user", activeTripId: "", lastPing: new Date }],
+		crew: [{ username: "no", email: "no", firstName: null, lastName: null, description: null, profilePictureId: "", dateOfBirth: null, roleId: "user", activeTripId: "", lastPing: new Date }],
 		name: undefined,
 		length_sail: undefined,
-		length_motor: undefined
+		length_motor: undefined,
+		endPoint: undefined,
+		startPoint: undefined,
+		skipper: undefined
 	};
 
 
@@ -63,19 +70,7 @@
 				<h1 class="h1 text-center">{requestedTripData.name}</h1>
 			</div>
 			<div class="rounded-3xl bg-surface-100-800-token p-1 content-center mb-2">
-				<h3 class="h5 text-center">Crew:
-					{#each requestedTripData?.crew as member, i}
-						<a href="/user/{member.username}" class="btn btn-sm variant-ghost-secondary mr-1">
-						<Avatar initials={getInitials(member)}
-								src={getPictureUrl(member.profilePictureId)}
-								background="bg-primary-500"
-								width="w-5"
-								link
-								rounded="rounded-full"
-								class="mr-1"
-								/>
-								{member.username}</a>
-					{/each}
+				<h3 class="h5 text-center">{parseDate(requestedTripData?.startPoint)} - {parseDate(requestedTripData?.endPoint)}
 				</h3>
 			</div>
 			<div class="rounded-3xl bg-surface-100-800-token p-1 content-center mb-2">
@@ -83,6 +78,34 @@
 					{((Number(requestedTripData?.length_sail)+Number(requestedTripData?.length_motor))/1853).toFixed(2)} NM
 					<span class="!text-base material-symbols-outlined">sailing</span>{(Number(requestedTripData?.length_sail)/1853).toFixed(2)} NM
 					<span class="!text-base material-symbols-outlined">mode_heat</span>{(Number(requestedTripData?.length_motor)/1853).toFixed(2)} NM
+				</h3>
+			</div>
+			<div class="rounded-3xl bg-surface-100-800-token p-1 content-center mb-2">
+				<h3 class="h5 text-center">Skipper:
+					<a href="/user/{requestedTripData.skipper?.username}" class="btn btn-sm variant-ghost-secondary mr-1">
+						<Avatar initials={getInitials(requestedTripData.skipper)}
+								src={getPictureUrl(requestedTripData.skipper?.profilePictureId)}
+								background="bg-primary-500"
+								width="w-5"
+								link
+								rounded="rounded-full"
+								class="mr-1"
+								/>
+								{requestedTripData.skipper?.username}</a> Crew:
+					{#each requestedTripData?.crew as member, i}
+						{#if member.username != requestedTripData?.skipper?.username}
+							<a href="/user/{member.username}" class="btn btn-sm variant-ghost-secondary mr-1">
+							<Avatar initials={getInitials(member)}
+									src={getPictureUrl(member.profilePictureId)}
+									background="bg-primary-500"
+									width="w-5"
+									link
+									rounded="rounded-full"
+									class="mr-1"
+									/>
+									{member.username}</a>
+						{/if}
+					{/each}
 				</h3>
 			</div>
 			<div class="h-full rounded-3xl p-3 bg-surface-100-800-token md:overflow-auto">
