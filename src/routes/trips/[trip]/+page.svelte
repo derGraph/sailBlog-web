@@ -12,13 +12,17 @@
 	$: requestedTrip = data.requestedTrip;
 
 	let requestedTripData: {
-		crew: [any];
+		length_sail: any;
+		length_motor: any;
+		crew: [User];
 		name: any;
 		description: any; 
 	} = {
 		description: "",
-		crew: [],
-		name: undefined
+		crew: [{username: "no", email: "no", firstName: null, lastName: null, description: null, profilePictureId: "", dateOfBirth: null, roleId: "user", activeTripId: "", lastPing: new Date }],
+		name: undefined,
+		length_sail: undefined,
+		length_motor: undefined
 	};
 
 
@@ -41,17 +45,12 @@
 		});
 		tracks.push(requestedTrip);
 	});
-
-	function parseCrew(unparsedCrew:User[]){
-    }
-
 	
 	function getInitials(user:User) {
 		if (user != null && user.firstName && user.lastName) {
 			return user.firstName.charAt(0) + user.lastName.charAt(0);
 		}
 	}
-
 
 	function getPictureUrl(profilePictureId: string) {
 		return profilePictureId
@@ -77,6 +76,13 @@
 								/>
 								{member.username}</a>
 					{/each}
+				</h3>
+			</div>
+			<div class="rounded-3xl bg-surface-100-800-token p-1 content-center mb-2">
+				<h3 class="h5 text-center">Distance:
+					{((Number(requestedTripData?.length_sail)+Number(requestedTripData?.length_motor))/1853).toFixed(2)} NM
+					<span class="!text-base material-symbols-outlined">sailing</span>{(Number(requestedTripData?.length_sail)/1853).toFixed(2)} NM
+					<span class="!text-base material-symbols-outlined">mode_heat</span>{(Number(requestedTripData?.length_motor)/1853).toFixed(2)} NM
 				</h3>
 			</div>
 			<div class="h-full rounded-3xl p-3 bg-surface-100-800-token md:overflow-auto">
