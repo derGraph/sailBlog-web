@@ -29,8 +29,7 @@ export function removeSensitiveData(inputData: object[]|object){
                     inputData[key] = null;
                 }
             }
-            
         }
-        return inputData
     }        
+    return inputData
 }

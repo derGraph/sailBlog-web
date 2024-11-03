@@ -63,7 +63,6 @@ export async function GET(event) {
                     }
                 });
             }
-            console.log(responseData);
             responseData = removeSensitiveData(responseData);
             return new Response(JSON.stringify(responseData));
         }
