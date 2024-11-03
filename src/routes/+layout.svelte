@@ -1,12 +1,10 @@
 <script lang="ts">
 	import '../app.postcss';
 	import { AppBar } from '@skeletonlabs/skeleton';
-	import { AppShell } from '@skeletonlabs/skeleton';
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import { setModeCurrent, setModeUserPrefers, modeCurrent } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 	import errorStore from '$lib/errorStore';
-	import { storePopup } from '@skeletonlabs/skeleton';
 
 	let navHeight = 2;
 	export let data;
