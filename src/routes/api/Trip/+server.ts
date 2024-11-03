@@ -1,3 +1,4 @@
+import { removeSensitiveData } from '$lib/server/functions';
 import { prisma } from '$lib/server/prisma';
 import { checkVisibility } from '$lib/visibility.js';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
@@ -62,6 +63,8 @@ export async function GET(event) {
                     }
                 });
             }
+            console.log(responseData);
+            responseData = removeSensitiveData(responseData);
             return new Response(JSON.stringify(responseData));
         }
 
