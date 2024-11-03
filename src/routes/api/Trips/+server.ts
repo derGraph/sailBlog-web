@@ -1,3 +1,4 @@
+import { removeSensitiveData } from '$lib/server/functions.js';
 import { prisma } from '$lib/server/prisma';
 import { error, isHttpError, json, redirect } from '@sveltejs/kit';
 
@@ -65,7 +66,7 @@ export async function GET(event: {
 				}
 			});
 		}
-
+		responseData = removeSensitiveData(responseData);
 		return new Response(JSON.stringify(responseData));
 	} catch (error_message) {
 		if (error_message instanceof Error) {
