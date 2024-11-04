@@ -109,4 +109,5 @@ model Media {
   user              User      @relation("uploader", fields: [username], references: [username])
   profilePicture    User?     @relation("profilePicture")
   username          String
+  alt               String?
 }
