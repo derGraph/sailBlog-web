@@ -49,7 +49,7 @@
 		username: string;
 		description: string;
 	}) {
-		return 'https://upload.wikimedia.org/wikipedia/en/9/9a/Trollface_non-free.png';
+		return '';
 	}
 
 	function editNameChange() {
@@ -106,8 +106,7 @@
 					<h1 class="h1 mt-3">{requestedUser.firstName + ' ' + requestedUser.lastName}</h1>
 					{#if user?.username == requestedUserName}
 						<button class="h1 mt-3 material-symbols-outlined max-h" onclick={editNameChange}
-							>edit</button
-						>
+							>edit</button>
 					{/if}
 				</div>
 			{:else}
@@ -140,7 +139,7 @@
 			<h4 class="h4">@{requestedUser.username}</h4>
 		{/if}
 		{#if user?.username == requestedUserName}
-			<Tiptap {saveEditor} description={requestedUser.description} />
+			<Tiptap {saveEditor} usernameToFetch={user?.username} description={requestedUser.description} />
 		{:else if requestedUser.description}
 			<div class="remove-all">
 				{@html requestedUser.description}
