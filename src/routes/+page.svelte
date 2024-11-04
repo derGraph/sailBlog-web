@@ -4,8 +4,8 @@
 	import Leaflet from '$lib/Leaflet.svelte';
 	import { onMount } from 'svelte';
 
-	export let data;
-	let tracks: String[] | null = null;
+	let { data } = $props();
+	let tracks: String[] | null = $state(null);
 
 	const initialView: LatLngExpression = [43.95, 14.79];
 

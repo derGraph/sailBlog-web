@@ -17,8 +17,8 @@ export async function POST(event) {
 			message: 'Set Header to image/filetype!'
 		});
 	}
-	console.log('HI');
 	let unparsedVisibility = event.url.searchParams.get('visibility');
+	let alt = event.url.searchParams.get('alt');
 	let visibility = 1;
 
 	if (unparsedVisibility != null) {
@@ -47,6 +47,11 @@ export async function POST(event) {
 			message: 'Log in first!'
 		});
 	}
+	let media:Media = {
+		id: '',
+		visibility: 0,
+		username: ''
+	};
 
 	try {
 		const arrayBuffer = await event.request.arrayBuffer();
@@ -59,21 +64,29 @@ export async function POST(event) {
 				inputImage = await inputImage.resize(2000);
 			}
 		}
-		let media = await prisma.media.create({
+		media = await prisma.media.create({
 			data: {
 				username: event.locals.user?.username,
-				visibility: visibility
+				visibility: visibility,
+				...(alt && {alt}),  
 			}
 		});
 
 		let filePath = path.join('store', media.username);
 		if (!existsSync(filePath)) {
-			mkdirSync(filePath);
+			mkdirSync(filePath, {recursive: true});
 		}
 
 		filePath = path.join(filePath, media.id + '.avif');
 		inputImage.avif({ lossless: false, quality: 50 }).toFile(filePath);
 	} catch (imageError) {
+		if(media.id != ''){
+			await prisma.media.delete({
+				where: {
+					id: media.id
+				}
+			});
+		}
 		if (imageError == 'Error: Input buffer contains unsupported image format') {
 			error(415, {
 				message: 'Only JPEG, PNG, WebP, GIF, AVIF, TIFF and SVG allowed!'
@@ -104,18 +117,11 @@ export async function GET(event) {
 
 	try {
 		if (event.locals.user?.username == requestedUsername) {
-			let returnMedia = <Media[]>(<unknown>await prisma.media.findMany({
+			let results = <Media[]>(<unknown>await prisma.media.findMany({
 				where: {
 					username: event.locals.user?.username
 				}
 			}));
-			var results: { [a: string]: any } = {};
-			for (let media of returnMedia) {
-				results[media.id] = {
-					visibility: media.visibility,
-					username: media.username
-				};
-			}
 			return new Response(JSON.stringify(results));
 		} else if (event.locals.user) {
 			let returnMedia = await prisma.media.findMany({

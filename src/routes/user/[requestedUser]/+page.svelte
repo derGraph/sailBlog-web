@@ -4,20 +4,21 @@
 	import errorStore from '$lib/errorStore.js';
 	import Tiptap from '$lib/Tiptap/+Tiptap.svelte';
 
-	export let data;
-	let newFirstName = '';
-	let newLastName = '';
+	let { data } = $props();
+	let newFirstName = $state('');
+	let newLastName = $state('');
 
-	$: requestedUserName = data.requestedUser;
+	let requestedUserName = $derived(data.requestedUser);
 
-	let requestedUser = {
+	let requestedUser = $state({
 		firstName: '',
 		lastName: '',
 		username: '',
 		description: ''
-	};
+	});
 
-	$: editName = false;
+	let editName = $state(false);
+	
 
 	onMount(async () => {
 		fetch('/api/User?username=' + requestedUserName).then((response) => {
@@ -48,7 +49,7 @@
 		username: string;
 		description: string;
 	}) {
-		return 'https://upload.wikimedia.org/wikipedia/en/9/9a/Trollface_non-free.png';
+		return '';
 	}
 
 	function editNameChange() {
@@ -61,8 +62,8 @@
 		}
 	}
 
-	$: user = data.user;
-	$: session = data.session;
+	let user = $derived(data.user);
+	let session = $derived(data.session);
 	const saveEditor = (message: any) => {
 		fetch(
 			'/api/User?username=' + requestedUserName + '&description=' + encodeURIComponent(message),
@@ -97,16 +98,15 @@
 				rounded="rounded-full"
 			/>
 		{:else}
-			<div class="placeholder-circle w-40 mt-3" />
+			<div class="placeholder-circle w-40 mt-3"></div>
 		{/if}
 		{#if requestedUser.firstName && requestedUser.lastName}
 			{#if editName == false}
 				<div class="flex flex-row">
 					<h1 class="h1 mt-3">{requestedUser.firstName + ' ' + requestedUser.lastName}</h1>
 					{#if user?.username == requestedUserName}
-						<button class="h1 mt-3 material-symbols-outlined max-h" on:click={editNameChange}
-							>edit</button
-						>
+						<button class="h1 mt-3 material-symbols-outlined max-h" onclick={editNameChange}
+							>edit</button>
 					{/if}
 				</div>
 			{:else}
@@ -128,7 +128,7 @@
 						required
 					/>
 					{#if user?.username == requestedUserName}
-						<button class="h1 mt-3 material-symbols-outlined max-h" on:click={editNameChange}
+						<button class="h1 mt-3 material-symbols-outlined max-h" onclick={editNameChange}
 							>check</button
 						>
 					{/if}
@@ -139,7 +139,7 @@
 			<h4 class="h4">@{requestedUser.username}</h4>
 		{/if}
 		{#if user?.username == requestedUserName}
-			<Tiptap {saveEditor} description={requestedUser.description} />
+			<Tiptap {saveEditor} usernameToFetch={user?.username} description={requestedUser.description} />
 		{:else if requestedUser.description}
 			<div class="remove-all">
 				{@html requestedUser.description}

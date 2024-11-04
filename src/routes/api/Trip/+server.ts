@@ -1,3 +1,4 @@
+import { removeSensitiveData } from '$lib/server/functions';
 import { prisma } from '$lib/server/prisma';
 import { checkVisibility } from '$lib/visibility.js';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
@@ -19,32 +20,50 @@ export async function GET(event) {
         if(tripId == null){
             error(400, { message: 'tripId missing!' });
         }else{
-            let responseData = await prisma.trip.findMany({
-                where:{
-                    id: tripId,
-                    OR: [
-                        {   visibility: 1 },
-                        {   visibility: 2 },
-                        {
-                            visibility: 0,
-                            crew: {
-                                some: {
-                                    username: username
+            let responseData;
+            if(username != "" && username != null){
+                responseData = await prisma.trip.findMany({
+                    where:{
+                        id: tripId,
+                        OR: [
+                            {   visibility: 1 },
+                            {   visibility: 2 },
+                            {
+                                visibility: 0,
+                                crew: {
+                                    some: {
+                                        username: username
+                                    }
                                 }
+                            },
+                            {                            
+                                visibility: 0,
+                                skipperName: username
                             }
-                        },
-                        {                            
-                            visibility: 0,
-                            skipperName: username
-                        }
-                    ]
-                },
-                include:{
-                    crew: true,
-                    startPoint: true,
-                    endPoint: true
-                }
-            });
+                        ]
+                    },
+                    include:{
+                        crew: true,
+                        skipper: true,
+                        startPoint: true,
+                        endPoint: true
+                    }
+                });
+            }else{
+                responseData = await prisma.trip.findMany({
+                    where:{
+                        id: tripId,
+                        visibility: 2,
+                    },
+                    include:{
+                        crew: true,
+                        skipper: true,
+                        startPoint: true,
+                        endPoint: true
+                    }
+                });
+            }
+            responseData = removeSensitiveData(responseData);
             return new Response(JSON.stringify(responseData));
         }
 

@@ -35,6 +35,14 @@ export const handle: Handle = async ({ event, resolve }) => {
 				ip: event.getClientAddress()
 			}
 		});
+		await prisma.user.update({
+			where: {
+				username: user.username
+			},
+			data: {
+				lastPing: new Date(Date.now()),
+			}
+		})
 	}
 	event.locals.user = user;
 	event.locals.session = session;

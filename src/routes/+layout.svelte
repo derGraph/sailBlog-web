@@ -1,15 +1,13 @@
 <script lang="ts">
 	import '../app.postcss';
 	import { AppBar } from '@skeletonlabs/skeleton';
-	import { AppShell } from '@skeletonlabs/skeleton';
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import { setModeCurrent, setModeUserPrefers, modeCurrent } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 	import errorStore from '$lib/errorStore';
-	import { storePopup } from '@skeletonlabs/skeleton';
 
 	let navHeight = 2;
-	export let data;
+	let { data, children } = $props();
 
 	onMount(() => {
 		setModeCurrent($modeCurrent);
@@ -34,8 +32,8 @@
 		$errorStore = new Response();
 	}
 
-	$: user = data.user;
-	$: session = data.session;
+	let user = $derived(data.user);
+	let session = $derived(data.session);
 </script>
 
 <link
@@ -45,61 +43,63 @@
 	<div class="h-screen flex flex-col">
 		<div class="md:container h-20 md:mx-auto justify-center items-center">
 			<AppBar class="rounded-b-3xl">
-				<svelte:fragment slot="lead">
-					<a href="/" class="material-symbols-outlined" style="font-size: {navHeight}rem">map</a>
-					<a href="/" class="text-2xl">sailBlog</a>
-				</svelte:fragment>
-				<svelte:fragment slot="default">
-					{#if user}
-						{#if user.firstName && user.lastName}
-							<button type="button" class="text-xl" on:click={() => {window.location.href = "/trips"}}>Trips</button>
-							<span
-								class="divider-vertical h-3"
-							/>
+				{#snippet lead()}
+					
+						<a href="/" class="material-symbols-outlined" style="font-size: {navHeight}rem">map</a>
+						<a href="/" class="text-2xl">sailBlog</a>
+					
+					{/snippet}
+				{#snippet children()}
+					
+						{#if user}
+							{#if user.firstName && user.lastName}
+								<button type="button" class="text-xl" onclick={() => {window.location.href = "/trips"}}>Trips</button>
+								<span class="divider-vertical h-3"></span>
+							{/if}
 						{/if}
-					{/if}
-				</svelte:fragment>
-				<svelte:fragment slot="trail">
-					{#if !user}
-						<div class="btn-md btn variant-ghost-secondary">
-							<a href="/sign_in"><button type="button" class="">Sign in!</button></a>
-							<span
-								class="divider-vertical h-6"
-							/>
-							<a href="/sign_up"><button type="button" class="">Sign up!</button></a>
-						</div>
-					{:else}
-						<div
-							class="btn-sm btn variant-ghost-secondary material-symbols-outlined"
-							style="margin:0;"
-						>
-							<button on:click={changeDarkMode} style="font-size: {navHeight}rem"
-								>{$modeCurrent ? 'dark_mode' : 'light_mode'}</button
-							>
-							<span
-								class="divider-vertical h-8"
-								style="border-color:rgb(var(--color-secondary-500)); margin:0; padding:0;"
-							/>
-							<a href="/sign_out" style="margin:0;padding:0;"
-								><button type="button" style="font-size: {navHeight}rem">logout</button></a
-							>
-						</div>
-						{#if user.firstName && user.lastName}
-							<a href="/user" aria-label="Get to the Users page!"
-								><Avatar
-									initials={getInitials()}
-									src={getPictureUrl()}
-									background="bg-primary-500"
-									width="w-11"
-									link
-									rounded="rounded-full"
-								/></a
-							>
+					
+					{/snippet}
+				{#snippet trail()}
+					
+						{#if !user}
+							<div class="btn-md btn variant-ghost-secondary">
+								<a href="/sign_in"><button type="button" class="">Sign in!</button></a>
+								<span class="divider-vertical h-6"></span>
+								<a href="/sign_up"><button type="button" class="">Sign up!</button></a>
+							</div>
 						{:else}
-							<a href="/user"><div class="placeholder-circle w-11" /></a>
+							<div
+								class="btn-sm btn variant-ghost-secondary material-symbols-outlined"
+								style="margin:0;"
+							>
+								<button onclick={changeDarkMode} style="font-size: {navHeight}rem"
+									>{$modeCurrent ? 'dark_mode' : 'light_mode'}</button
+								>
+								<span
+									class="divider-vertical h-8"
+									style="border-color:rgb(var(--color-secondary-500)); margin:0; padding:0;"
+								></span>
+								<a href="/sign_out" style="margin:0;padding:0;"
+									><button type="button" style="font-size: {navHeight}rem">logout</button></a
+								>
+							</div>
+							{#if user.firstName && user.lastName}
+								<a href="/user" aria-label="Get to the Users page!"
+									><Avatar
+										initials={getInitials()}
+										src={getPictureUrl()}
+										background="bg-primary-500"
+										width="w-11"
+										link
+										rounded="rounded-full"
+									/></a
+								>
+							{:else}
+								<a href="/user" aria-label="profile Picture" ><div class="placeholder-circle w-11" ></div></a>
+							{/if}
 						{/if}
-					{/if}
-				</svelte:fragment>
+					
+					{/snippet}
 			</AppBar>
 		</div>
 		{#if $errorStore.status && $errorStore.status != 200}
@@ -116,7 +116,7 @@
 						{/await}
 					</div>
 					<div class="alert-actions">
-						<button class="btn variant-filled-warning" on:click={resetError}>
+						<button class="btn variant-filled-warning" onclick={resetError}>
 							<span>Ok</span>
 						</button>
 					</div>
@@ -124,7 +124,7 @@
 			</div>
 		{/if}
 		<div class="flex-grow min-h-0 flex flex-col">
-			<slot />
+			{@render children?.()}
 		</div>
 		<div
 			class="container rounded-t-3xl mx-auto justify-center bg-surface-100-800-token"

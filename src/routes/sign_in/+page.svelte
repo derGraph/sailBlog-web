@@ -1,18 +1,22 @@
 <script lang="ts">
-	import errorStore from '$lib/errorStore.js';
-	export let form;
+	import { run } from 'svelte/legacy';
 
-	$: if (form?.error) {
-		$errorStore = new Response(
-			JSON.stringify({
-				message: form.error
-			}),
-			{
-				statusText: 'Bad request!',
-				status: 400
-			}
-		);
-	}
+	import errorStore from '$lib/errorStore.js';
+	let { form } = $props();
+
+	run(() => {
+		if (form?.error) {
+			$errorStore = new Response(
+				JSON.stringify({
+					message: form.error
+				}),
+				{
+					statusText: 'Bad request!',
+					status: 400
+				}
+			);
+		}
+	});
 </script>
 
 <div class="md:container md:mx-auto py-3 rounded-3xl my-3 bg-surface-100-800-token">
