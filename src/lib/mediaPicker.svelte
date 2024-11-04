@@ -1,14 +1,12 @@
 <script lang="ts">
     import { onMount } from "svelte";
 	import errorStore from "./errorStore";
+    
+    let {isOpen = false, usernameToFetch = "", Finished = function(id:string){}} = $props();
 
-    export let isOpen:boolean = false; // Control the modal visibility
-    export let usernameToFetch:string = "";
-    export let selectedImageId:string = ""; 
-
-    let images: any[] = [];
+    let images: any[] = $state([]);
     let files: any[] = [];
-    let mediaVisibilityPopup = false;
+    let mediaVisibilityPopup = $state(false);
     let fileToUpload: string | Blob | null = null;
 
     // Fetch images when the component mounts
@@ -74,7 +72,7 @@
 
     // Close the modal and return the selected image ID
     function selectImage(id: any) {
-        selectedImageId = id;
+        Finished(id);
         isOpen = false;
     }
 
@@ -97,12 +95,12 @@
             <input id="altText" placeholder="description" class="input mb-1"/>
             <button 
                 class="btn variant-filled"
-                on:click={()=> uploadImage()}>
+                onclick={uploadImage}>
                 OK
             </button>
             <button 
                 class="btn variant-filled"
-                on:click={()=> mediaVisibilityPopup=false}>
+                onclick={() => {mediaVisibilityPopup=false}}>
                 Cancel
             </button>
         </div>
@@ -113,7 +111,7 @@
         <div class="flex content-center justify-center h-[91.6%] md:h-5/6">
             <div class="variant-glass-surface rounded-3xl shadow-lg w-11/12 md:w-3/4 lg:w-3/4 p-4 flex flex-col">
                 <div class="text-right">
-                    <button on:click={() => (isOpen = false)} class="hover:text-gray-500 material-symbols-outlined">
+                    <button onclick={() => (isOpen = false)} class="hover:text-gray-500 material-symbols-outlined">
                         close
                     </button>
                 </div>
@@ -121,7 +119,7 @@
                 <div class="grid grid-cols-2 lg:grid-cols-3 gap-2 overflow-auto flex-grow">
                             <button
                                 class="border rounded cursor-pointer max-h-72"
-                                on:click={() => document.getElementById("mediaPickerUpload")?.click()}
+                                onclick={() => document.getElementById("mediaPickerUpload")?.click()}
                             >   
                                 <span class="material-symbols-outlined content-center h-min">add</span>
                             </button>
@@ -130,12 +128,12 @@
                                 type="file" 
                                 class="hidden h-0"
                                 accept="image/*"
-                                on:change={(event) => handleFileChange(event)}
+                                onchange={(event) => handleFileChange(event)}
                             />
                     {#each images.reverse() as image}
                             <button
                                 class="border rounded cursor-pointer h-min"
-                                on:click={() => selectImage(image.id)}
+                                onclick={() => selectImage(image.id)}
                             >   
                                 <img src={"/api/Media/"+image.username+"/"+image.id+".avif"} alt={parseAlt(image.alt)} class="object-cover rounded content-center w-full h-full" />
                             </button>

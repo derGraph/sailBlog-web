@@ -4,20 +4,21 @@
 	import errorStore from '$lib/errorStore.js';
 	import Tiptap from '$lib/Tiptap/+Tiptap.svelte';
 
-	export let data;
-	let newFirstName = '';
-	let newLastName = '';
+	let { data } = $props();
+	let newFirstName = $state('');
+	let newLastName = $state('');
 
-	$: requestedUserName = data.requestedUser;
+	let requestedUserName = $derived(data.requestedUser);
 
-	let requestedUser = {
+	let requestedUser = $state({
 		firstName: '',
 		lastName: '',
 		username: '',
 		description: ''
-	};
+	});
 
-	$: editName = false;
+	let editName = $state(false);
+	
 
 	onMount(async () => {
 		fetch('/api/User?username=' + requestedUserName).then((response) => {
@@ -61,8 +62,8 @@
 		}
 	}
 
-	$: user = data.user;
-	$: session = data.session;
+	let user = $derived(data.user);
+	let session = $derived(data.session);
 	const saveEditor = (message: any) => {
 		fetch(
 			'/api/User?username=' + requestedUserName + '&description=' + encodeURIComponent(message),
@@ -97,14 +98,14 @@
 				rounded="rounded-full"
 			/>
 		{:else}
-			<div class="placeholder-circle w-40 mt-3" />
+			<div class="placeholder-circle w-40 mt-3"></div>
 		{/if}
 		{#if requestedUser.firstName && requestedUser.lastName}
 			{#if editName == false}
 				<div class="flex flex-row">
 					<h1 class="h1 mt-3">{requestedUser.firstName + ' ' + requestedUser.lastName}</h1>
 					{#if user?.username == requestedUserName}
-						<button class="h1 mt-3 material-symbols-outlined max-h" on:click={editNameChange}
+						<button class="h1 mt-3 material-symbols-outlined max-h" onclick={editNameChange}
 							>edit</button
 						>
 					{/if}
@@ -128,7 +129,7 @@
 						required
 					/>
 					{#if user?.username == requestedUserName}
-						<button class="h1 mt-3 material-symbols-outlined max-h" on:click={editNameChange}
+						<button class="h1 mt-3 material-symbols-outlined max-h" onclick={editNameChange}
 							>check</button
 						>
 					{/if}

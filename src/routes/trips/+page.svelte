@@ -5,12 +5,12 @@
 	import type { User } from "@prisma/client";
 	import { parseDate, parseRadioButton } from "$lib/functions.js";
 
-    let tableArr: any[] = [];
-    let totalLength = 0;
-    let totalSailedLength = 0;
-    let totalMotoredLength = 0;
+    let tableArr: any[] = $state([]);
+    let totalLength = $state(0);
+    let totalSailedLength = $state(0);
+    let totalMotoredLength = $state(0);
 
-    export let data;
+    let { data } = $props();
 
     onMount(()=>{
         reloadTable();
@@ -82,14 +82,14 @@
 		<tbody>
 			{#each tableArr as row}
                     <tr class="group">
-                        <td on:click={() => selectActiveTrip(row.id)} class="!align-middle"><button type="button" class="material-symbols-outlined !align-middle">{@html parseRadioButton(row.id, data.user)}</button></td>
-                        <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{row.name}</td>
-                        <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{parseDate(row.startPoint)}</td>
-                        <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{parseDate(row.endPoint)}</td>
-                        <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{((Number(row.length_sail) + Number(row.length_motor))/1853).toFixed(0)} NM<div class="hidden group-hover:block"><span class="!text-xs material-symbols-outlined">sailing</span>{(Number(row.length_sail)/1853).toFixed(0)} <span class="!text-xs material-symbols-outlined">mode_heat</span>{(Number(row.length_motor)/1853).toFixed(0)}</div></td>
-                        <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{row.skipperName}</td>
-                        <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{parseCrew(row.crew)}</td>
-                        <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{parseVisibility(row.visibility)}</td>
+                        <td onclick={() => selectActiveTrip(row.id)} class="!align-middle"><button type="button" class="material-symbols-outlined !align-middle">{@html parseRadioButton(row.id, data.user)}</button></td>
+                        <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{row.name}</td>
+                        <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{parseDate(row.startPoint)}</td>
+                        <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{parseDate(row.endPoint)}</td>
+                        <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{((Number(row.length_sail) + Number(row.length_motor))/1853).toFixed(0)} NM<div class="hidden group-hover:block"><span class="!text-xs material-symbols-outlined">sailing</span>{(Number(row.length_sail)/1853).toFixed(0)} <span class="!text-xs material-symbols-outlined">mode_heat</span>{(Number(row.length_motor)/1853).toFixed(0)}</div></td>
+                        <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{row.skipperName}</td>
+                        <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{parseCrew(row.crew)}</td>
+                        <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{parseVisibility(row.visibility)}</td>
                     </tr>
 			{/each}
 		</tbody>

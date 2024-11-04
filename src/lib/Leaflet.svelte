@@ -1,17 +1,19 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import L, { LatLngBounds } from 'leaflet';
 	import 'leaflet/dist/leaflet.css';
 	import { onDestroy, onMount, setContext } from 'svelte';
 	import { modeCurrent } from '@skeletonlabs/skeleton';
 	import errorStore from './errorStore';
 
-	let map: L.Map | undefined;
-	let mapElement: HTMLDivElement;
-	let lines: L.Polyline[][] = [];
+	let map: L.Map | undefined = $state();
+	let mapElement: HTMLDivElement = $state();
+	let lines: L.Polyline[][] = $state([]);
 	let mapMoved: Boolean = false;
 	let myEvent: number = 0;
 	let maxBounds: LatLngBounds;
-	let changed = false;
+	let changed = $state(false);
 
 	let recenterButtonStructure = L.Control.extend({
 		options: {
@@ -74,10 +76,21 @@
 		getMap: () => map
 	});
 
-	export let bounds: L.LatLngBoundsExpression | undefined = undefined;
-	export let view: L.LatLngExpression | undefined = undefined;
-	export let zoom: number | undefined = undefined;
-	export let tracks: String[] | null = null;
+	interface Props {
+		bounds?: L.LatLngBoundsExpression | undefined;
+		view?: L.LatLngExpression | undefined;
+		zoom?: number | undefined;
+		tracks?: String[] | null;
+		children?: import('svelte').Snippet;
+	}
+
+	let {
+		bounds = undefined,
+		view = undefined,
+		zoom = undefined,
+		tracks = null,
+		children
+	}: Props = $props();
 
 	onMount(() => {
 		if (!bounds && (!view || !zoom)) {
@@ -85,21 +98,6 @@
 		}
 	});
 
-	$: if (map) {
-		if (bounds) {
-			map.fitBounds(bounds);
-		} else if (view && zoom) {
-			map.setView(view, zoom);
-		}
-		map?.dragging.enable();
-		map?.on("mousedown", onMouseDown);
-		map?.on("zoomstart", onZoomStart);
-		map?.on("dragstart", onDrag);
-		if(changed){
-			changed = false;
-			onTracksChange(tracks);
-		}
-	}
 
 	function onMouseDown(ev: {}){
 		mapMoved = true;
@@ -117,7 +115,6 @@
 		mapMoved = true;
 	}
 
-	$: onTracksChange(tracks);
 
 	function getColorByPropulsion(propulsion: number): string {
 		switch (propulsion) {
@@ -194,7 +191,6 @@
 		}
 	}
 
-	$: onLineChange(lines);
 
 	function onLineChange(lines2D: L.Polyline[][]) {
 		
@@ -229,11 +225,34 @@
 		}
 		return await response.json();
 	}
+	run(() => {
+		if (map) {
+			if (bounds) {
+				map.fitBounds(bounds);
+			} else if (view && zoom) {
+				map.setView(view, zoom);
+			}
+			map?.dragging.enable();
+			map?.on("mousedown", onMouseDown);
+			map?.on("zoomstart", onZoomStart);
+			map?.on("dragstart", onDrag);
+			if(changed){
+				changed = false;
+				onTracksChange(tracks);
+			}
+		}
+	});
+	run(() => {
+		onTracksChange(tracks);
+	});
+	run(() => {
+		onLineChange(lines);
+	});
 </script>
 
 <div class="w-full h-full rounded-3xl" bind:this={mapElement}>
 	{#if map}
-		<slot />
+		{@render children?.()}
 	{/if}
 </div>
 

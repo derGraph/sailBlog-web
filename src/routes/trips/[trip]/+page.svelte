@@ -8,9 +8,9 @@
 	import type { LatLngExpression } from 'leaflet';
 	import { onMount } from 'svelte';
 
-	export let data;
+	let { data } = $props();
 
-	$: requestedTrip = data.requestedTrip;
+	let requestedTrip = $derived(data.requestedTrip);
 
 	let requestedTripData: {
 		endPoint: any;
@@ -21,7 +21,7 @@
 		crew: [User];
 		name: any;
 		description: any; 
-	} = {
+	} = $state({
 		description: "",
 		crew: [{ username: "no", email: "no", firstName: null, lastName: null, description: null, profilePictureId: "", dateOfBirth: null, roleId: "user", activeTripId: "", lastPing: new Date }],
 		name: undefined,
@@ -30,11 +30,11 @@
 		endPoint: undefined,
 		startPoint: undefined,
 		skipper: undefined
-	};
+	});
 
 
-	$: user = data.user;
-	$: session = data.session;
+	let user = $derived(data.user);
+	let session = $derived(data.session);
 
 	let tracks: String[] = [];
 	const initialView: LatLngExpression = [43.95, 14.79];
