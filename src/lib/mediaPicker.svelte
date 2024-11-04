@@ -2,7 +2,7 @@
     import { onMount } from "svelte";
 	import errorStore from "./errorStore";
     
-    let {isOpen = false, usernameToFetch = "", Finished = function(id:string){}} = $props();
+    let {isOpen = $bindable(false), usernameToFetch = "", onFinished = function(id:string){}} = $props();
 
     let images: any[] = $state([]);
     let files: any[] = [];
@@ -23,6 +23,7 @@
                 return;
             }
             images = await response.json(); // Assuming the response is a JSON array of image objects
+            images = images.reverse();
         } catch (error) {
             console.error("Error fetching images:", error);
         }
@@ -71,8 +72,8 @@
     }
 
     // Close the modal and return the selected image ID
-    function selectImage(id: any) {
-        Finished(id);
+    function selectImage(url: any) {
+        onFinished(url);
         isOpen = false;
     }
 
@@ -130,10 +131,10 @@
                                 accept="image/*"
                                 onchange={(event) => handleFileChange(event)}
                             />
-                    {#each images.reverse() as image}
+                    {#each images as image}
                             <button
                                 class="border rounded cursor-pointer h-min"
-                                onclick={() => selectImage(image.id)}
+                                onclick={() => selectImage("/api/Media/"+image.username+"/"+image.id+".avif")}
                             >   
                                 <img src={"/api/Media/"+image.username+"/"+image.id+".avif"} alt={parseAlt(image.alt)} class="object-cover rounded content-center w-full h-full" />
                             </button>

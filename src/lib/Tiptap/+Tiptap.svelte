@@ -20,12 +20,14 @@
 	let element: Element = $state();
 	let editor: Editor = $state();
 	let editing = true;
+
+	let isOpen = $state(false);
 	interface Props {
 		saveEditor: any;
 		description?: string;
 	}
 
-	let { saveEditor, description = '' }: Props = $props();
+	let { saveEditor, description = '', usernameToFetch = '' }: Props = $props();
 
 
 	function setContent(description: string) {
@@ -116,6 +118,10 @@
 		}
 	});
 
+	function finishedImageUpload(url:string){
+		editor.commands.setImage({src: url});
+	}
+
 	function save() {
 		let html = editor.getHTML();
 		saveEditor(html);
@@ -183,10 +189,7 @@
 				style="font-size: 1.5rem">format_align_right</button
 			>
 			<button
-				onclick={() =>
-					editor.commands.setImage({
-						src: 'http://192.168.0.7:5173/api/Media/derGeisler/clwpdtde70001p0dvtj3lmwto.avif'
-					})}
+				onclick={() => isOpen=true}
 				class="!pl-1 !pr-2 !py-1 material-symbols-outlined"
 				style="font-size: 1.5rem">add_photo_alternate</button
 			>
@@ -199,6 +202,7 @@
 	{/if}
 
 	<div bind:this={element}></div>
+	<MediaPicker {usernameToFetch} bind:isOpen={isOpen} onFinished={finishedImageUpload}/>
 </div>
 
 <style lang="css">
