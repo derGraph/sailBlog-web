@@ -80,7 +80,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each tableArr as row, i}
+			{#each tableArr as row}
                     <tr class="group">
                         <td on:click={() => selectActiveTrip(row.id)} class="!align-middle"><button type="button" class="material-symbols-outlined !align-middle">{@html parseRadioButton(row.id, data.user)}</button></td>
                         <td on:click="{()=>{window.location.href='/trips/'+row.id}}" class="!align-middle">{row.name}</td>
