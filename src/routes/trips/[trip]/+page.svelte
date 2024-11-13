@@ -80,9 +80,10 @@
 					<span class="!text-base material-symbols-outlined">mode_heat</span>{(Number(requestedTripData?.length_motor)/1853).toFixed(2)} NM
 				</h3>
 			</div>
-			<div class="rounded-3xl bg-surface-100-800-token p-1 content-center mb-2">
-				<h3 class="h5 text-center">Skipper:
-					<a href="/user/{requestedTripData.skipper?.username}" class="btn btn-sm variant-ghost-secondary mr-1">
+			<div class="rounded-3xl bg-surface-100-800-token p-1 content-center mb-2 flex justify-center items-center space-x-2">
+				<div class="flex items-center">
+					<h3 class="h5 align-middle mr-2">Skipper:</h3>
+					<a href="/user/{requestedTripData.skipper?.username}" class="btn btn-sm variant-ghost-secondary mr-1 flex items-center">
 						<Avatar initials={getInitials(requestedTripData.skipper)}
 								src={getPictureUrl(requestedTripData.skipper?.profilePictureId)}
 								background="bg-primary-500"
@@ -90,23 +91,29 @@
 								link
 								rounded="rounded-full"
 								class="mr-1"
-								/>
-								{requestedTripData.skipper?.username}</a> Crew:
+						/>
+						{requestedTripData.skipper?.username}
+					</a>
+				</div>
+			
+				<div class="flex items-center">
+					<h3 class="h5 align-middle mr-2">Crew:</h3>
 					{#each requestedTripData?.crew as member, i}
 						{#if member.username != requestedTripData?.skipper?.username}
-							<a href="/user/{member.username}" class="btn btn-sm variant-ghost-secondary mr-1">
-							<Avatar initials={getInitials(member)}
-									src={getPictureUrl(member.profilePictureId)}
-									background="bg-primary-500"
-									width="w-5"
-									link
-									rounded="rounded-full"
-									class="mr-1"
-									/>
-									{member.username}</a>
+							<a href="/user/{member.username}" class="btn btn-sm variant-ghost-secondary mr-1 flex items-center">
+								<Avatar initials={getInitials(member)}
+										src={getPictureUrl(member.profilePictureId)}
+										background="bg-primary-500"
+										width="w-5"
+										link
+										rounded="rounded-full"
+										class="mr-1"
+								/>
+								{member.username}
+							</a>
 						{/if}
 					{/each}
-				</h3>
+				</div>
 			</div>
 			<div class="h-full rounded-3xl p-3 bg-surface-100-800-token md:overflow-auto">
 				<div class="md:mx-1 md:my-0 text-wrap">

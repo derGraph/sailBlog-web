@@ -219,15 +219,20 @@ export async function PUT(event) {
                 await prisma.trip.findFirstOrThrow({
                     where: {
                         id: tripId,
-                        crew: {
-                            some: {
-                                username: username
-                            }
-                        }
+                        OR: [{
+                            crew: {
+                                    some: {
+                                        username: username
+                                    }
+                                }
+                        },{
+                            skipperName: username
+                        }],
+                        
                     }
                 });
             }catch (error_message){
-                return error(400, 'Trip not found or not skipper of trip!');
+                return error(400, 'Trip not found or not skipper/crew of trip!');
             }
         }
 
@@ -241,7 +246,7 @@ export async function PUT(event) {
 
         if(skipperName != null){
             try{
-                await prisma.user.findFirstOrThrow({ where: {username: skipperName} });
+                skipperName = (await prisma.user.findFirstOrThrow({ where: {username: skipperName} })).username;
             }catch (exception){
                 return error(400, 'Invalid skipper!');
             }
@@ -252,10 +257,9 @@ export async function PUT(event) {
                 parsedCrew = crew.split(",");
                 for(let member of parsedCrew){
                     if(member != ""){
-                        await prisma.user.findFirstOrThrow({
+                        parsedCrew[parsedCrew.indexOf(member)] = (await prisma.user.findFirstOrThrow({
                             where: {username: member.replaceAll(",", "").replaceAll(" ", "")}
-                        });
-                        parsedCrew[parsedCrew.indexOf(member)] = member.replaceAll(",", "").replaceAll(" ", "");
+                        })).username;
                     }else{
                         delete parsedCrew[parsedCrew.indexOf(member)];
                     }
