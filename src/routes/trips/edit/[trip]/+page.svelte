@@ -1,6 +1,7 @@
 <script lang="ts">
 	import errorStore from '$lib/errorStore.js';
 	import { parseDate } from '$lib/functions.js';
+	import SearchBar from '$lib/searchBar.svelte';
 	import Tiptap from '$lib/Tiptap/+Tiptap.svelte';
 	import type { User } from '@prisma/client';
 	import { Avatar } from '@skeletonlabs/skeleton';
@@ -35,6 +36,7 @@
 	let user = $derived(data.user);
 	let session = $derived(data.session);
 
+	let showCrewSearch = $state(false);
 	let tracks: String[] = [];
 	const initialView: LatLngExpression = [43.95, 14.79];
 
@@ -80,8 +82,29 @@
 	}
 
 
-	function addCrew() {
-		throw new Error('Function not implemented.');
+	function addCrew(username:string) {
+		let usernameList = requestedTripData.crew.map((member)=>{
+			return member.username;
+		});
+		usernameList.push(username);
+		fetch('/api/Trip?tripId='+requestedTrip+'&crew='+usernameList, {method: 'PUT'}).then((response)=>{
+			if(!response.ok){
+			$errorStore = response;
+			}else{
+				getTripData();
+			}
+		})
+	}
+
+	async function search(searchTerm:string) {
+		let response = await fetch('/api/User?search='+searchTerm, {method: 'GET'});
+		if(!response.ok){
+			$errorStore = response;
+		}else{
+			let usernameArray:String[] = await response.json();
+			return usernameArray;
+		}
+		return [];
 	}
 </script>
 <div class="felx-1 h-full flex felx-col md:container md:mx-auto p-3 rounded table-container">
@@ -125,11 +148,12 @@
 						</button>
 					{/if}
 				{/each}
-				<button onclick={()=>{addCrew()}} class="btn btn-sm variant-ghost-secondary mr-1 p-1.5 group hover:variant-filled-primary content-center">
+				<button onclick={()=>{showCrewSearch = true}} class="btn btn-sm variant-ghost-secondary mr-1 p-1.5 group hover:variant-filled-primary content-center">
 					<Avatar width="w-5" rounded="rounded-full" background="color-secondary-500">
 						<span class="material-symbols-outlined">add</span>
 					</Avatar>
 				</button>
+				<SearchBar bind:displayed={showCrewSearch} onSelected={addCrew} getList={search}/>
 			</div>
 		</div>
 		
