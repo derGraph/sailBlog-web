@@ -37,6 +37,7 @@
 	let session = $derived(data.session);
 
 	let showCrewSearch = $state(false);
+	let showSkipperSearch = $state(false);
 	let tracks: String[] = [];
 	const initialView: LatLngExpression = [43.95, 14.79];
 
@@ -93,7 +94,17 @@
 			}else{
 				getTripData();
 			}
-		})
+		});
+	}
+
+	function changeSkipper(username:string) {
+		fetch('/api/Trip?tripId='+requestedTrip+'&skipper='+username, {method: 'PUT'}).then((response)=>{
+			if(!response.ok){
+			$errorStore = response;
+			}else{
+				getTripData();
+			}
+		});
 	}
 
 	async function search(searchTerm:string) {
@@ -115,7 +126,7 @@
 		<div class="rounded-3xl bg-surface-100-800-token p-1 content-center mb-2 flex justify-center items-center space-x-2">
 			<div class="flex items-center">
 				<h3 class="h5 align-middle mr-2">Skipper:</h3>
-				<a href="/user/{requestedTripData.skipper?.username}" class="btn btn-sm variant-ghost-secondary mr-1 group hover:variant-filled-warning">
+				<button onclick={()=>{showSkipperSearch = true}} class="btn btn-sm variant-ghost-secondary mr-1 group hover:variant-filled-warning">
 					<Avatar initials={getInitials(requestedTripData.skipper)}
 							src={getPictureUrl(requestedTripData.skipper?.profilePictureId)}
 							background="bg-primary-500"
@@ -126,27 +137,26 @@
 					/>
 					<span class="!ml-0 !mr-1 h-5 w-5 !text-base material-symbols-outlined !hidden group-hover:!block">autorenew</span>
 					{requestedTripData.skipper?.username}
-				</a>
+				</button>
+				<SearchBar bind:displayed={showSkipperSearch} onSelected={changeSkipper} getList={search}/>
 			</div>
 		
 			<div class="flex items-center">
 				<h3 class="h5 align-middle mr-2">Crew:</h3>
 				{#each requestedTripData?.crew as member, i}
-					{#if member.username != requestedTripData?.skipper?.username}
 					<button onclick={()=>{deleteUser(member.username)}} class="btn btn-sm variant-ghost-secondary mr-1 group hover:variant-filled-error">
 						<Avatar initials={getInitials(member)}
-									src={getPictureUrl(member.profilePictureId)}
-									background="bg-primary-500"
-									width="w-5"
-									link
-									rounded="rounded-full"
-									class="group-hover:hidden mr-1"
-									/>
-							<span class="!ml-0 !mr-1 h-5 w-5 !text-base material-symbols-outlined !hidden group-hover:!block">close</span>
+								src={getPictureUrl(member.profilePictureId)}
+								background="bg-primary-500"
+								width="w-5"
+								link
+								rounded="rounded-full"
+								class="group-hover:hidden mr-1"
+								/>
+						<span class="!ml-0 !mr-1 h-5 w-5 !text-base material-symbols-outlined !hidden group-hover:!block">close</span>
 
-							{member.username}
-						</button>
-					{/if}
+						{member.username}
+					</button>
 				{/each}
 				<button onclick={()=>{showCrewSearch = true}} class="btn btn-sm variant-ghost-secondary mr-1 p-1.5 group hover:variant-filled-primary content-center">
 					<Avatar width="w-5" rounded="rounded-full" background="color-secondary-500">
