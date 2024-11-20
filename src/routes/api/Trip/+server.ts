@@ -3,7 +3,7 @@ import { prisma } from '$lib/server/prisma';
 import { checkVisibility } from '$lib/visibility.js';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { error, isHttpError, json } from '@sveltejs/kit';
-import DOMPurify from 'dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 
 
 
@@ -240,6 +240,7 @@ export async function PUT(event) {
 			try {
 				description = DOMPurify.sanitize(description);
 			} catch (error_message) {
+                console.log(error_message);
 				return error(400, 'Invalid description!');
 			}
 		}
