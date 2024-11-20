@@ -52,6 +52,19 @@
 		});
 		tracks.push(requestedTrip);
 	});
+
+	function isUser(trip: any){
+		let isContained = false;
+		trip.crew.forEach((element: { username: string; }) => {
+			if(element.username == user?.username){
+				isContained = true;
+			}
+		});
+		if(user?.username == trip.skipper?.username){
+			isContained = true;
+		}
+		return isContained;
+	}
 	
 	function getInitials(user:User) {
 		if (user != null && user.firstName && user.lastName) {
@@ -66,8 +79,9 @@
 <div class="felx-1 h-full flex felx-col md:container md:mx-auto p-3 rounded table-container">
     <div class="flex-1 flex flex-wrap flex-row">
         <div class="basis-full md:basis-1/3 w-1/3 md:h-full flex flex-col">
-			<div class="rounded-3xl bg-surface-100-800-token p-3 content-center mb-2">
-				<h1 class="h1 text-center">{requestedTripData.name}</h1>
+			<div class="rounded-3xl bg-surface-100-800-token p-3 content-center mb-2 justify-center">
+				<h1 class="h1 text-center">{String(requestedTripData.name).trim()}{#if isUser(requestedTripData)}<a class="!text-4xl material-symbols-outlined max-h" href="/trips/edit/{requestedTrip}">edit</a>{/if}
+				</h1>
 			</div>
 			<div class="rounded-3xl bg-surface-100-800-token p-1 content-center mb-2">
 				<h3 class="h5 text-center">{parseDate(requestedTripData?.startPoint)} - {parseDate(requestedTripData?.endPoint)}
@@ -80,10 +94,10 @@
 					<span class="!text-base material-symbols-outlined">mode_heat</span>{(Number(requestedTripData?.length_motor)/1853).toFixed(2)} NM
 				</h3>
 			</div>
-			<div class="rounded-3xl bg-surface-100-800-token p-1 content-center mb-2 flex justify-center items-center space-x-2">
+			<div class="rounded-3xl bg-surface-100-800-token p-1 content-center mb-2 flex flex-wrap justify-center items-center space-x-2">
 				<div class="flex items-center">
 					<h3 class="h5 align-middle mr-2">Skipper:</h3>
-					<a href="/user/{requestedTripData.skipper?.username}" class="btn btn-sm variant-ghost-secondary mr-1 flex items-center">
+					<a href="/user/{requestedTripData.skipper?.username}" class="btn btn-sm variant-ghost-secondary mr-1 pl-2 flex items-center">
 						<Avatar initials={getInitials(requestedTripData.skipper)}
 								src={getPictureUrl(requestedTripData.skipper?.profilePictureId)}
 								background="bg-primary-500"
@@ -100,7 +114,7 @@
 					<h3 class="h5 align-middle mr-2">Crew:</h3>
 					{#each requestedTripData?.crew as member, i}
 						{#if member.username != requestedTripData?.skipper?.username}
-							<a href="/user/{member.username}" class="btn btn-sm variant-ghost-secondary mr-1 flex items-center">
+							<a href="/user/{member.username}" class="btn btn-sm variant-ghost-secondary mr-1 pl-2 flex items-center">
 								<Avatar initials={getInitials(member)}
 										src={getPictureUrl(member.profilePictureId)}
 										background="bg-primary-500"

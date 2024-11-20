@@ -38,6 +38,9 @@
 
 	let showCrewSearch = $state(false);
 	let showSkipperSearch = $state(false);
+	let editDescription = $state(false);
+	let editName = $state(false);
+	let newName = $state("");
 	let tracks: String[] = [];
 	const initialView: LatLngExpression = [43.95, 14.79];
 
@@ -50,7 +53,8 @@
 		fetch('/api/Trip?tripId='+requestedTrip).then(async (response)=>{
 			if (response.ok) {
 				response.json().then((response_data) => {
-					requestedTripData = response_data[0]
+					requestedTripData = response_data[0];
+					newName = requestedTripData.name;
 				});
 			} else {
 				$errorStore = response;
@@ -107,6 +111,27 @@
 		});
 	}
 
+	function saveEditor(html:string){
+		editDescription = false;
+		fetch('/api/Trip?tripId='+requestedTrip+'&description='+html, {method: 'PUT'}).then((response)=>{
+			if(!response.ok){
+			$errorStore = response;
+			}else{
+				getTripData();
+			}
+		});
+	}
+
+	function saveTripName(name:string){
+		editName = false;
+		fetch('/api/Trip?tripId='+requestedTrip+'&name='+name, {method: 'PUT'}).then((response)=>{
+			if(!response.ok){
+			$errorStore = response;
+			}else{
+				getTripData();
+			}
+		});
+	}
 	async function search(searchTerm:string) {
 		let response = await fetch('/api/User?search='+searchTerm, {method: 'GET'});
 		if(!response.ok){
@@ -120,13 +145,23 @@
 </script>
 <div class="felx-1 h-full flex felx-col md:container md:mx-auto p-3 rounded table-container">
 	<div class="flex-1 basis-full md:basis-1/3 w-1/3 md:h-full flex flex-col">
-		<div class="rounded-3xl bg-surface-100-800-token p-3 content-center mb-2">
-			<h1 class="h1 text-center">{requestedTripData.name}</h1>
+		<div class="rounded-3xl bg-surface-100-800-token p-3 justify-center mb-2 flex flex-row">
+			{#if editName}
+			<input 	class="!text-xl input w-min" 
+					type="text" 
+					name="tripName"
+					bind:value={newName}
+					required
+					placeholder="{requestedTripData.name}">
+			<button class="!text-4xl material-symbols-outlined max-h" onclick={()=>{saveTripName(newName)}}>save</button>
+			{:else}
+			<h1 class="h1 text-center">{requestedTripData.name}<button class="!text-4xl material-symbols-outlined" onclick={()=>{editName=true}}>edit</button></h1>
+			{/if}
 		</div>
 		<div class="rounded-3xl bg-surface-100-800-token p-1 content-center mb-2 flex justify-center items-center space-x-2">
 			<div class="flex items-center">
 				<h3 class="h5 align-middle mr-2">Skipper:</h3>
-				<button onclick={()=>{showSkipperSearch = true}} class="btn btn-sm variant-ghost-secondary mr-1 group hover:variant-filled-warning">
+				<button onclick={()=>{showSkipperSearch = true}} class="btn btn-sm variant-ghost-secondary mr-1 pl-2 group hover:variant-filled-warning">
 					<Avatar initials={getInitials(requestedTripData.skipper)}
 							src={getPictureUrl(requestedTripData.skipper?.profilePictureId)}
 							background="bg-primary-500"
@@ -144,7 +179,7 @@
 			<div class="flex items-center">
 				<h3 class="h5 align-middle mr-2">Crew:</h3>
 				{#each requestedTripData?.crew as member, i}
-					<button onclick={()=>{deleteUser(member.username)}} class="btn btn-sm variant-ghost-secondary mr-1 group hover:variant-filled-error">
+					<button onclick={()=>{deleteUser(member.username)}} class="btn btn-sm variant-ghost-secondary mr-1 pl-2 group hover:variant-filled-error">
 						<Avatar initials={getInitials(member)}
 								src={getPictureUrl(member.profilePictureId)}
 								background="bg-primary-500"
@@ -168,10 +203,29 @@
 		</div>
 		
 		
-		<div class="h-full rounded-3xl p-3 bg-surface-100-800-token md:overflow-auto">
-			<div class="md:mx-1 md:my-0 text-wrap">
-				{@html requestedTripData.description}
-			</div>
-		</div>
+		<div class="h-full rounded-3xl p-3 bg-surface-100-800-token relative overflow-hidden">
+		  
+			{#if editDescription}
+			  <!-- TipTap editor with scrolling -->
+			  <div class="h-full overflow-auto z-0">
+				<Tiptap {saveEditor} usernameToFetch={user?.username} description={requestedTripData.description} />
+			  </div>
+			{:else}
+				<!-- Edit Button -->
+				<button 
+				class="btn-icon variant-ghost-secondary absolute t-2 r-2 z-1"
+				aria-label="Edit"
+				onclick={() => { editDescription = true }}
+				>
+				<span class="material-symbols-outlined">edit</span>
+				</button>
+				<!-- Scrollable description with rounded corners -->
+				<div class="h-full overflow-auto md:mx-1 md:my-0 text-wrap z-0">
+					{@html requestedTripData.description}
+				</div>
+			  
+			{/if}
+		  </div>
+		  
     </div>
 </div>
