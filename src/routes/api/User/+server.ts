@@ -5,6 +5,24 @@ import DOMPurify from 'isomorphic-dompurify';
 /** @type {import('./$types').RequestHandler} */
 export async function GET(event) {
 	let requestedUsername = event.url.searchParams.get('username');
+	let requestedSearch = event.url.searchParams.get('search');
+
+	if(requestedSearch != null) {
+		let userlist = await prisma.user.findMany({
+			where: {
+				username: {
+					contains: requestedSearch
+				}
+			},
+			take: 10,
+			select: {
+				username: true
+			}
+		});
+		return new Response(JSON.stringify(userlist.map((user)=>{
+			return user.username
+		})));
+	}
 
 	if (requestedUsername == null || requestedUsername == '') {
 		error(400, {

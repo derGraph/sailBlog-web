@@ -17,8 +17,8 @@
 	import Text from '@tiptap/extension-text';
 	import MediaPicker from '$lib/mediaPicker.svelte';
 
-	let element: Element = $state();
-	let editor: Editor = $state();
+	let element: Element|undefined = $state();
+	let editor: Editor|undefined = $state();
 	let editing = true;
 
 	let isOpen = $state(false);
@@ -27,7 +27,7 @@
 		description?: string;
 	}
 
-	let { saveEditor, description = '', usernameToFetch = '' }: Props = $props();
+	let { saveEditor, description = '', usernameToFetch = '' } = $props();
 
 
 	function setContent(description: string) {
@@ -119,11 +119,11 @@
 	});
 
 	function finishedImageUpload(url:string){
-		editor.commands.setImage({src: url});
+		editor?.commands.setImage({src: url});
 	}
 
 	function save() {
-		let html = editor.getHTML();
+		let html = editor?.getHTML();
 		saveEditor(html);
 	}
 	run(() => {
@@ -131,59 +131,59 @@
 	});
 </script>
 
-<div class="bg-surface-200-700-token mx-3 rounded-3xl items-center px-4 py-3">
+<div class="items-center">
 	{#if editing && editor}
 		<div class="btn-group variant-ghost-secondary m-1 [&>*+*]:border-secondary-500">
 			<button
-				onclick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+				onclick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
 				class:active={editor.isActive('heading', { level: 2 })}
 				class="!pl-1 !pr-1 !py-1 !text-end material-symbols-outlined"
 				style="font-size: 1.5rem">title</button
 			>
 			<button
-				onclick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+				onclick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
 				class:active={editor.isActive('heading', { level: 3 })}
 				class="!px-1 !py-1 material-symbols-outlined"
 				style="font-size: 1.25rem">title</button
 			>
 			<button
-				onclick={() => editor.chain().focus().setParagraph().run()}
+				onclick={() => editor?.chain().focus().setParagraph().run()}
 				class:active={editor.isActive('paragraph')}
 				class="!px-1 !py-1 !py-1 material-symbols-outlined"
 				style="font-size: 1rem">title</button
 			>
 			<button
-				onclick={() => editor.chain().focus().toggleBlockquote().run()}
+				onclick={() => editor?.chain().focus().toggleBlockquote().run()}
 				class="!px-1 !py-1 !py-1 material-symbols-outlined"
 				class:active={editor.isActive('blockquote')}
 				style="font-size: 1.5rem">read_more</button
 			>
 			<button
-				onclick={() => editor.chain().focus().toggleBulletList().run()}
+				onclick={() => editor?.chain().focus().toggleBulletList().run()}
 				class="!px-1 !py-1 !py-1 material-symbols-outlined"
 				class:active={editor.isActive('bulletList')}
 				style="font-size: 1.5rem">format_list_bulleted</button
 			>
 			<button
-				onclick={() => editor.chain().focus().toggleOrderedList().run()}
+				onclick={() => editor?.chain().focus().toggleOrderedList().run()}
 				class="!px-1 !py-1 !py-1 material-symbols-outlined"
 				class:active={editor.isActive('orderedList')}
 				style="font-size: 1.5rem">format_list_numbered</button
 			>
 			<button
-				onclick={() => editor.chain().focus().setTextAlign('left').run()}
+				onclick={() => editor?.chain().focus().setTextAlign('left').run()}
 				class="!px-1 !py-1 !py-1 material-symbols-outlined"
 				class:active={editor.isActive({ textAlign: 'left' })}
 				style="font-size: 1.5rem">format_align_left</button
 			>
 			<button
-				onclick={() => editor.chain().focus().setTextAlign('center').run()}
+				onclick={() => editor?.chain().focus().setTextAlign('center').run()}
 				class="!px-1 !py-1 !py-1 material-symbols-outlined"
 				class:active={editor.isActive({ textAlign: 'center' })}
 				style="font-size: 1.5rem">format_align_center</button
 			>
 			<button
-				onclick={() => editor.chain().focus().setTextAlign('right').run()}
+				onclick={() => editor?.chain().focus().setTextAlign('right').run()}
 				class="!px-1 !py-1 !py-1 material-symbols-outlined"
 				class:active={editor.isActive({ textAlign: 'right' })}
 				style="font-size: 1.5rem">format_align_right</button
