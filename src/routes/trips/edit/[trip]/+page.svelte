@@ -207,7 +207,7 @@
 		  
 			{#if editDescription}
 			  <!-- TipTap editor with scrolling -->
-			  <div class="h-full overflow-auto z-0">
+			  <div class="h-full z-0">
 				<Tiptap {saveEditor} usernameToFetch={user?.username} description={requestedTripData.description} />
 			  </div>
 			{:else}
