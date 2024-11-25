@@ -101,7 +101,7 @@
 			],
 			editorProps: {
 				attributes: {
-					class: ''
+					class: 'card p-2 m-1 variant-ghost-secondary min-h-96'
 				}
 			},
 			content: description,
