@@ -158,8 +158,8 @@
 			<h1 class="h1 text-center">{requestedTripData.name}<button class="!text-4xl material-symbols-outlined" onclick={()=>{editName=true}}>edit</button></h1>
 			{/if}
 		</div>
-		<div class="rounded-3xl bg-surface-100-800-token p-1 content-center mb-2 flex justify-center items-center space-x-2">
-			<div class="flex items-center">
+		<div class="rounded-3xl bg-surface-100-800-token p-1 content-center mb-2 flex flex-wrap justify-center items-center space-x-2">
+			<div class="flex flex-wrap items-center">
 				<h3 class="h5 align-middle mr-2">Skipper:</h3>
 				<button onclick={()=>{showSkipperSearch = true}} class="btn btn-sm variant-ghost-secondary mr-1 pl-2 group hover:variant-filled-warning">
 					<Avatar initials={getInitials(requestedTripData.skipper)}
@@ -176,7 +176,7 @@
 				<SearchBar bind:displayed={showSkipperSearch} onSelected={changeSkipper} getList={search}/>
 			</div>
 		
-			<div class="flex items-center">
+			<div class="flex flex-wrap items-center">
 				<h3 class="h5 align-middle mr-2">Crew:</h3>
 				{#each requestedTripData?.crew as member, i}
 					<button onclick={()=>{deleteUser(member.username)}} class="btn btn-sm variant-ghost-secondary mr-1 pl-2 group hover:variant-filled-error">
