@@ -5,6 +5,7 @@
 	import { setModeCurrent, setModeUserPrefers, modeCurrent } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 	import errorStore from '$lib/errorStore';
+	import { getProfilePicture } from '$lib/functions';
 
 	let navHeight = 2;
 	let { data, children } = $props();
@@ -87,7 +88,7 @@
 								<a href="/user" aria-label="Get to the Users page!"
 									><Avatar
 										initials={getInitials()}
-										src={getPictureUrl()}
+										src={getProfilePicture(user)}
 										background="bg-primary-500"
 										width="w-11"
 										link

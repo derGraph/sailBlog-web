@@ -100,6 +100,7 @@ export async function PUT(event) {
 	let description = null;
 	let activeTripId = null;
 	let activeTrip = null;
+	let profilePictureId = null;
 
 	if (event.locals.user?.username) {
 		let username = event.locals.user?.username;
@@ -112,6 +113,7 @@ export async function PUT(event) {
 		unparsedDateOfBirth = event.url.searchParams.get('dateOfBirth');
 		description = event.url.searchParams.get('description');
 		activeTripId = event.url.searchParams.get('activeTrip');
+		profilePictureId = event.url.searchParams.get('picture');
 
 		if(usernameToChange != null){
 			if(usernameToChange != username){
@@ -173,6 +175,20 @@ export async function PUT(event) {
 		}
 
 		try {
+			if(profilePictureId != null){
+				await prisma.media.findFirstOrThrow({
+					where: {
+						username: username,
+						id: profilePictureId
+					}
+				});
+			}
+		} catch (error_message) {
+			profilePictureId = null;
+			error(400, { message: 'Invalid Picture: ' + error_message });
+		}
+
+		try {
 			if(activeTrip){
 				await prisma.trip.findFirstOrThrow({
 					where: {
@@ -194,7 +210,8 @@ export async function PUT(event) {
 				...(firstName && { firstName }),
 				...(lastName && { lastName }),
 				...(description && { description }),
-				...(activeTripId && {activeTripId})
+				...(activeTripId && {activeTripId}),
+				...(profilePictureId && {profilePictureId})
 			}
 		});
 		return new Response('200');

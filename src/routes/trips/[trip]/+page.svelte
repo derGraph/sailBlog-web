@@ -1,7 +1,7 @@
 <script lang="ts">
 	import errorStore from '$lib/errorStore.js';
 	import Leaflet from '$lib/Leaflet.svelte';
-	import { parseDate } from '$lib/functions.js';
+	import { getProfilePicture, parseDate } from '$lib/functions.js';
 	import Tiptap from '$lib/Tiptap/+Tiptap.svelte';
 	import type { User } from '@prisma/client';
 	import { Avatar } from '@skeletonlabs/skeleton';
@@ -72,9 +72,6 @@
 		}
 	}
 
-	function getPictureUrl(profilePictureId: string) {
-		return profilePictureId
-	}
 </script>
 <div class="felx-1 h-full flex felx-col md:container md:mx-auto p-3 rounded table-container">
     <div class="flex-1 flex flex-wrap flex-row">
@@ -99,7 +96,7 @@
 					<h3 class="h5 align-middle mr-2">Skipper:</h3>
 					<a href="/user/{requestedTripData.skipper?.username}" class="btn btn-sm variant-ghost-secondary mr-1 pl-2 flex items-center">
 						<Avatar initials={getInitials(requestedTripData.skipper)}
-								src={getPictureUrl(requestedTripData.skipper?.profilePictureId)}
+								src={getProfilePicture(requestedTripData.skipper)}
 								background="bg-primary-500"
 								width="w-5"
 								link
@@ -116,7 +113,7 @@
 						{#if member.username != requestedTripData?.skipper?.username}
 							<a href="/user/{member.username}" class="btn btn-sm variant-ghost-secondary mr-1 pl-2 flex items-center">
 								<Avatar initials={getInitials(member)}
-										src={getPictureUrl(member.profilePictureId)}
+										src={getProfilePicture(member)}
 										background="bg-primary-500"
 										width="w-5"
 										link

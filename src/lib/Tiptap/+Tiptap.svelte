@@ -24,13 +24,14 @@
 	let isOpen = $state(false);
 	interface Props {
 		saveEditor: any;
-		description?: string;
+		description: string | null;
+		usernameToFetch?: string;
 	}
 
-	let { saveEditor, description = '', usernameToFetch = '' } = $props();
+	let { saveEditor, description = '', usernameToFetch = '' }:Props = $props();
 
 
-	function setContent(description: string) {
+	function setContent(description: string | null) {
 		if (editor) {
 			editor.commands.setContent(description);
 		}
@@ -118,8 +119,8 @@
 		}
 	});
 
-	function finishedImageUpload(url:string){
-		editor?.commands.setImage({src: url});
+	function finishedImageUpload(owner:string, imageId:string){
+		editor?.commands.setImage({src: "/api/Media/"+owner+"/"+imageId+".avif"});
 	}
 
 	function save() {
