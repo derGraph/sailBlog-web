@@ -40,7 +40,7 @@
 	rel="stylesheet"
 	href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0"
 />
-	<div class="h-screen flex flex-col">
+	<div class="h-dvh flex flex-col">
 		<div class="md:container h-20 md:mx-auto justify-center items-center">
 			<AppBar class="rounded-b-3xl">
 				{#snippet lead()}
