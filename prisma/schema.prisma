@@ -26,8 +26,10 @@ model User {
   crewedTrips       Trip[] @relation("crew")
   activeTrip        Trip   @relation(fields: [activeTripId], references: [id])
   activeTripId      String
-  crewedLength      Int       @default(0)
-  skipperedLength   Int       @default(0)
+  crewedLengthSail      Int       @default(0)
+  crewedLengthMotor     Int       @default(0)
+  skipperedLengthSail   Int       @default(0)
+  skipperedLengthMotor  Int       @default(0)
   recalculate       Boolean   @default(true)
   uploadedMedia     Media[]   @relation("uploader")                
   sessions          Session[]
