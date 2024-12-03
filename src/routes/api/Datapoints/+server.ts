@@ -92,7 +92,6 @@ export async function POST(event: {
 				},
 				data: {
 					last_update: datapoints[datapoints.length-1].time,
-					recalculate: true,
 					endPointId: (await prisma.datapoint.findFirst({where: {tripId: activeUser.activeTripId}, orderBy:{time: 'desc'}}))?.id,
 					startPointId: (await prisma.datapoint.findFirst({where: {tripId: activeUser.activeTripId}, orderBy:{time: 'asc'}}))?.id
 				}

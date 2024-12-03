@@ -70,6 +70,22 @@ export async function simplifyGps(trip: string, amount: number) {
 				optimized: 2
 			}
 		});
+		let unoptimizedCount = await prisma.datapoint.count({
+			where: {
+				tripId: trip,
+				optimized: 0
+			}
+		});
+		if(unoptimizedCount = 2){
+			await prisma.trip.update({
+				where: {
+					id: trip
+				},
+				data:{
+					recalculate: true
+				}
+			});
+		}
 		totalAmount += take;
 		console.log("Trip "+ trip +": Simplified " + totalAmount + " of " + amount);
 	}
@@ -127,6 +143,7 @@ export async function calculateDistance(trip: string){
 export async function simplify(){
 	let trips = await prisma.trip.findMany({});
 	for (var trip in trips){
+		await simplifyGps(trips[trip].id, 100000);
 		if(trips[trip].recalculate){
 			console.log("calculating "+trips[trip].id);
 			await prisma.trip.update({
@@ -140,9 +157,31 @@ export async function simplify(){
 				}
 			});
 			await calculateDistance(trips[trip].id);
+			await prisma.user.updateMany({
+				where: {
+					OR: [
+						{
+							skipperedTrips: {
+								some: {
+									id: trips[trip].id
+								}	
+							}
+						},
+						{
+							crewedTrips: {
+								some: {
+									id: trips[trip].id
+								}	
+							}
+						},
+					]
+				},
+				data: {
+					recalculate: true
+				}
+			});
 			console.log("FINISHED");
 		}
-		await simplifyGps(trips[trip].id, 100000);
 	}
 	return;
 }

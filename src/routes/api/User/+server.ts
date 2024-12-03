@@ -58,8 +58,22 @@ export async function GET(event) {
 					description: true,
 					profilePicture: true,
 					profilePictureId: true,
-					skipperedTrips: true,
-					crewedTrips: true
+					skipperedTrips: {
+						where: {
+							OR: [
+								{visibility: 1},
+								{visibility: 2}
+							]
+						}
+					},
+					crewedTrips: {
+						where: {
+							OR: [
+								{visibility: 1},
+								{visibility: 2}
+							]
+						}
+					}
 				}
 			});
 
@@ -72,7 +86,17 @@ export async function GET(event) {
 				},
 				select: {
 					username: true,
-					profilePicture: true
+					profilePicture: true,
+					skipperedTrips: {
+						where: {
+							visibility: 2
+						}
+					},
+					crewedTrips: {
+						where: {
+							visibility: 2
+						}
+					}
 				}
 			});
 			const { username, ...results } = userdata;
