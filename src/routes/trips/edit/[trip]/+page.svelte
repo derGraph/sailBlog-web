@@ -23,7 +23,23 @@
 		description: any; 
 	} = $state({
 		description: "",
-		crew: [{ username: "no", email: "no", firstName: null, lastName: null, description: null, profilePictureId: "", dateOfBirth: null, roleId: "user", activeTripId: "", lastPing: new Date, crewedLengthMotor: 0, crewedLengthSail: 0, skipperedLengthMotor: 0, skipperedLengthSail: 0, recalculate: false }],
+		crew: [{
+			username: "no",
+			email: "no",
+			firstName: null,
+			lastName: null,
+			description: null,
+			profilePictureId: "",
+			dateOfBirth: null,
+			roleId: "user",
+			activeTripId: "",
+			lastPing: new Date,
+			crewedLengthMotor: 0,
+			crewedLengthSail: 0,
+			skipperedLengthMotor: 0,
+			skipperedLengthSail: 0,
+			recalculate: false
+		}],
 		name: undefined,
 		length_sail: undefined,
 		length_motor: undefined,
