@@ -23,22 +23,24 @@
                 return;
             }
             tableArr = await response.json();
-            for(let index in tableArr){
-                totalLength += Number(tableArr[index].length_sail)+Number(tableArr[index].length_motor);
-                totalSailedLength += Number(tableArr[index].length_sail);
-                totalMotoredLength += Number(tableArr[index].length_motor);
-                if(tableArr[index].skipperName != data.user?.username){
-                    let containsMe = false;
-                    for(let crewMember in tableArr[index].crew){
-                        if(tableArr[index].crew[crewMember].username == data.user?.username){
-                            containsMe = true;
-                        }
-                    }
-                    if(!containsMe){
-                        tableArr.splice(tableArr.indexOf(tableArr[index]), 1);
-                    }
+            tableArr = tableArr.filter((trip:{length_sail:Number, length_motor:Number, skipperName:String|null, crew:User[]})=>{
+                if(trip.skipperName == data.user?.username){
+                    // is Skipper
+                    totalLength += Number(trip.length_sail)+Number(trip.length_motor);
+                    totalSailedLength += Number(trip.length_sail);
+                    totalMotoredLength += Number(trip.length_motor);
+                    return true;
                 }
-            }
+                if((trip.crew.map((member)=>{return member.username})).includes(data.user!.username)){
+                    // is Crew;
+                    totalLength += Number(trip.length_sail)+Number(trip.length_motor);
+                    totalSailedLength += Number(trip.length_sail);
+                    totalMotoredLength += Number(trip.length_motor);
+                    return true;
+                }
+                return false;
+            });
+            console.log(tableArr);
         });
     }
 
