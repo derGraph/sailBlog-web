@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Avatar, ListBox } from '@skeletonlabs/skeleton';
-	import { onMount } from 'svelte';
 	import errorStore from '$lib/errorStore.js';
 	import Tiptap from '$lib/Tiptap/+Tiptap.svelte';
 	import MediaPicker from '$lib/mediaPicker.svelte';
@@ -27,11 +26,6 @@
 	let editName = $state(false);
 	let editDescription = $state(false);
 	let mediaPickerOpen = $state(false);
-	
-
-	onMount(async () => {
-		getUserData();
-	});
 
 	$effect(()=>{
 		requestedUserName;

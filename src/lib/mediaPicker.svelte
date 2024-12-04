@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { onMount } from "svelte";
 	import errorStore from "./errorStore";
     
     let {isOpen = $bindable(false), usernameToFetch = "", onFinished = function(username:string, id:string){}} = $props();
@@ -8,11 +7,6 @@
     let files: any[] = [];
     let mediaVisibilityPopup = $state(false);
     let fileToUpload: string | Blob | null = null;
-
-    // Fetch images when the component mounts
-    onMount(async () => {
-        await fetchImages();
-    });
 
     // Fetch images when username changes
     $effect(()=>{
