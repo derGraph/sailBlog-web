@@ -12,6 +12,10 @@
 	let requestedUserName = $derived(data.requestedUser);
 
 	let requestedUser: {
+		crewedLengthSail: number;
+		crewedLengthMotor: number;
+		skipperedLengthSail: number;
+		skipperedLengthMotor: number;
         description: string | null;
         username: string;
         firstName: string | null;
@@ -185,6 +189,20 @@
 				<h4 class="h4">@{requestedUser.username}</h4>
 			{/if}
 		</div>
+		{#if requestedUser}
+			<div class="rounded-3xl bg-surface-100-800-token p-1 px-3 content-center mb-2">
+				<h3 class="h5 text-center group">Crewed:
+					{((Number(requestedUser?.crewedLengthSail)+Number(requestedUser?.crewedLengthMotor))/1853).toFixed(2)} NM&emsp;
+					<span class="!text-base material-symbols-outlined">sailing</span>{(Number(requestedUser?.crewedLengthSail)/1853).toFixed(2)} NM
+					<span class="!text-base material-symbols-outlined">mode_heat</span>{(Number(requestedUser?.crewedLengthMotor)/1853).toFixed(2)} NM
+				</h3>
+				<h3 class="h5 text-center group">Skippered:
+					{((Number(requestedUser?.skipperedLengthSail)+Number(requestedUser?.skipperedLengthMotor))/1853).toFixed(2)} NM&emsp;
+					<span class="!text-base material-symbols-outlined">sailing</span>{(Number(requestedUser?.skipperedLengthSail)/1853).toFixed(2)} NM
+					<span class="!text-base material-symbols-outlined">mode_heat</span>{(Number(requestedUser?.skipperedLengthMotor)/1853).toFixed(2)} NM
+				</h3>
+			</div>
+		{/if}
 		<div class="h-full rounded-3xl p-3 bg-surface-100-800-token relative overflow-hidden min-w-20">
 			{#if editDescription}
 				<!-- TipTap editor with scrolling -->
