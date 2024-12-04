@@ -135,6 +135,11 @@ export async function POST(event) {
 			}
 		});
 
+		if(activeUser.activeTripId == null){
+			error(400, { message: 'User has no active trip, select one or create trip!' });
+		}
+
+
 		await prisma.datapoint.create({
 			data: {
 				lat: lat,

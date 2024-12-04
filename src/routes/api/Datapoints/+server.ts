@@ -60,6 +60,9 @@ export async function POST(event: {
 					input[k].id = undefined;
 				}
 				let datapoint = checkDatapoint(input[k]);
+				if(activeUser.activeTripId == null){
+					error(400, { message: 'User has no active trip, select one or create trip!' });
+				}
 				datapoint.tripId = activeUser.activeTripId;
 				let existingPoint = null;
 				if (datapoint.id) {
@@ -86,6 +89,9 @@ export async function POST(event: {
 
 		try {
 			await prisma.datapoint.createMany({ data: datapoints });
+			if(activeUser.activeTripId == null){
+				error(400, { message: 'User has no active trip, select one or create trip!' });
+			}
 			await prisma.trip.update({
 				where: {
 					id: activeUser.activeTripId

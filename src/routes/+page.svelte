@@ -10,7 +10,7 @@
 	const initialView: LatLngExpression = [43.95, 14.79];
 
 	onMount(() => {
-		if (data.user) {
+		if (data.user?.activeTripId) {
 			tracks = [data.user?.activeTripId];
 		}
 	});

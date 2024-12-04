@@ -1,6 +1,6 @@
 <script lang="ts">
 	import errorStore from '$lib/errorStore.js';
-	import { parseDate } from '$lib/functions.js';
+	import { getProfilePicture, parseDate } from '$lib/functions.js';
 	import SearchBar from '$lib/searchBar.svelte';
 	import Tiptap from '$lib/Tiptap/+Tiptap.svelte';
 	import type { User } from '@prisma/client';
@@ -23,7 +23,7 @@
 		description: any; 
 	} = $state({
 		description: "",
-		crew: [{ username: "no", email: "no", firstName: null, lastName: null, description: null, profilePictureId: "", dateOfBirth: null, roleId: "user", activeTripId: "", lastPing: new Date }],
+		crew: [{ username: "no", email: "no", firstName: null, lastName: null, description: null, profilePictureId: "", dateOfBirth: null, roleId: "user", activeTripId: "", lastPing: new Date, crewedLengthMotor: 0, crewedLengthSail: 0, skipperedLengthMotor: 0, skipperedLengthSail: 0, recalculate: false }],
 		name: undefined,
 		length_sail: undefined,
 		length_motor: undefined,
@@ -39,10 +39,10 @@
 	let showCrewSearch = $state(false);
 	let showSkipperSearch = $state(false);
 	let editDescription = $state(false);
+	let showDeleteConfirm = $state(false);
 	let editName = $state(false);
 	let newName = $state("");
 	let tracks: String[] = [];
-	const initialView: LatLngExpression = [43.95, 14.79];
 
 
 	onMount(() => {
@@ -69,11 +69,6 @@
 		}
 	}
 
-	function getPictureUrl(profilePictureId: string) {
-		return profilePictureId
-	}
-
-
 	function deleteUser(username: string) {
 		let deleted_crew = requestedTripData.crew.filter(member=> member.username != username);
 		let crewlist = deleted_crew.map(member => member.username);
@@ -85,7 +80,6 @@
 			}
 		});
 	}
-
 
 	function addCrew(username:string) {
 		let usernameList = requestedTripData.crew.map((member)=>{
@@ -142,7 +136,40 @@
 		}
 		return [];
 	}
+
+
+	function deleteTrip() {
+		fetch('/api/Trip?tripId='+requestedTrip, {method: 'DELETE'}).then((response)=>{
+			if(!response.ok){
+			$errorStore = response;
+			}else{
+				getTripData();
+			}
+		});
+	}
 </script>
+
+{#if showDeleteConfirm}
+	<div class="fixed flex h-full inset-0 content-center items-center place-content-center bg-black bg-opacity-80 z-[1002]">
+		<div class="variant-glass-surface rounded-3xl p-4 shadow-lg content-center justify-center w-11/12 md:w-1/3">
+			<label for="options" class="h3 mb-2">Do you really want to delete this trip?</label>
+			<button 
+				class="btn variant-filled-error"
+				onclick={() => {
+					showDeleteConfirm=false;
+					deleteTrip();
+					}}>
+				Yes
+			</button>
+			<button 
+				class="btn variant-filled-success"
+				onclick={() => {showDeleteConfirm=false}}>
+				No
+			</button>
+		</div>
+	</div>
+{/if}
+
 <div class="felx-1 h-full flex felx-col md:container md:mx-auto p-3 rounded table-container">
 	<div class="flex-1 basis-full md:basis-1/3 w-1/3 md:h-full flex flex-col">
 		<div class="rounded-3xl bg-surface-100-800-token p-3 justify-center mb-2 flex flex-row">
@@ -155,7 +182,11 @@
 					placeholder="{requestedTripData.name}">
 			<button class="!text-4xl material-symbols-outlined max-h" onclick={()=>{saveTripName(newName)}}>save</button>
 			{:else}
-			<h1 class="h1 text-center">{requestedTripData.name}<button class="!text-4xl material-symbols-outlined" onclick={()=>{editName=true}}>edit</button></h1>
+			<h1 class="h1 text-center">
+				{requestedTripData.name}
+				<button class="!text-4xl material-symbols-outlined" onclick={()=>{editName=true}}>edit</button>
+				<button class="!text-4xl material-symbols-outlined" onclick={()=>{showDeleteConfirm=true}}>delete</button>
+			</h1>
 			{/if}
 		</div>
 		<div class="rounded-3xl bg-surface-100-800-token p-1 content-center mb-2 flex flex-wrap justify-center items-center space-x-2">
@@ -163,7 +194,7 @@
 				<h3 class="h5 align-middle mr-2">Skipper:</h3>
 				<button onclick={()=>{showSkipperSearch = true}} class="btn btn-sm variant-ghost-secondary mr-1 pl-2 group hover:variant-filled-warning">
 					<Avatar initials={getInitials(requestedTripData.skipper)}
-							src={getPictureUrl(requestedTripData.skipper?.profilePictureId)}
+							src={getProfilePicture(requestedTripData.skipper)}
 							background="bg-primary-500"
 							width="w-5"
 							link
@@ -181,7 +212,7 @@
 				{#each requestedTripData?.crew as member, i}
 					<button onclick={()=>{deleteUser(member.username)}} class="btn btn-sm variant-ghost-secondary mr-1 pl-2 group hover:variant-filled-error">
 						<Avatar initials={getInitials(member)}
-								src={getPictureUrl(member.profilePictureId)}
+								src={getProfilePicture(member)}
 								background="bg-primary-500"
 								width="w-5"
 								link

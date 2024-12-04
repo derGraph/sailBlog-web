@@ -30,7 +30,7 @@ export function getProfilePicture(user:{
     profilePictureId: string | null;
     dateOfBirth: Date | null;
     roleId: string;
-    activeTripId: string;
+    activeTripId: string | null;
     lastPing: Date;
 }){
     if(user?.username && user?.profilePictureId){

@@ -24,8 +24,8 @@ model User {
   roleId            String    @default("user")
   skipperedTrips    Trip[] @relation("skipper")
   crewedTrips       Trip[] @relation("crew")
-  activeTrip        Trip   @relation(fields: [activeTripId], references: [id])
-  activeTripId      String
+  activeTrip        Trip?   @relation(fields: [activeTripId], references: [id], onDelete: SetNull)
+  activeTripId      String?
   crewedLengthSail      Int       @default(0)
   crewedLengthMotor     Int       @default(0)
   skipperedLengthSail   Int       @default(0)
@@ -82,13 +82,14 @@ model Trip {
                                           // 1: logged in
                                           // 2: public 
   recalculate       Boolean   @default(true)
+  deleted           Boolean   @default(false)
   }
 
 model Datapoint {
   id                String    @id @default(cuid())
   tripStart         Trip?     @relation("startPoint")
   tripEnd           Trip?     @relation("endPoint")
-  trip              Trip      @relation(fields: [tripId], references: [id])
+  trip              Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
   tripId            String
   time              DateTime  @default(now())
   lat               Decimal

@@ -63,6 +63,11 @@ export async function GET(event) {
                     }
                 });
             }
+            if(responseData.length == 0){
+                return error(404, {
+                    message: "Not Found!"
+                });
+            }
             responseData = removeSensitiveData(responseData);
             return new Response(JSON.stringify(responseData));
         }
@@ -161,6 +166,7 @@ export async function POST(event) {
         let responseData = await prisma.trip.create({
             data: {
                 name: name,
+                deleted: false,
                 skipperName: skipper,
                 ...(visibility && {visibility}),                
                 ...(description && {description})
@@ -206,7 +212,8 @@ export async function PUT(event) {
 	let visibility = null;
     let tripId = null;
     let unparsedVisibility = null;
-    let oldData: ({ crew: { username: string; description: string | null; recalculate: boolean; email: string; firstName: string | null; lastName: string | null; profilePictureId: string | null; dateOfBirth: Date | null; roleId: string; activeTripId: string; crewedLengthSail: number; crewedLengthMotor: number; skipperedLengthSail: number; skipperedLengthMotor: number; lastPing: Date; }[]; } & { id: string; name: string; description: string | null; startPointId: string | null; endPointId: string | null; last_update: Date; length_sail: Decimal | null; length_motor: Decimal | null; skipperName: string | null; visibility: number; recalculate: boolean; }) | null = null;
+    let restore = false;
+    let oldData: ({ crew: { username: string; description: string | null; recalculate: boolean; email: string; firstName: string | null; lastName: string | null; profilePictureId: string | null; dateOfBirth: Date | null; roleId: string; activeTripId: string | null; crewedLengthSail: number; crewedLengthMotor: number; skipperedLengthSail: number; skipperedLengthMotor: number; lastPing: Date; }[]; } & { id: string; name: string; description: string | null; startPointId: string | null; endPointId: string | null; last_update: Date; length_sail: Decimal | null; length_motor: Decimal | null; skipperName: string | null; visibility: number; recalculate: boolean; }) | null = null;
 
     if(event.locals.user?.username){
         let username = event.locals.user?.username;
@@ -216,7 +223,9 @@ export async function PUT(event) {
         crew = event.url.searchParams.get('crew');
         tripId = event.url.searchParams.get('tripId');
         unparsedVisibility = event.url.searchParams.get('visibility');
-        
+        if(event.url.searchParams.get("restore")=="true"){
+            restore = true;
+        }
 
         if(tripId == null || tripId!.length === 0){
             return error(400, 'tripId is needed!');
@@ -225,6 +234,7 @@ export async function PUT(event) {
                 oldData = await prisma.trip.findFirstOrThrow({
                     where: {
                         id: tripId,
+                        ...(restore ? { deleted: true } : { deleted: false }),
                         OR: [{
                             crew: {
                                     some: {
@@ -304,7 +314,8 @@ export async function PUT(event) {
                 ...(name && {name}),
                 ...(skipperName && {skipperName}),
                 ...(visibility && {visibility}),                
-                ...(description && {description})
+                ...(description && {description}),
+                ...(restore ? { deleted: false } : {}),
             }
         });
         if(skipperName != null){
@@ -401,5 +412,48 @@ export async function PUT(event) {
 
     }else{
         return error(401, 'Not logged in!');
+    }
+}
+
+export async function DELETE(event) {
+    let tripId = null;
+
+    if(event.locals.user?.username){
+        tripId = event.url.searchParams.get('tripId');
+        if(tripId){
+            try{
+                await prisma.trip.update({
+                    where: {
+                        id: tripId,
+                        deleted: false,
+                        OR: [{
+                            crew: {
+                                some:{
+                                    username: event.locals.user?.username
+                                }
+                            }
+                        },{
+                            skipper: {
+                                username: event.locals.user?.username
+                            }
+                        }]
+                    },
+                    data: {
+                        deleted: true,
+                        name: "deletedTrip_"+(new Date(Date.now())).toISOString(),
+                        description: null,
+                        visibility: 0
+                    }
+                });
+                return new Response('200');
+            }catch(error_message){
+                if(error_message instanceof PrismaClientKnownRequestError){
+                    return error(400, "Update: " + error_message.message)
+                }else{
+                    return error(500, "ERROR")
+                }
+            }
+        }
+
     }
 }

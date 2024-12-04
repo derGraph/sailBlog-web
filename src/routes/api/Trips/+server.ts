@@ -21,14 +21,19 @@ export async function POST(event) {
 }
 
 export async function GET(event: {
+	url: any;
     locals: { user: { username: any}}
 }) {
-
+	let deleted = false;
+	if(event.url.searchParams.get("deleted")=="true"){
+		deleted = true;
+	}
     try{
 		let responseData;
 		if(event.locals.user){
 			responseData = await prisma.trip.findMany({
 				where:{
+					deleted: deleted,
 					OR: [{
 						crew: {
 							some: {
@@ -57,7 +62,8 @@ export async function GET(event: {
 		}else{
 			responseData = await prisma.trip.findMany({
 				where: {
-					visibility: 2
+					visibility: 2,
+					deleted: false
 				},
 				include: {
 					crew: true,
