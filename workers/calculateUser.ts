@@ -50,7 +50,7 @@ export async function calculateUser(user: string) {
         crewedLengthSail += Number(trip.length_sail);
         crewedLengthMotor += Number(trip.length_motor);
     }
-    
+
     await prisma.user.update({
         where: {
             username: user
@@ -63,5 +63,4 @@ export async function calculateUser(user: string) {
             recalculate: false
         }
     });
-    console.log("FINISHED");
 }
