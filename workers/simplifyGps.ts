@@ -1,6 +1,12 @@
 import { prisma } from '../src/lib/server/prisma';
 import type { Decimal } from '@prisma/client/runtime/library';
 import { getDistance, getDistanceFromLine } from 'geolib';
+import shapefile from "shapefile";
+import * as turf from '@turf/turf';
+
+console.log("BEFORE READ")
+const reader = await shapefile.open("../store/World_Seas_IHO_v3.shp");
+console.log("after read")
 
 export async function simplifyGps(trip: string, amount: number) {
 	let totalAmount = 0;
@@ -29,6 +35,7 @@ export async function simplifyGps(trip: string, amount: number) {
 
 		
 		for (let i = 1; i < inputData.length - 1; i++) {
+			await getRegion(inputData[i]);
 			let crosstrackError = getDistanceFromLine(
 				{ lat: Number(inputData[i].lat), lng: Number(inputData[i].long) },
 				{ lat: Number(lastPoint.lat), lng: Number(lastPoint.long) },
@@ -143,6 +150,7 @@ export async function calculateDistance(trip: string){
 export async function simplify(){
 	let trips = await prisma.trip.findMany({});
 	for (var trip in trips){
+		console.log(trip);
 		await simplifyGps(trips[trip].id, 100000);
 		if(trips[trip].recalculate){
 			console.log("calculating "+trips[trip].id);
@@ -186,6 +194,37 @@ export async function simplify(){
 	return;
 }
 
+export async function getRegion(datapoint:Datapoint) {
+		try { 
+		  // Step 2: Create a point using the GPS coordinates
+		  const point = turf.point([Number(datapoint.lat), Number(datapoint.long)]);
+	  
+		  // Step 3: Iterate over the features (regions) in the shapefile
+			for (const feature of features) {
+				// Check if the feature is a Polygon or MultiPolygon
+				if (feature.geometry.type === 'Polygon') {
+					console.log(feature);
+					// Handle Polygon
+					const polygon = turf.polygon(feature.geometry.coordinates);
+					if (turf.booleanPointInPolygon(point, polygon)) {
+						return feature.properties?.name || 'Unknown Region';
+					}
+				} else if (feature.geometry.type === 'MultiPolygon') {
+				// Handle MultiPolygon (multiple polygons)
+				for (const coords of feature.geometry.coordinates) {
+					const polygon = turf.polygon(coords);
+					if (turf.booleanPointInPolygon(point, polygon)) {
+						return feature.properties?.name || 'Unknown Region';
+					}
+				}
+				}
+			}
+			return null;
+		} catch (error) {
+		  console.error("Error processing shapefile or point:", error);
+		  return null;
+		}
+}
 
 interface Datapoint {
 	id: string;
