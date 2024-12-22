@@ -159,7 +159,7 @@
 			if(!response.ok){
 			$errorStore = response;
 			}else{
-				getTripData();
+				window.location.assign("/trips");
 			}
 		});
 	}
@@ -245,7 +245,7 @@
 						<span class="material-symbols-outlined">add</span>
 					</Avatar>
 				</button>
-				<SearchBar bind:displayed={showCrewSearch} onSelected={addCrew} getList={search}/>
+				<SearchBar bind:displayed={showCrewSearch} onSelected={addCrew} getList={search} inputClass="w-32"/>
 			</div>
 		</div>
 		
@@ -270,7 +270,6 @@
 				<div class="h-full overflow-auto md:mx-1 md:my-0 text-wrap z-0">
 					{@html requestedTripData.description}
 				</div>
-			  
 			{/if}
 		  </div>
 		  

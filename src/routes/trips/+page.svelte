@@ -4,11 +4,14 @@
     import { parseVisibility } from "$lib/visibility";
 	import type { User } from "@prisma/client";
 	import { parseDate, parseRadioButton } from "$lib/functions.js";
+	import SearchBar from "$lib/searchBar.svelte";
 
     let tableArr: any[] = $state([]);
     let totalLength = $state(0);
     let totalSailedLength = $state(0);
     let totalMotoredLength = $state(0);
+    let showDeletedTrips = $state(false);
+    let showMyTrips = $state(false);
 
     let { data } = $props();
 
@@ -63,9 +66,30 @@
         }
     }
 
+    async function addTrip() {
+        let result = await fetch("/api/Trip?name=newTrip&skipper="+data.user?.username+'&crew='+data.user?.username, {method:"POST"});
+        if (!result.ok){
+                errorStore.set(result);
+            }else{
+                window.location.assign("/trips/edit/"+(await result.json()).id);
+            }
+    }
+
 </script>
 
-<div class="md:container md:mx-auto py-3 h-full rounded table-container">
+<div class="md:container md:mx-auto pb-3 h-full rounded table-container">
+    <div class="flex flex-row my-1 flex-wrap">
+        <button type="button" onclick={()=>{if(showMyTrips){showDeletedTrips=false} showMyTrips = !showMyTrips}} class="btn btn-md variant-ghost mr-2">
+            <span class="material-symbols-outlined">{#if showMyTrips}check_box{:else}check_box_outline_blank{/if}</span>
+            my Trips
+        </button>
+        <button type="button" onclick={()=>{if(!showDeletedTrips){showMyTrips=true} showDeletedTrips = !showDeletedTrips}} class="btn btn-md variant-ghost-error">
+            <span class="material-symbols-outlined">{#if showDeletedTrips}check_box{:else}check_box_outline_blank{/if}</span>
+            deleted Trips
+        </button>
+        <spacer class="flex-1"></spacer>
+        <button type="button" onclick={()=>{addTrip()}} class="btn btn-md variant-ghost-success"><span class="material-symbols-outlined">add</span>add Trip</button>
+    </div>
     <table class="text-wrap table table-hover">
 		<thead>
 			<tr>
@@ -100,9 +124,6 @@
 			</tr>
 		</tfoot>
 	</table>
-    <div class="flex flex-row-reverse">
-        <a href="/newTrip" class=""><button type="button" class="btn btn-md mt-1 variant-ringed-secondary"><span class="material-symbols-outlined mr-1">route</span>new Trip</button></a>
-    </div>
 </div>
 
 

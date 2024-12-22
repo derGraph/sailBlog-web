@@ -139,6 +139,7 @@ export async function POST(event) {
                         delete parsedCrew[parsedCrew.indexOf(member)];
                     }
                 }
+                parsedCrew = parsedCrew.flat();
             }catch (error_message){
                 if(error_message instanceof PrismaClientKnownRequestError){
                     return error(403, "Crew: "+error_message.message)
@@ -174,7 +175,7 @@ export async function POST(event) {
         });
         
         if(parsedCrew){
-            prisma.user.updateMany({
+            await prisma.user.updateMany({
                 where: {
                     username: {
                         in: parsedCrew
@@ -184,7 +185,7 @@ export async function POST(event) {
                     recalculate: true
                 }
             });
-            prisma.trip.update({
+            await prisma.trip.update({
                 where: {
                     id: responseData.id
                 },
@@ -284,6 +285,7 @@ export async function PUT(event) {
                         delete parsedCrew[parsedCrew.indexOf(member)];
                     }
                 }
+                parsedCrew = parsedCrew.flat();
             }catch (error_message){
                 if(error_message instanceof PrismaClientKnownRequestError){
                     return error(400, "Crew: " + error_message.message)
@@ -378,14 +380,11 @@ export async function PUT(event) {
                     }
                 }
             });
-
             await prisma.user.updateMany({
                 where: {
                     OR:[{
                         AND:[{
-                            username: {
-                                in: parsedCrew
-                            }
+                            username: {in: parsedCrew}
                         },{
                             username: {
                                 notIn: oldData.crew.map((member)=>{return member.username})
@@ -440,7 +439,7 @@ export async function DELETE(event) {
                     },
                     data: {
                         deleted: true,
-                        name: "deletedTrip_"+(new Date(Date.now())).toISOString(),
+                        name: "deletedTrip "+(new Date(Date.now())).toISOString(),
                         description: null,
                         visibility: 0
                     }
