@@ -78,6 +78,7 @@ model Trip {
   skipper           User?     @relation("skipper", fields: [skipperName], references: [username])
   skipperName       String?
   crew              User[]    @relation("crew")
+  location          Location[]
   visibility        Int       @default(1) // 0: private
                                           // 1: logged in
                                           // 2: public 
@@ -105,6 +106,11 @@ model Datapoint {
   optimized         Int     @default(0) // 0: to optimize
                                         // 1: deleted
                                         // 2: needed
+}
+
+model Location {
+  name              String    @id
+  trips             Trip[]
 }
 
 model Media {
