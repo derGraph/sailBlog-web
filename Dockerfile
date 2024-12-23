@@ -6,7 +6,7 @@ RUN npm i --force
 COPY . .
 RUN npx prisma generate
 RUN npm run build
-RUN npm prune --production
+RUN npm prune --production --force
 
 WORKDIR /app/workers
 RUN npm i
