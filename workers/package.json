@@ -15,7 +15,7 @@
     "workers": "file:"
   },
   "devDependencies": {
-    "@prisma/client": "^5.19.1",
+    "@prisma/client": "^6.1.0",
     "@types/shapefile": "^0.6.4",
     "tsc-alias": "^1.8.10",
     "typescript": "^5.5.4"

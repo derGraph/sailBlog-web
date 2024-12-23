@@ -4,9 +4,9 @@ import { getDistance, getDistanceFromLine } from 'geolib';
 import shapefile from "shapefile";
 import * as turf from '@turf/turf';
 
-console.log("BEFORE READ")
+/*console.log("BEFORE READ")
 const reader = await shapefile.open("../store/World_Seas_IHO_v3.shp");
-console.log("after read")
+console.log("after read")*/
 
 export async function simplifyGps(trip: string, amount: number) {
 	let totalAmount = 0;
@@ -35,7 +35,7 @@ export async function simplifyGps(trip: string, amount: number) {
 
 		
 		for (let i = 1; i < inputData.length - 1; i++) {
-			await getRegion(inputData[i]);
+			//await getRegion(inputData[i]);
 			let crosstrackError = getDistanceFromLine(
 				{ lat: Number(inputData[i].lat), lng: Number(inputData[i].long) },
 				{ lat: Number(lastPoint.lat), lng: Number(lastPoint.long) },
@@ -195,7 +195,7 @@ export async function simplify(){
 }
 
 export async function getRegion(datapoint:Datapoint) {
-		try { 
+		/*try { 
 		  // Step 2: Create a point using the GPS coordinates
 		  const point = turf.point([Number(datapoint.lat), Number(datapoint.long)]);
 	  
@@ -223,7 +223,7 @@ export async function getRegion(datapoint:Datapoint) {
 		} catch (error) {
 		  console.error("Error processing shapefile or point:", error);
 		  return null;
-		}
+		}*/
 }
 
 interface Datapoint {
