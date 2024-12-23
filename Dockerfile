@@ -12,7 +12,7 @@ RUN npm i
 RUN npx tsc
 RUN npx tsc-alias
 
-FROM node:22-alpine
+FROM node:23-alpine3.20
 WORKDIR /app
 RUN apk add --no-cache openssl
 COPY --from=builder /app/build build/
