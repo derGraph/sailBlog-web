@@ -14,7 +14,7 @@ RUN npx tsc-alias
 
 FROM node:23-alpine3.20
 WORKDIR /app
-RUN ln -s /usr/lib/libssl.so.3 /lib/libssl.so.3
+RUN apk update && apk add --no-cache openssl
 COPY --from=builder /app/build build/
 COPY --from=builder /app/node_modules node_modules/
 COPY --from=builder /app/workers/build /app/workers
