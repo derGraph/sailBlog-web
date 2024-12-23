@@ -1,7 +1,8 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 COPY package.json .
-RUN npm i
+#TODO: remove legacy peer drops as soon as the adapter is updated!
+RUN npm i --legacy-peer-deps
 COPY . .
 RUN npx prisma generate
 RUN npm run build
