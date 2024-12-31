@@ -1,5 +1,7 @@
 import { calculateUsers } from "./calculateUser";
-import { simplify } from "./simplifyGps";
+import { loadGeoJSON, simplify } from "./simplifyGps";
+
+await loadGeoJSON("../store/regionData.geoJson");
 
 while(true){
     console.log("HI");

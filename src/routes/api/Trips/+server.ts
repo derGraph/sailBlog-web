@@ -59,7 +59,8 @@ export async function GET(event: {
 					include:{
 						crew: true,
 						startPoint: true,
-						endPoint: true
+						endPoint: true,
+						location: true
 					}
 				});
 			}else{
@@ -89,7 +90,8 @@ export async function GET(event: {
 					include:{
 						crew: true,
 						startPoint: true,
-						endPoint: true
+						endPoint: true,
+						location: true
 					}
 				});
 			}
@@ -102,7 +104,8 @@ export async function GET(event: {
 				include: {
 					crew: true,
 					startPoint: true,
-					endPoint: true
+					endPoint: true,
+					location: true
 				}
 			});
 		}
