@@ -23,24 +23,30 @@
         reloadTable();
     });
 
-    function applyTripFilter(){
-        tableArr = allTrips.filter(trip => {
-            // If locations array is empty, consider all locations
-            const locationMatch = filterLocations.length === 0 || trip.location.some((loc: { name: String; }) => filterLocations.includes(loc.name));
+    function applyTripFilter() {
+    tableArr = allTrips.filter(trip => {
+        // If showDeletedTrips is true, show only deleted trips
+        if (showDeletedTrips) {
+            return trip.deleted;
+        }
 
-            // If showDeletedTrips is false, only include trips that are not deleted
-            const deletionMatch = showDeletedTrips || !trip.deleted;
+        // If locations array is empty, consider all locations
+        const locationMatch = filterLocations.length === 0 || trip.location.some((loc: { name: String; }) => filterLocations.includes(loc.name));
 
-            // If showMyTrips is false, include all trips; otherwise, filter by the user's trips
-            const isMyTrip =
+        // If showDeletedTrips is false, only include trips that are not deleted
+        const deletionMatch = !trip.deleted;
+
+        // If showMyTrips is false, include all trips; otherwise, filter by the user's trips
+        const isMyTrip =
             !showMyTrips ||
             trip.crew.some((crewMember: { username: string | undefined; }) => crewMember.username === data.user?.username) ||
             trip.skipperName === data.user?.username;
 
-            // Combine all conditions
-            return locationMatch && deletionMatch && isMyTrip;
-        });
-    }
+        // Combine all conditions
+        return locationMatch && deletionMatch && isMyTrip;
+    });
+}
+
 
     function reloadTable(){
         fetch('/api/Trips').then(async (response)=>{
