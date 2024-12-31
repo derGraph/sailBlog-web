@@ -116,7 +116,7 @@ export const actions: Actions = {
 					crewedTrips: {
 						connect: {
 							id: (await prisma.user.findFirstOrThrow({ where: { username: username } }))
-								.activeTripId
+								.activeTripId!
 						}
 					}
 				}
@@ -124,7 +124,7 @@ export const actions: Actions = {
 			await prisma.trip.update({
 				where: {
 					id: (await prisma.user.findFirstOrThrow({ where: { username: username } }))
-					.activeTripId
+					.activeTripId!
 				},
 				data : {
 					skipperName: username

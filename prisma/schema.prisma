@@ -24,8 +24,13 @@ model User {
   roleId            String    @default("user")
   skipperedTrips    Trip[] @relation("skipper")
   crewedTrips       Trip[] @relation("crew")
-  activeTrip        Trip   @relation(fields: [activeTripId], references: [id])
-  activeTripId      String
+  activeTrip        Trip?   @relation(fields: [activeTripId], references: [id], onDelete: SetNull)
+  activeTripId      String?
+  crewedLengthSail      Int       @default(0)
+  crewedLengthMotor     Int       @default(0)
+  skipperedLengthSail   Int       @default(0)
+  skipperedLengthMotor  Int       @default(0)
+  recalculate       Boolean   @default(true)
   uploadedMedia     Media[]   @relation("uploader")                
   sessions          Session[]
   key               Key[]
@@ -73,17 +78,19 @@ model Trip {
   skipper           User?     @relation("skipper", fields: [skipperName], references: [username])
   skipperName       String?
   crew              User[]    @relation("crew")
+  location          Location[]
   visibility        Int       @default(1) // 0: private
                                           // 1: logged in
                                           // 2: public 
   recalculate       Boolean   @default(true)
+  deleted           Boolean   @default(false)
   }
 
 model Datapoint {
   id                String    @id @default(cuid())
   tripStart         Trip?     @relation("startPoint")
   tripEnd           Trip?     @relation("endPoint")
-  trip              Trip      @relation(fields: [tripId], references: [id])
+  trip              Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
   tripId            String
   time              DateTime  @default(now())
   lat               Decimal
@@ -99,6 +106,11 @@ model Datapoint {
   optimized         Int     @default(0) // 0: to optimize
                                         // 1: deleted
                                         // 2: needed
+}
+
+model Location {
+  name              String    @id
+  trips             Trip[]
 }
 
 model Media {

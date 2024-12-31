@@ -1,4 +1,3 @@
-import { lucia } from '$lib/server/auth';
 import { redirect, type Handle } from '@sveltejs/kit';
 
 export async function load({ locals }) {

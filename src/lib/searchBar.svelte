@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 
-    // Sample data for demonstration purposes
-    let {displayed = $bindable(false), onSelected = function(id: string) {}, getList = (searchTerm: string) => Promise.resolve([] as String[])}:
-        {displayed: boolean, onSelected: Function, getList: (searchTerm: string) => Promise<String[]>} = $props();
+    let {displayed = $bindable(false), onSelected = function(id: string) {}, getList = (searchTerm: string) => Promise.resolve([] as String[]), inputClass = "", placeholder = "Search..."}:
+        {displayed: boolean, onSelected: Function, getList: (searchTerm: string) => Promise<String[]>, inputClass?: string, placeholder?: string} = $props();
 
     let items: String[] = $state([]);
     let searchTerm = $state('');
@@ -74,12 +73,12 @@
 </script>
 
 {#if displayed}
-  <div class="relative w-32 mx-auto">
+  <div class={"relative " + inputClass}>
     <input
       type="text"
       id="search"
-      placeholder="Search..."
-      class="w-full px-3 py-1 input"
+      placeholder={placeholder}
+      class="w-full h-full px-3 py-1 input"
       bind:value={searchTerm}
       oninput={handleInput}
       onfocus={handleFocus}

@@ -1,9 +1,15 @@
 import { prisma } from '../src/lib/server/prisma';
 import type { Decimal } from '@prisma/client/runtime/library';
 import { getDistance, getDistanceFromLine } from 'geolib';
+import {statSync, createReadStream} from 'fs';
+import {point, booleanPointInPolygon} from '@turf/turf';
+import { Feature, FeatureCollection, GeoJsonProperties, Geometry, MultiPolygon, Polygon } from "geojson";
+
+let regionData: null|FeatureCollection = null;
 
 export async function simplifyGps(trip: string, amount: number) {
 	let totalAmount = 0;
+	let regions:String[] = [];
 	while(totalAmount < amount){
 		let take = amount;
 
@@ -29,6 +35,10 @@ export async function simplifyGps(trip: string, amount: number) {
 
 		
 		for (let i = 1; i < inputData.length - 1; i++) {
+			if(i%1000 == 0 || i == 0){
+				let pointRegion:string = await findRegionForPoint(inputData[i]);
+				if(!regions.includes(pointRegion) && pointRegion != null) regions.push(pointRegion);
+			}
 			let crosstrackError = getDistanceFromLine(
 				{ lat: Number(inputData[i].lat), lng: Number(inputData[i].long) },
 				{ lat: Number(lastPoint.lat), lng: Number(lastPoint.long) },
@@ -54,6 +64,26 @@ export async function simplifyGps(trip: string, amount: number) {
 				optimizedPoints.push(inputData[i].id);
 			}
 		}
+		for(let region of regions){
+			await prisma.trip.update({
+				where: {
+					id: trip
+				},
+				data: {
+					location: {
+						connectOrCreate: {
+							where: {
+								name: region.toString()
+							},
+							create: {
+								name: region.toString()
+							}
+						}
+					}
+				}
+			});
+		}
+
 		await prisma.datapoint.updateMany({
 			where:  {
 				id: {in: deletedPoints}
@@ -70,6 +100,22 @@ export async function simplifyGps(trip: string, amount: number) {
 				optimized: 2
 			}
 		});
+		let unoptimizedCount = await prisma.datapoint.count({
+			where: {
+				tripId: trip,
+				optimized: 0
+			}
+		});
+		if(unoptimizedCount = 2){
+			await prisma.trip.update({
+				where: {
+					id: trip
+				},
+				data:{
+					recalculate: true
+				}
+			});
+		}
 		totalAmount += take;
 		console.log("Trip "+ trip +": Simplified " + totalAmount + " of " + amount);
 	}
@@ -127,6 +173,7 @@ export async function calculateDistance(trip: string){
 export async function simplify(){
 	let trips = await prisma.trip.findMany({});
 	for (var trip in trips){
+		await simplifyGps(trips[trip].id, 100000);
 		if(trips[trip].recalculate){
 			console.log("calculating "+trips[trip].id);
 			await prisma.trip.update({
@@ -140,13 +187,96 @@ export async function simplify(){
 				}
 			});
 			await calculateDistance(trips[trip].id);
+			await prisma.user.updateMany({
+				where: {
+					OR: [
+						{
+							skipperedTrips: {
+								some: {
+									id: trips[trip].id
+								}	
+							}
+						},
+						{
+							crewedTrips: {
+								some: {
+									id: trips[trip].id
+								}	
+							}
+						},
+					]
+				},
+				data: {
+					recalculate: true
+				}
+			});
 			console.log("FINISHED");
 		}
-		await simplifyGps(trips[trip].id, 100000);
 	}
 	return;
 }
 
+export async function loadGeoJSON(filePath: any) {
+    return new Promise(async (resolve, reject) => {
+        const fileSize = statSync(filePath).size;
+
+        let bytesRead = 0;
+        const stream = createReadStream(filePath, { encoding: 'utf8' });
+        let data = '';
+		let lastPrintedProgress = 0;
+
+		process.stdout.write('Loading File: ');
+
+        stream.on('data', (chunk: string | any[]) => {
+            data += chunk;
+            bytesRead += chunk.length;
+            const progress = Math.floor((bytesRead / fileSize) * 100);
+
+            if (progress >= lastPrintedProgress + 5) {
+                process.stdout.write('#');
+                lastPrintedProgress += 5;
+            }
+        });
+
+        stream.on('end', () => {
+			
+			console.log(' Finished!');
+
+			process.stdout.write("Parsing JSON data:");
+            try {
+                const geoJSON = JSON.parse(data) as FeatureCollection<Geometry, GeoJsonProperties>;;
+				regionData = geoJSON;
+                resolve(geoJSON);
+            } catch (error) {
+                reject(new Error('Failed to parse GeoJSON.')); // Handle JSON parse errors
+            }
+			console.log(" Finished!")
+        });
+
+        stream.on('error', (error: any) => {
+            reject(error);
+        });
+    });
+}
+
+export async function findRegionForPoint( inputPoint: {lat: Decimal; long: Decimal}) {
+	if(regionData == null){
+		console.log("Region Data was not loaded, load it before using it!")
+		return;
+	}
+    const pointGeometry = point([Number(inputPoint.long), Number(inputPoint.lat)]);
+ 
+    for (const feature of regionData.features) {
+		// Ensure feature geometry is a Polygon or MultiPolygon
+		if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
+			if (booleanPointInPolygon(pointGeometry, feature as Feature<Polygon | MultiPolygon>)) {
+				return feature.properties?.NAME;
+			}
+		}
+	}
+
+    return null; // No region found
+}
 
 interface Datapoint {
 	id: string;
