@@ -1,17 +1,17 @@
 <script lang="ts">
-    import { onMount } from "svelte";
 	import errorStore from "./errorStore";
     
-    let {isOpen = $bindable(false), usernameToFetch = "", onFinished = function(id:string){}} = $props();
+    let {isOpen = $bindable(false), usernameToFetch = "", onFinished = function(username:string, id:string){}} = $props();
 
     let images: any[] = $state([]);
     let files: any[] = [];
     let mediaVisibilityPopup = $state(false);
     let fileToUpload: string | Blob | null = null;
 
-    // Fetch images when the component mounts
-    onMount(async () => {
-        await fetchImages();
+    // Fetch images when username changes
+    $effect(()=>{
+        usernameToFetch;
+        fetchImages();
     });
 
     // Fetch images from the API
@@ -72,8 +72,8 @@
     }
 
     // Close the modal and return the selected image ID
-    function selectImage(url: any) {
-        onFinished(url);
+    function selectImage(username:String, imageId:String) {
+        onFinished(username, imageId);
         isOpen = false;
     }
 
@@ -134,7 +134,7 @@
                     {#each images as image}
                             <button
                                 class="border rounded cursor-pointer h-min"
-                                onclick={() => selectImage("/api/Media/"+image.username+"/"+image.id+".avif")}
+                                onclick={() => selectImage(image.username, image.id)}
                             >   
                                 <img src={"/api/Media/"+image.username+"/"+image.id+".avif"} alt={parseAlt(image.alt)} class="object-cover rounded content-center w-full h-full" />
                             </button>

@@ -9,22 +9,8 @@
 
 	const initialView: LatLngExpression = [43.95, 14.79];
 
-	interface Datapoint {
-		id?: string;
-		time?: Date;
-		tripId: string;
-		lat: number;
-		long: number;
-		speed?: number;
-		heading?: number;
-		depth?: number;
-		h_accuracy?: number;
-		v_accuracy?: number;
-		propulsion?: number;
-	}
-
 	onMount(() => {
-		if (data.user) {
+		if (data.user?.activeTripId) {
 			tracks = [data.user?.activeTripId];
 		}
 	});

@@ -24,13 +24,14 @@
 	let isOpen = $state(false);
 	interface Props {
 		saveEditor: any;
-		description?: string;
+		description: string | null;
+		usernameToFetch?: string;
 	}
 
-	let { saveEditor, description = '', usernameToFetch = '' } = $props();
+	let { saveEditor, description = '', usernameToFetch = '' }:Props = $props();
 
 
-	function setContent(description: string) {
+	function setContent(description: string | null) {
 		if (editor) {
 			editor.commands.setContent(description);
 		}
@@ -101,7 +102,7 @@
 			],
 			editorProps: {
 				attributes: {
-					class: 'card p-2 m-1 variant-ghost-secondary min-h-96'
+					class: 'outline-none max-h-full min-h-96 overflow-auto text-wrap'
 				}
 			},
 			content: description,
@@ -118,8 +119,8 @@
 		}
 	});
 
-	function finishedImageUpload(url:string){
-		editor?.commands.setImage({src: url});
+	function finishedImageUpload(owner:string, imageId:string){
+		editor?.commands.setImage({src: "/api/Media/"+owner+"/"+imageId+".avif"});
 	}
 
 	function save() {
@@ -131,77 +132,79 @@
 	});
 </script>
 
-<div class="items-center">
+<div class="items-center h-full flex flex-col">
 	{#if editing && editor}
-		<div class="btn-group variant-ghost-secondary m-1 [&>*+*]:border-secondary-500">
+		<div>
+			<div class="btn-group variant-ghost-secondary m-1 [&>*+*]:border-secondary-500">
+				<button
+					onclick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
+					class:active={editor.isActive('heading', { level: 2 })}
+					class="!pl-1 !pr-1 !py-1 !text-end material-symbols-outlined"
+					style="font-size: 1.5rem">title</button
+				>
+				<button
+					onclick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
+					class:active={editor.isActive('heading', { level: 3 })}
+					class="!px-1 !py-1 material-symbols-outlined"
+					style="font-size: 1.25rem">title</button
+				>
+				<button
+					onclick={() => editor?.chain().focus().setParagraph().run()}
+					class:active={editor.isActive('paragraph')}
+					class="!px-1 !py-1 !py-1 material-symbols-outlined"
+					style="font-size: 1rem">title</button
+				>
+				<button
+					onclick={() => editor?.chain().focus().toggleBlockquote().run()}
+					class="!px-1 !py-1 !py-1 material-symbols-outlined"
+					class:active={editor.isActive('blockquote')}
+					style="font-size: 1.5rem">read_more</button
+				>
+				<button
+					onclick={() => editor?.chain().focus().toggleBulletList().run()}
+					class="!px-1 !py-1 !py-1 material-symbols-outlined"
+					class:active={editor.isActive('bulletList')}
+					style="font-size: 1.5rem">format_list_bulleted</button
+				>
+				<button
+					onclick={() => editor?.chain().focus().toggleOrderedList().run()}
+					class="!px-1 !py-1 !py-1 material-symbols-outlined"
+					class:active={editor.isActive('orderedList')}
+					style="font-size: 1.5rem">format_list_numbered</button
+				>
+				<button
+					onclick={() => editor?.chain().focus().setTextAlign('left').run()}
+					class="!px-1 !py-1 !py-1 material-symbols-outlined"
+					class:active={editor.isActive({ textAlign: 'left' })}
+					style="font-size: 1.5rem">format_align_left</button
+				>
+				<button
+					onclick={() => editor?.chain().focus().setTextAlign('center').run()}
+					class="!px-1 !py-1 !py-1 material-symbols-outlined"
+					class:active={editor.isActive({ textAlign: 'center' })}
+					style="font-size: 1.5rem">format_align_center</button
+				>
+				<button
+					onclick={() => editor?.chain().focus().setTextAlign('right').run()}
+					class="!px-1 !py-1 !py-1 material-symbols-outlined"
+					class:active={editor.isActive({ textAlign: 'right' })}
+					style="font-size: 1.5rem">format_align_right</button
+				>
+				<button
+					onclick={() => isOpen=true}
+					class="!pl-1 !pr-2 !py-1 material-symbols-outlined"
+					style="font-size: 1.5rem">add_photo_alternate</button
+				>
+			</div>
 			<button
-				onclick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
-				class:active={editor.isActive('heading', { level: 2 })}
-				class="!pl-1 !pr-1 !py-1 !text-end material-symbols-outlined"
-				style="font-size: 1.5rem">title</button
-			>
-			<button
-				onclick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
-				class:active={editor.isActive('heading', { level: 3 })}
-				class="!px-1 !py-1 material-symbols-outlined"
-				style="font-size: 1.25rem">title</button
-			>
-			<button
-				onclick={() => editor?.chain().focus().setParagraph().run()}
-				class:active={editor.isActive('paragraph')}
-				class="!px-1 !py-1 !py-1 material-symbols-outlined"
-				style="font-size: 1rem">title</button
-			>
-			<button
-				onclick={() => editor?.chain().focus().toggleBlockquote().run()}
-				class="!px-1 !py-1 !py-1 material-symbols-outlined"
-				class:active={editor.isActive('blockquote')}
-				style="font-size: 1.5rem">read_more</button
-			>
-			<button
-				onclick={() => editor?.chain().focus().toggleBulletList().run()}
-				class="!px-1 !py-1 !py-1 material-symbols-outlined"
-				class:active={editor.isActive('bulletList')}
-				style="font-size: 1.5rem">format_list_bulleted</button
-			>
-			<button
-				onclick={() => editor?.chain().focus().toggleOrderedList().run()}
-				class="!px-1 !py-1 !py-1 material-symbols-outlined"
-				class:active={editor.isActive('orderedList')}
-				style="font-size: 1.5rem">format_list_numbered</button
-			>
-			<button
-				onclick={() => editor?.chain().focus().setTextAlign('left').run()}
-				class="!px-1 !py-1 !py-1 material-symbols-outlined"
-				class:active={editor.isActive({ textAlign: 'left' })}
-				style="font-size: 1.5rem">format_align_left</button
-			>
-			<button
-				onclick={() => editor?.chain().focus().setTextAlign('center').run()}
-				class="!px-1 !py-1 !py-1 material-symbols-outlined"
-				class:active={editor.isActive({ textAlign: 'center' })}
-				style="font-size: 1.5rem">format_align_center</button
-			>
-			<button
-				onclick={() => editor?.chain().focus().setTextAlign('right').run()}
-				class="!px-1 !py-1 !py-1 material-symbols-outlined"
-				class:active={editor.isActive({ textAlign: 'right' })}
-				style="font-size: 1.5rem">format_align_right</button
-			>
-			<button
-				onclick={() => isOpen=true}
+				onclick={save}
 				class="!pl-1 !pr-2 !py-1 material-symbols-outlined"
-				style="font-size: 1.5rem">add_photo_alternate</button
+				style="font-size: 1.5rem">save</button
 			>
 		</div>
-		<button
-			onclick={save}
-			class="!pl-1 !pr-2 !py-1 material-symbols-outlined"
-			style="font-size: 1.5rem">save</button
-		>
 	{/if}
 
-	<div bind:this={element}></div>
+	<div bind:this={element} class="overflow-hidden h-full w-full card p-2 m-1 variant-ghost-secondary"></div>
 	<MediaPicker {usernameToFetch} bind:isOpen={isOpen} onFinished={finishedImageUpload}/>
 </div>
 

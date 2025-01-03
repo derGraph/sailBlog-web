@@ -25,14 +25,14 @@ export async function GET(event) {
 	let requestedFiletype = requestedMedia.split('.')[1];
 	try {
 		if (event.locals.user?.username == requestedUsername) {
-			let userdata = await prisma.media.findFirstOrThrow({
+			await prisma.media.findFirstOrThrow({
 				where: {
 					username: event.locals.user?.username,
 					id: requestedName
 				}
 			});
 		} else if (event.locals.user?.username) {
-			let userdata = await prisma.media.findFirstOrThrow({
+			await prisma.media.findFirstOrThrow({
 				where: {
 					username: requestedUsername,
 					id: requestedName,
@@ -47,7 +47,7 @@ export async function GET(event) {
 				}
 			});
 		} else {
-			let userdata = await prisma.media.findFirstOrThrow({
+			await prisma.media.findFirstOrThrow({
 				where: {
 					username: requestedUsername,
 					id: requestedName,

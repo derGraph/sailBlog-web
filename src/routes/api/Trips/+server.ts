@@ -21,48 +21,90 @@ export async function POST(event) {
 }
 
 export async function GET(event: {
+	url: any;
     locals: { user: { username: any}}
 }) {
-
+	let deleted = false;
+	let username: string|null = null;
+	if(event.url.searchParams.get("deleted")=="true"){
+		deleted = true;
+	}
+	username = event.url.searchParams.get("username");
     try{
 		let responseData;
 		if(event.locals.user){
-			responseData = await prisma.trip.findMany({
-				where:{
-					OR: [{
-						crew: {
-							some: {
+			if(username == null){
+				responseData = await prisma.trip.findMany({
+					where:{
+						OR: [{
+							crew: {
+								some: {
+									username: event.locals.user.username
+								}
+							}
+						},
+						{
+							skipper: {
 								username: event.locals.user.username
 							}
-						}
+						},
+						{
+							visibility: 1
+						},
+						{
+							visibility: 2
+						}]
 					},
-					{
-						skipper: {
-							username: event.locals.user.username
-						}
+					include:{
+						crew: true,
+						startPoint: true,
+						endPoint: true,
+						location: true
+					}
+				});
+			}else{
+				responseData = await prisma.trip.findMany({
+					where:{
+						deleted: deleted,
+						OR: [
+						{
+							visibility: 1,
+							...(username ? {
+								OR: [
+									{crew: {some: {username: username}}},
+									{skipper: {username: username}},
+								],
+							} : {})
+						},
+						{
+							visibility: 2,
+							...(username ? {
+								OR: [
+									{crew: {some: {username: username}}},
+									{skipper: {username: username}},
+								],
+							} : {})
+						}]
 					},
-					{
-						visibility: 1
-					},
-					{
-						visibility: 2
-					}]
-				},
-				include:{
-					crew: true,
-					startPoint: true,
-					endPoint: true
-				}
-			});
+					include:{
+						crew: true,
+						startPoint: true,
+						endPoint: true,
+						location: true
+					}
+				});
+			}
 		}else{
 			responseData = await prisma.trip.findMany({
 				where: {
-					visibility: 2
+					visibility: 2,
+					deleted: false
 				},
 				include: {
 					crew: true,
 					startPoint: true,
-					endPoint: true
+					endPoint: true,
+					location: true
 				}
 			});
 		}
@@ -70,6 +112,7 @@ export async function GET(event: {
 		return new Response(JSON.stringify(responseData));
 	} catch (error_message) {
 		if (error_message instanceof Error) {
+			console.log(error_message)
 			error(404, {
 				message: error_message.message
 			});

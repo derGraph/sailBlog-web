@@ -1,4 +1,3 @@
-import { lucia } from '$lib/server/auth';
 import { error } from '@sveltejs/kit';
 
 // This handler will respond to PUT, PATCH, DELETE, etc.

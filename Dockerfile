@@ -1,18 +1,19 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 COPY package.json .
-RUN npm i
+#TODO: remove legacy peer drops as soon as the adapter is updated!
+RUN npm i --force
 COPY . .
 RUN npx prisma generate
 RUN npm run build
-RUN npm prune --production
+RUN npm prune --production --force
 
 WORKDIR /app/workers
 RUN npm i
 RUN npx tsc
 RUN npx tsc-alias
 
-FROM node:22-alpine
+FROM node:23-alpine3.20
 WORKDIR /app
 COPY --from=builder /app/build build/
 COPY --from=builder /app/node_modules node_modules/
