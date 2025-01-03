@@ -16,7 +16,8 @@ FROM node:22-alpine
 WORKDIR /app
 COPY --from=builder /app/build build/
 COPY --from=builder /app/node_modules node_modules/
-COPY --from=builder /app/workers/build /app/workers
+COPY --from=builder /app/workers/node_modules workers/node_modules/
+COPY --from=builder /app/workers/build workers/
 COPY prisma /app/prisma/
 COPY docker-entrypoint.sh /
 COPY package.json .
