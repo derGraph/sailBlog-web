@@ -15,7 +15,9 @@
     let showDeletedTrips = $state(false);
     let showMyTrips = $state(false);
     let showLocationSearch = $state(false);
+    let showUserSearch = $state(false);
     let filterLocations: String[] = $state([]);
+    let filterUsers: String[] = $state([]);
 
     let { data } = $props();
 
@@ -33,6 +35,9 @@
         // If locations array is empty, consider all locations
         const locationMatch = filterLocations.length === 0 || trip.location.some((loc: { name: String; }) => filterLocations.includes(loc.name));
 
+        // If user array is empty, consider all users
+        const userMatch = filterUsers.length === 0 || trip.crew.some((loc: { username: String; }) => filterUsers.includes(loc.username)) || 
+                          filterUsers.includes(trip.skipperName);
         // If showDeletedTrips is false, only include trips that are not deleted
         const deletionMatch = !trip.deleted;
 
@@ -43,7 +48,7 @@
             trip.skipperName === data.user?.username;
 
         // Combine all conditions
-        return locationMatch && deletionMatch && isMyTrip;
+        return locationMatch && deletionMatch && isMyTrip && userMatch;
     });
 }
 
@@ -117,6 +122,24 @@
         }
     }
 
+    async function searchUser(searchTerm:string) {
+		let response = await fetch('/api/User?search='+searchTerm, {method: 'GET'});
+		if(!response.ok){
+			$errorStore = response;
+		}else{
+			let usernameArray:String[] = await response.json();
+			return usernameArray;
+		}
+		return [];
+	}
+
+    async function addUserTerm(user: String) {
+        if(!filterUsers.includes(user)){
+            filterUsers.push(user);
+            applyTripFilter();
+        }
+    }
+
 </script>
 
 <div class="md:container md:mx-auto pb-3 h-full rounded table-container">
@@ -139,6 +162,17 @@
             <button type="button" onclick={()=>{filterLocations = filterLocations.filter(e => e !== filterLocation); applyTripFilter()}} class="btn btn-md variant-ghost-tertiary mr-2">
                 <span class="material-symbols-outlined">close</span>
                 {filterLocation}
+            </button>
+        {/each}
+        <button type="button" onclick={()=>{showUserSearch = !showUserSearch}} class="btn btn-md variant-ghost mr-2">
+            <span class="material-symbols-outlined">search</span>
+            search for User
+        </button>
+        <SearchBar bind:displayed = {showUserSearch} getList={searchUser} onSelected={addUserTerm}></SearchBar>
+        {#each filterUsers as filterUser}
+            <button type="button" onclick={()=>{filterUsers = filterUsers.filter(e => e !== filterUser); applyTripFilter()}} class="btn btn-md variant-ghost-tertiary mr-2">
+                <span class="material-symbols-outlined">close</span>
+                {filterUser}
             </button>
         {/each}
         <spacer class="flex-1"></spacer>
