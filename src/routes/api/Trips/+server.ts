@@ -25,9 +25,14 @@ export async function GET(event: {
     locals: { user: { username: any}}
 }) {
 	let deleted = false;
+	let page = 0;
 	let username: string|null = null;
 	if(event.url.searchParams.get("deleted")=="true"){
 		deleted = true;
+	}
+	page = Number(event.url.searchParams.get("page"));
+	if(page != 0){
+		page -= 1;
 	}
 	username = event.url.searchParams.get("username");
     try{
@@ -36,6 +41,7 @@ export async function GET(event: {
 			if(username == null){
 				responseData = await prisma.trip.findMany({
 					where:{
+						deleted: deleted,
 						OR: [{
 							crew: {
 								some: {
@@ -60,7 +66,9 @@ export async function GET(event: {
 						startPoint: true,
 						endPoint: true,
 						location: true
-					}
+					},
+					take: 10,
+					...(page && { skip: page*10}),
 				});
 			}else{
 				responseData = await prisma.trip.findMany({
@@ -91,7 +99,9 @@ export async function GET(event: {
 						startPoint: true,
 						endPoint: true,
 						location: true
-					}
+					},
+					take: 10,
+					...(page && { skip: page*10}),
 				});
 			}
 		}else{
@@ -105,7 +115,9 @@ export async function GET(event: {
 					startPoint: true,
 					endPoint: true,
 					location: true
-				}
+				},
+				take: 10,
+				...(page && { skip: page*10}),
 			});
 		}
 		responseData = removeSensitiveData(responseData);

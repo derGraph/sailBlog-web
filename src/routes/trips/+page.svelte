@@ -54,7 +54,9 @@
 
 
     function reloadTable(){
-        fetch('/api/Trips').then(async (response)=>{
+        let parameters = new URLSearchParams(window.location.search);
+        let page = parameters.get("page")
+        fetch('/api/Trips?page='+page).then(async (response)=>{
             if (!response.ok) {
                 $errorStore = response;
                 return;
@@ -189,13 +191,12 @@
                 <th>Location</th>
                 <th>Skipper</th>
                 <th>Crew</th>
-                <th>Visibilty</th>
 			</tr>
 		</thead>
 		<tbody>
 			{#each tableArr as row}
                 <tr class="group">
-                    <td onclick={() => selectActiveTrip(row.id)} class="!align-middle"><button type="button" class="material-symbols-outlined !align-middle">{@html parseRadioButton(row.id, data.user)}</button></td>
+                    <td onclick={() => selectActiveTrip(row.id)} class="!align-middle"><button type="button" class="material-symbols-outlined !align-middle">{@html data.user ? parseRadioButton(row.id, data.user) : 'radio_button_unchecked'}</button></td>
                     <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{row.name}</td>
                     <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{parseDate(row.startPoint)}</td>
                     <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{parseDate(row.endPoint)}</td>
@@ -203,14 +204,13 @@
                     <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{parseLocation(row.location)}</td>
                     <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{row.skipperName}</td>
                     <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{parseCrew(row.crew)}</td>
-                    <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{parseVisibility(row.visibility)}</td>
                 </tr>
 			{/each}
 		</tbody>
 		<tfoot>
 			<tr class="group">
-				<th colspan="4">Total Miles</th>
-				<td>{(totalLength/1853).toFixed(0)} NM<div class="hidden group-hover:block"><span class="!text-xs material-symbols-outlined">sailing</span>{(totalSailedLength/1853).toFixed(0)} <span class="!text-xs material-symbols-outlined">mode_heat</span>{(totalMotoredLength/1853).toFixed(0)}</div></td>
+				<th colspan="4"></th>
+				<td></td>
 			</tr>
 		</tfoot>
 	</table>
