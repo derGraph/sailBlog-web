@@ -1,7 +1,7 @@
 import type { User } from "@prisma/client";
 
 
-export function parseRadioButton(tripId:string, user: { username: string; email: string; firstName: string | null; lastName: string | null; description: string | null; profilePictureId: string | null; dateOfBirth: Date | null; roleId: string; activeTripId: string; lastPing: Date; } | null){
+export function parseRadioButton(tripId:string, user: User){
     if(tripId==user?.activeTripId){
         //ACTIVE
         return 'radio_button_checked';
