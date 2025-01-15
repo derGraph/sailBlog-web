@@ -36,6 +36,7 @@ export async function GET(event: {
 			if(username == null){
 				responseData = await prisma.trip.findMany({
 					where:{
+						deleted: deleted,
 						OR: [{
 							crew: {
 								some: {
