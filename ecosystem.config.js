@@ -7,7 +7,7 @@ module.exports = {
                 NODE_ENV: "production"
             },
             exec_mode: "cluster",
-            instances: 2
+            instances: 4
         },
         {
             name: "simplifier",
