@@ -27,11 +27,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 		});
 	}else{
 		try{
-			await prisma.user.findFirstOrThrow({
-				where: {
-					username: "false"
-				}
-			});
 			await prisma.session.update({
 				where:{
 					id: session.id
@@ -51,6 +46,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 			});
 		}catch(error_message){
 			if (error_message instanceof Error) {
+				console.log(error_message)
 				if(error_message.name != "PrismaClientUnknownRequestError"){
 					error(500, {
 						message: 'ERROR'
