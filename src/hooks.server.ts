@@ -1,7 +1,7 @@
 // src/hooks.server.ts
 import { lucia } from '$lib/server/auth';
 import { prisma } from '$lib/server/prisma';
-import type { Handle } from '@sveltejs/kit';
+import { error, type Handle } from '@sveltejs/kit';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const sessionId = event.cookies.get(lucia.sessionCookieName);
@@ -26,23 +26,42 @@ export const handle: Handle = async ({ event, resolve }) => {
 			...sessionCookie.attributes
 		});
 	}else{
-		await prisma.session.update({
-			where:{
-				id: session.id
-			},
-			data: {
-				last_use: new Date(Date.now()),
-				ip: event.getClientAddress()
+		try{
+			await prisma.user.findFirstOrThrow({
+				where: {
+					username: "false"
+				}
+			});
+			await prisma.session.update({
+				where:{
+					id: session.id
+				},
+				data: {
+					last_use: new Date(Date.now()),
+					ip: event.getClientAddress()
+				}
+			});
+			await prisma.user.update({
+				where: {
+					username: user.username
+				},
+				data: {
+					lastPing: new Date(Date.now()),
+				}
+			});
+		}catch(error_message){
+			if (error_message instanceof Error) {
+				if(error_message.name != "PrismaClientUnknownRequestError"){
+					error(500, {
+						message: 'ERROR'
+					});
+				}
+			} else {
+				error(500, {
+					message: 'ERROR'
+				});
 			}
-		});
-		await prisma.user.update({
-			where: {
-				username: user.username
-			},
-			data: {
-				lastPing: new Date(Date.now()),
-			}
-		})
+		}
 	}
 	event.locals.user = user;
 	event.locals.session = session;
