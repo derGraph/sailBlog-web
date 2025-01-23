@@ -1,6 +1,6 @@
 # sailBlog
 
-### This is a project to share and record voyage data when sailing. It is my first attemt in svelte.
+### This is a project to share and record voyage data when sailing. It is my first attempt in svelte.
 
 It uses prisma for Database and lucia for authentication. The project should adhere to EU-GDPR rules.
 The companion app is written in flutter and is used to inject the data into the database.
