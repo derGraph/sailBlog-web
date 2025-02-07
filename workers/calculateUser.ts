@@ -17,6 +17,7 @@ export async function calculateUsers() {
 export async function calculateUser(user: string) {
     let userTrips = await prisma.trip.findMany({
         where: {
+            deleted: false,
             OR: [{
                 crew: {
                     some: {
