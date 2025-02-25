@@ -220,15 +220,15 @@ function checkDatapoint(rawData: {
 
 	if (propulsion != null) {
 		switch (propulsion) {
-			case 'anchor':
+			case 'anchor': case 0:
 				propulsion = 0;
 				break;
 
-			case 'motor':
+			case 'motor': case 1:
 				propulsion = 1;
 				break;
 
-			case 'sailing':
+			case 'sailing': case 2:
 				propulsion = 2;
 				break;
 

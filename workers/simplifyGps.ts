@@ -3,6 +3,7 @@ import type { Decimal } from '@prisma/client/runtime/library';
 import { getDistance, getDistanceFromLine } from 'geolib';
 import {statSync, createReadStream} from 'fs';
 import {point, booleanPointInPolygon} from '@turf/turf';
+import * as readline from 'readline';
 import { Feature, FeatureCollection, GeoJsonProperties, Geometry, MultiPolygon, Polygon } from "geojson";
 
 let regionData: null|FeatureCollection = null;
@@ -216,44 +217,48 @@ export async function simplify(){
 	return;
 }
 
-export async function loadGeoJSON(filePath: any) {
-    return new Promise(async (resolve, reject) => {
-        const fileSize = statSync(filePath).size;
+export async function loadGeoJSON(filePath: string): Promise<FeatureCollection<Geometry, GeoJsonProperties>> {
+    const fileSize = statSync(filePath).size;
+    let bytesRead = 0;
+    let lastPrintedProgress = 0;
 
-        let bytesRead = 0;
-        const stream = createReadStream(filePath, { encoding: 'utf8' });
-        let data = '';
-		let lastPrintedProgress = 0;
+    process.stdout.write('Loading File: ');
 
-		process.stdout.write('Loading File: ');
+    const stream = createReadStream(filePath, { encoding: 'utf8' });
 
-        stream.on('data', (chunk: string | any[]) => {
-            data += chunk;
-            bytesRead += chunk.length;
-            const progress = Math.floor((bytesRead / fileSize) * 100);
+    const rl = readline.createInterface({
+        input: stream,
+        crlfDelay: Infinity,
+    });
 
-            if (progress >= lastPrintedProgress + 5) {
-                process.stdout.write('#');
-                lastPrintedProgress += 5;
-            }
-        });
+    let chunks: string[] = [];
 
-        stream.on('end', () => {
-			
-			console.log(' Finished!');
+    rl.on('line', (line: string) => {
+        chunks.push(line);
+        bytesRead += line.length;
+        const progress = Math.floor((bytesRead / fileSize) * 100);
 
-			process.stdout.write("Parsing JSON data:");
+        if (progress >= lastPrintedProgress + 5) {
+            process.stdout.write('#');
+            lastPrintedProgress += 5;
+        }
+    });
+
+    return new Promise((resolve, reject) => {
+        rl.on('close', () => {
+            process.stdout.write(' Finished!\nParsing JSON data:');
+
             try {
-                const geoJSON = JSON.parse(data) as FeatureCollection<Geometry, GeoJsonProperties>;;
-				regionData = geoJSON;
+                const data = chunks.join('');
+                const geoJSON = JSON.parse(data) as FeatureCollection<Geometry, GeoJsonProperties>;
+                process.stdout.write(' Finished!\n');
                 resolve(geoJSON);
             } catch (error) {
-                reject(new Error('Failed to parse GeoJSON.')); // Handle JSON parse errors
+                reject(new Error('Failed to parse GeoJSON.'));
             }
-			console.log(" Finished!")
         });
 
-        stream.on('error', (error: any) => {
+        rl.on('error', (error) => {
             reject(error);
         });
     });

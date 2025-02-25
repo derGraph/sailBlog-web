@@ -441,7 +441,8 @@ export async function DELETE(event) {
                         deleted: true,
                         name: "deletedTrip "+(new Date(Date.now())).toISOString(),
                         description: null,
-                        visibility: 0
+                        visibility: 0,
+                        recalculate: true,
                     }
                 });
                 return new Response('200');
