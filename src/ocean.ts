@@ -103,7 +103,7 @@ export const ocean: CustomThemeConfig = {
 		'--color-surface-400': rgbToTailwind("rgb(125, 125, 125)"),//field placeholder font color
 		'--color-surface-500': rgbToTailwind("rgb(43, 78, 95)"),//field border not highlited
 		'--color-surface-600': rgbToTailwind("rgb(84, 84, 185)"),//button seperation
-		'--color-surface-700': rgbToTailwind("rgb(250, 234, 234)"),//field fill
+		'--color-surface-700': rgbToTailwind("rgb(24, 18, 63)"),//field fill
 		'--color-surface-800': rgbToTailwind("rgb(36, 32, 61)"),
 		'--color-surface-900': rgbToTailwind("rgb(51, 46, 46)")
 	}
