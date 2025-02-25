@@ -37,8 +37,10 @@ export async function simplifyGps(trip: string, amount: number) {
 		
 		for (let i = 1; i < inputData.length - 1; i++) {
 			if(i%1000 == 0 || i == 0){
-				let pointRegion:string = await findRegionForPoint(inputData[i]);
-				if(!regions.includes(pointRegion) && pointRegion != null) regions.push(pointRegion);
+				if(!process.env.IS_DEVELOPMENT){
+					let pointRegion:string = await findRegionForPoint(inputData[i]);
+					if(!regions.includes(pointRegion) && pointRegion != null) regions.push(pointRegion);
+				}
 			}
 			let crosstrackError = getDistanceFromLine(
 				{ lat: Number(inputData[i].lat), lng: Number(inputData[i].long) },
@@ -217,51 +219,54 @@ export async function simplify(){
 	return;
 }
 
-export async function loadGeoJSON(filePath: string): Promise<FeatureCollection<Geometry, GeoJsonProperties>> {
-    const fileSize = statSync(filePath).size;
-    let bytesRead = 0;
-    let lastPrintedProgress = 0;
-
-    process.stdout.write('Loading File: ');
-
-    const stream = createReadStream(filePath, { encoding: 'utf8' });
-
-    const rl = readline.createInterface({
-        input: stream,
-        crlfDelay: Infinity,
-    });
-
-    let chunks: string[] = [];
-
-    rl.on('line', (line: string) => {
-        chunks.push(line);
-        bytesRead += line.length;
-        const progress = Math.floor((bytesRead / fileSize) * 100);
-
-        if (progress >= lastPrintedProgress + 5) {
-            process.stdout.write('#');
-            lastPrintedProgress += 5;
-        }
-    });
-
-    return new Promise((resolve, reject) => {
-        rl.on('close', () => {
-            process.stdout.write(' Finished!\nParsing JSON data:');
-
-            try {
-                const data = chunks.join('');
-                const geoJSON = JSON.parse(data) as FeatureCollection<Geometry, GeoJsonProperties>;
-                process.stdout.write(' Finished!\n');
-                resolve(geoJSON);
-            } catch (error) {
-                reject(new Error('Failed to parse GeoJSON.'));
-            }
-        });
-
-        rl.on('error', (error) => {
-            reject(error);
-        });
-    });
+export async function loadGeoJSON(filePath: string): Promise<void> {
+	if(!process.env.IS_DEVELOPMENT){
+		const fileSize = statSync(filePath).size;
+		let bytesRead = 0;
+		let lastPrintedProgress = 0;
+	
+		process.stdout.write('Loading File: ');
+	
+		const stream = createReadStream(filePath, { encoding: 'utf8' });
+	
+		const rl = readline.createInterface({
+			input: stream,
+			crlfDelay: Infinity,
+		});
+	
+		let chunks: string[] = [];
+	
+		rl.on('line', (line: string) => {
+			chunks.push(line);
+			bytesRead += line.length;
+			const progress = Math.floor((bytesRead / fileSize) * 100);
+	
+			if (progress >= lastPrintedProgress + 5) {
+				process.stdout.write('#');
+				lastPrintedProgress += 5;
+			}
+		});
+	
+		return new Promise((resolve, reject) => {
+			rl.on('close', () => {
+				process.stdout.write(' Finished!\nParsing JSON data:');
+	
+				try {
+					const data = chunks.join('');
+					regionData = JSON.parse(data) as FeatureCollection<Geometry, GeoJsonProperties>;
+					process.stdout.write(' Finished!\n');
+					resolve();
+				} catch (error) {
+					reject(new Error('Failed to parse GeoJSON.'));
+				}
+			});
+	
+			rl.on('error', (error) => {
+				reject(error);
+			});
+		});
+	}
+	return Promise.resolve();
 }
 
 export async function findRegionForPoint( inputPoint: {lat: Decimal; long: Decimal}) {
