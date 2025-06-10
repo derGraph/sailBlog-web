@@ -1,31 +1,19 @@
 // src/hooks.server.ts
-import { lucia } from '$lib/server/auth';
+import { auth } from '$lib/server/auth';
 import { prisma } from '$lib/server/prisma';
 import { error, type Handle } from '@sveltejs/kit';
 
 export const handle: Handle = async ({ event, resolve }) => {
-	const sessionId = event.cookies.get(lucia.sessionCookieName);
+	const sessionId = event.cookies.get("auth_session");
 	if (!sessionId) {
 		event.locals.user = null;
 		event.locals.session = null;
 		return resolve(event);
 	}
 
-	const { session, user } = await lucia.validateSession(sessionId);
-	if (session && session.fresh) {
-		const sessionCookie = lucia.createSessionCookie(session.id);
-		event.cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: '.',
-			...sessionCookie.attributes
-		});
-	}
-	if (!session) {
-		const sessionCookie = lucia.createBlankSessionCookie();
-		event.cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: '.',
-			...sessionCookie.attributes
-		});
-	}else{
+	const {session, user} = await auth.validateSession(sessionId);
+
+	if(session != null && user != null){
 		try{
 			await prisma.session.update({
 				where:{
@@ -59,7 +47,31 @@ export const handle: Handle = async ({ event, resolve }) => {
 			}
 		}
 	}
+
+
+
 	event.locals.user = user;
 	event.locals.session = session;
 	return resolve(event);
-};
+	
+
+	/*if (session && session.fresh) {
+		const sessionCookie = lucia.createSessionCookie(session.id);
+		event.cookies.set(sessionCookie.name, sessionCookie.value, {
+			path: '.',
+			...sessionCookie.attributes
+		});
+	}
+	if (!session) {
+		const sessionCookie = lucia.createBlankSessionCookie();
+		event.cookies.set(sessionCookie.name, sessionCookie.value, {
+			path: '.',
+			...sessionCookie.attributes
+		});
+	}else{
+		
+	}
+	event.locals.user = user;
+	event.locals.session = session;
+	return resolve(event);*/}
+;

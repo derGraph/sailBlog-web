@@ -42,8 +42,9 @@ model Session {
   userId            String
   expiresAt         DateTime
   user              User      @relation(references: [username], fields: [userId], onDelete: Cascade)
+  secret            Bytes
   ip                String?
-  session_created   DateTime?
+  session_created   DateTime? @default(now())
   last_use          DateTime?
 }
 
