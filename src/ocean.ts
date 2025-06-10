@@ -87,15 +87,15 @@ export const ocean: CustomThemeConfig = {
 		'--color-error-800': '153 9 9', // #990909
 		'--color-error-900': '125 7 7', // #7d0707
 		// surface | #7057ff
-		'--color-surface-50': rgbToTailwind("rgb(100, 147, 161)"),
-		'--color-surface-100': rgbToTailwind("rgb(226, 221, 255)"),
-		'--color-surface-200': rgbToTailwind("rgb(219, 213, 255)"),
-		'--color-surface-300': rgbToTailwind("rgb(198, 188, 255)"),
-		'--color-surface-400': rgbToTailwind("rgb(125, 125, 125)"),//field placeholder font color
-		'--color-surface-500': rgbToTailwind("rgb(43, 78, 95)"),//field border not highlited
-		'--color-surface-600': rgbToTailwind("rgb(84, 84, 185)"),//button seperation
-		'--color-surface-700': rgbToTailwind("rgb(24, 18, 63)"),//field fill
-		'--color-surface-800': rgbToTailwind("rgb(36, 32, 61)"),
-		'--color-surface-900': rgbToTailwind("rgb(51, 46, 46)")
+		'--color-surface-50': '234 230 255', // #eae6ff
+		'--color-surface-100': '226 221 255', // #e2ddff
+		'--color-surface-200': '219 213 255', // #dbd5ff
+		'--color-surface-300': '198 188 255', // #c6bcff
+		'--color-surface-400': '155 137 255', // #9b89ff
+		'--color-surface-500': '112 87 255', // #7057ff
+		'--color-surface-600': '101 78 230', // #654ee6
+		'--color-surface-700': '84 65 191', // #5441bf
+		'--color-surface-800': '67 52 153', // #433499
+		'--color-surface-900': '55 43 125' // #372b7d
 	}
 };
