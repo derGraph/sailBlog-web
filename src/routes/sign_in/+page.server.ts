@@ -1,4 +1,4 @@
-import { lucia } from '$lib/server/auth';
+import { auth } from '$lib/server/auth';
 import { fail, redirect } from '@sveltejs/kit';
 import { hash, verify } from '@node-rs/argon2';
 import { prisma } from '$lib/server/prisma';
@@ -75,16 +75,16 @@ export const actions: Actions = {
 			}
 		}
 
-		const session = await lucia.createSession(user.username, {});
-		const sessionCookie = lucia.createSessionCookie(session.id);
-		event.cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: '.',
-			...sessionCookie.attributes
+		const {id, secret} = await auth.createSession(user.username);
+
+		event.cookies.set("auth_session", id+"."+secret, {
+			path: '/',
+			expires: new Date(Date.now() + 90*1000*60*60*24)
 		});
 
 		await prisma.session.update({
 			where:{
-				id: session.id
+				id: id
 			},
 			data: {
 				last_use: new Date(Date.now()),

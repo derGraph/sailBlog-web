@@ -2,7 +2,7 @@
 
 ### This is a project to share and record voyage data when sailing. It is my first attempt in svelte.
 
-It uses prisma for Database and lucia for authentication. The project should adhere to EU-GDPR rules.
+It uses prisma for Database Management. The project should adhere to EU-GDPR rules.
 The companion app is written in flutter and is used to inject the data into the database.
 All API-Endpoints used in the project are also available to the public. Log in via POST to /login and then use the cookie!
 

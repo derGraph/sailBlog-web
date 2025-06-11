@@ -50,6 +50,14 @@ class Authenticator {
 		return {id, secret};
 	}
 
+	async invalidateSession(sessionId: string): Promise<void> {
+		await prisma.session.delete({
+			where: {
+				id: sessionId
+			}
+		});
+		return;
+	}
 
 }
 

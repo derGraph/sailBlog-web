@@ -39,7 +39,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@lucia-auth/adapter-prisma": "^4.0.1",
 		"@node-rs/argon2": "^2.0.0",
 		"@prisma/client": "^6.1.0",
 		"@skeletonlabs/skeleton": "^2.10.3",
@@ -70,7 +69,6 @@
 		"geolib": "^3.3.4",
 		"isomorphic-dompurify": "^2.16.0",
 		"leaflet": "^1.9.4",
-		"lucia": "^3.2.2",
 		"pm2": "^5.4.2",
 		"postcss": "8.4.47",
 		"prettier": "^3.3.3",
