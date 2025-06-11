@@ -77,8 +77,10 @@ export const actions: Actions = {
 
 		const {id, secret} = await auth.createSession(user.username);
 
-		event.cookies.set("auth_session", id+"."+secret, {
+		event.cookies.set("session_token", id+"."+secret, {
 			path: '/',
+			httpOnly: true,
+			secure: true,
 			expires: new Date(Date.now() + 90*1000*60*60*24)
 		});
 
