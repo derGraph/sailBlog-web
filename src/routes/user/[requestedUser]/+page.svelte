@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Avatar, ListBox } from '@skeletonlabs/skeleton';
+	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import errorStore from '$lib/errorStore.js';
 	import Tiptap from '$lib/Tiptap/+Tiptap.svelte';
 	import MediaPicker from '$lib/mediaPicker.svelte';
@@ -128,7 +128,7 @@
 		{#if requestedUserName == user?.username}
 			<MediaPicker bind:isOpen = {mediaPickerOpen} usernameToFetch = {requestedUserName} onFinished={(owner:String, imageId:String)=>{changePicture(owner, imageId)}}/>
 		{/if}
-		<div class="flex flex-col mb-2 p-3 w-min bg-surface-100-800-token rounded-3xl items-center">
+		<div class="flex flex-col mb-2 p-3 w-min bg-surface-100-900 rounded-3xl items-center">
 			{#if requestedUser.firstName && requestedUser.lastName}
 				{#if requestedUserName == user?.username}
 				<button onclick={()=>{mediaPickerOpen = true}}>
@@ -163,14 +163,14 @@
 								>edit</button>
 						{/if}
 				{:else}
-						<input 	class="!text-xl input w-min" 
+						<input 	class="text-xl! input w-min" 
 							name="firstName"
 							bind:value={newFirstName}
 							type="text"
 							placeholder={requestedUser.firstName}
 							required
 						/>
-						<input 	class="!text-xl input w-min" 
+						<input 	class="text-xl! input w-min" 
 							name="lastName"
 							bind:value={newLastName}
 							type="text"
@@ -190,20 +190,20 @@
 			{/if}
 		</div>
 		{#if requestedUser}
-			<div class="rounded-3xl bg-surface-100-800-token p-1 px-3 content-center mb-2">
+			<div class="rounded-3xl bg-surface-100-900 p-1 px-3 content-center mb-2">
 				<h3 class="h5 text-center group">Crewed:
-					{((Number(requestedUser?.crewedLengthSail)+Number(requestedUser?.crewedLengthMotor))/1853).toFixed(2)} NM&emsp;
-					<span class="!text-base material-symbols-outlined">sailing</span>{(Number(requestedUser?.crewedLengthSail)/1853).toFixed(2)} NM
-					<span class="!text-base material-symbols-outlined">mode_heat</span>{(Number(requestedUser?.crewedLengthMotor)/1853).toFixed(2)} NM
+					{((Number(requestedUser?.crewedLengthSail)+Number(requestedUser?.crewedLengthMotor))/1853).toFixed(2)} NM 
+					<span class="text-base! material-symbols-outlined">sailing</span>{(Number(requestedUser?.crewedLengthSail)/1853).toFixed(2)} NM
+					<span class="text-base! material-symbols-outlined">mode_heat</span>{(Number(requestedUser?.crewedLengthMotor)/1853).toFixed(2)} NM
 				</h3>
 				<h3 class="h5 text-center group">Skippered:
-					{((Number(requestedUser?.skipperedLengthSail)+Number(requestedUser?.skipperedLengthMotor))/1853).toFixed(2)} NM&emsp;
-					<span class="!text-base material-symbols-outlined">sailing</span>{(Number(requestedUser?.skipperedLengthSail)/1853).toFixed(2)} NM
-					<span class="!text-base material-symbols-outlined">mode_heat</span>{(Number(requestedUser?.skipperedLengthMotor)/1853).toFixed(2)} NM
+					{((Number(requestedUser?.skipperedLengthSail)+Number(requestedUser?.skipperedLengthMotor))/1853).toFixed(2)} NM 
+					<span class="text-base! material-symbols-outlined">sailing</span>{(Number(requestedUser?.skipperedLengthSail)/1853).toFixed(2)} NM
+					<span class="text-base! material-symbols-outlined">mode_heat</span>{(Number(requestedUser?.skipperedLengthMotor)/1853).toFixed(2)} NM
 				</h3>
 			</div>
 		{/if}
-		<div class="h-full rounded-3xl p-3 bg-surface-100-800-token relative overflow-hidden min-w-20">
+		<div class="h-full rounded-3xl p-3 bg-surface-100-900 relative overflow-hidden min-w-20">
 			{#if editDescription}
 				<!-- TipTap editor with scrolling -->
 				<div class="h-full z-0">
@@ -213,7 +213,7 @@
 				{#if requestedUserName == user?.username}
 					<!-- Edit Button -->
 					<button 
-					class="btn-icon variant-ghost-secondary absolute t-2 r-2 z-1"
+					class="btn-icon preset-tonal-secondary border border-secondary-500 absolute t-2 r-2 z-1"
 					aria-label="Edit"
 					onclick={() => { editDescription = true }}
 					>

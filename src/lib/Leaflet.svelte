@@ -4,8 +4,14 @@
 	import L, { LatLngBounds } from 'leaflet';
 	import 'leaflet/dist/leaflet.css';
 	import { onDestroy, onMount, setContext } from 'svelte';
-	import { modeCurrent } from '@skeletonlabs/skeleton';
 	import errorStore from './errorStore';
+
+	let checked = $state(false);
+
+	$effect(() => {
+		const mode = localStorage.getItem('mode') || 'light';
+		checked = mode === 'dark';
+	});
 
 	let map: L.Map | undefined = $state();
 	let mapElement: HTMLDivElement = $state();
@@ -46,6 +52,8 @@
 	let recenterButton = new recenterButtonStructure();
 
 	onMount(() => {
+		const mode = localStorage.getItem('mode') || 'light';
+    	document.documentElement.setAttribute('data-mode', mode);
 		map = L.map(mapElement);
 
 		var osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -256,7 +264,7 @@
 	{/if}
 </div>
 
-{#if !$modeCurrent}
+{#if !checked}
 	<style lang="">
 		.osm-layer,
 		.leaflet-control-zoom-in,

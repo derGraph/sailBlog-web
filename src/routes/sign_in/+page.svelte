@@ -19,7 +19,7 @@
 	});
 </script>
 
-<div class="md:container md:mx-auto py-3 rounded-3xl my-3 bg-surface-100-800-token">
+<div class="md:container md:mx-auto py-3 rounded-3xl my-3 bg-surface-100-900">
 	<form method="post" class="md:mx-auto max-w-max space-y-3.5">
 		<h3 class="h3 md:mx-auto">Sign in!</h3>
 		<label class="label">
@@ -30,7 +30,7 @@
 			<span>Password</span>
 			<input name="password" class="input" type="password" placeholder="password" required />
 		</label>
-		<button type="submit" class="btn variant-filled">
+		<button type="submit" class="btn preset-filled">
 			<span>Submit</span>
 		</button>
 	</form>

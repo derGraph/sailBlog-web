@@ -4,7 +4,7 @@
 	import SearchBar from '$lib/searchBar.svelte';
 	import Tiptap from '$lib/Tiptap/+Tiptap.svelte';
 	import type { User } from '@prisma/client';
-	import { Avatar } from '@skeletonlabs/skeleton';
+	import { Avatar } from '@skeletonlabs/skeleton-svelte';
 	import type { LatLngExpression } from 'leaflet';
 	import { onMount } from 'svelte';
 
@@ -166,11 +166,11 @@
 </script>
 
 {#if showDeleteConfirm}
-	<div class="fixed flex h-full inset-0 content-center items-center place-content-center bg-black bg-opacity-80 z-[1002]">
-		<div class="variant-glass-surface rounded-3xl p-4 shadow-lg content-center justify-center w-11/12 md:w-1/3">
+	<div class="fixed flex h-full inset-0 content-center items-center place-content-center bg-black bg-opacity-80 z-1002">
+		<div class="preset-tonal-surface rounded-3xl p-4 shadow-lg content-center justify-center w-11/12 md:w-1/3">
 			<label for="options" class="h3 mb-2">Do you really want to delete this trip?</label>
 			<button 
-				class="btn variant-filled-error"
+				class="btn preset-filled-error-500"
 				onclick={() => {
 					showDeleteConfirm=false;
 					deleteTrip();
@@ -178,7 +178,7 @@
 				Yes
 			</button>
 			<button 
-				class="btn variant-filled-success"
+				class="btn preset-filled-success-500"
 				onclick={() => {showDeleteConfirm=false}}>
 				No
 			</button>
@@ -188,27 +188,27 @@
 
 <div class="felx-1 h-full flex felx-col md:container md:mx-auto p-3 rounded table-container">
 	<div class="flex-1 basis-full md:basis-1/3 w-1/3 md:h-full flex flex-col">
-		<div class="rounded-3xl bg-surface-100-800-token p-3 justify-center mb-2 flex flex-row">
+		<div class="rounded-3xl bg-surface-100-900 p-3 justify-center mb-2 flex flex-row">
 			{#if editName}
-			<input 	class="!text-xl input w-min" 
+			<input 	class="text-xl! input w-min" 
 					type="text" 
 					name="tripName"
 					bind:value={newName}
 					required
 					placeholder="{requestedTripData.name}">
-			<button class="!text-4xl material-symbols-outlined max-h" onclick={()=>{saveTripName(newName)}}>save</button>
+			<button class="text-4xl! material-symbols-outlined max-h" onclick={()=>{saveTripName(newName)}}>save</button>
 			{:else}
 			<h1 class="h1 text-center">
 				{requestedTripData.name}
-				<button class="!text-4xl material-symbols-outlined" onclick={()=>{editName=true}}>edit</button>
-				<button class="!text-4xl material-symbols-outlined" onclick={()=>{showDeleteConfirm=true}}>delete</button>
+				<button class="text-4xl! material-symbols-outlined" onclick={()=>{editName=true}}>edit</button>
+				<button class="text-4xl! material-symbols-outlined" onclick={()=>{showDeleteConfirm=true}}>delete</button>
 			</h1>
 			{/if}
 		</div>
-		<div class="rounded-3xl bg-surface-100-800-token p-1 content-center mb-2 flex flex-wrap justify-center items-center space-x-2">
+		<div class="rounded-3xl bg-surface-100-900 p-1 content-center mb-2 flex flex-wrap justify-center items-center space-x-2">
 			<div class="flex flex-wrap items-center">
 				<h3 class="h5 align-middle mr-2">Skipper:</h3>
-				<button onclick={()=>{showSkipperSearch = true}} class="btn btn-sm variant-ghost-secondary mr-1 pl-2 group hover:variant-filled-warning">
+				<button onclick={()=>{showSkipperSearch = true}} class="btn btn-sm preset-tonal-secondary border border-secondary-500 mr-1 pl-2 group hover:preset-filled-warning-500">
 					<Avatar initials={getInitials(requestedTripData.skipper)}
 							src={getProfilePicture(requestedTripData.skipper)}
 							background="bg-primary-500"
@@ -217,7 +217,7 @@
 							rounded="rounded-full"
 							class="group-hover:hidden mr-1"
 					/>
-					<span class="!ml-0 !mr-1 h-5 w-5 !text-base material-symbols-outlined !hidden group-hover:!block">autorenew</span>
+					<span class="ml-0! mr-1! h-5 w-5 text-base! material-symbols-outlined hidden! group-hover:block!">autorenew</span>
 					{requestedTripData.skipper?.username}
 				</button>
 				<SearchBar bind:displayed={showSkipperSearch} onSelected={changeSkipper} getList={search}/>
@@ -226,7 +226,7 @@
 			<div class="flex flex-wrap items-center">
 				<h3 class="h5 align-middle mr-2">Crew:</h3>
 				{#each requestedTripData?.crew as member, i}
-					<button onclick={()=>{deleteUser(member.username)}} class="btn btn-sm variant-ghost-secondary mr-1 pl-2 group hover:variant-filled-error">
+					<button onclick={()=>{deleteUser(member.username)}} class="btn btn-sm preset-tonal-secondary border border-secondary-500 mr-1 pl-2 group hover:preset-filled-error-500">
 						<Avatar initials={getInitials(member)}
 								src={getProfilePicture(member)}
 								background="bg-primary-500"
@@ -235,12 +235,12 @@
 								rounded="rounded-full"
 								class="group-hover:hidden mr-1"
 								/>
-						<span class="!ml-0 !mr-1 h-5 w-5 !text-base material-symbols-outlined !hidden group-hover:!block">close</span>
+						<span class="ml-0! mr-1! h-5 w-5 text-base! material-symbols-outlined hidden! group-hover:block!">close</span>
 
 						{member.username}
 					</button>
 				{/each}
-				<button onclick={()=>{showCrewSearch = true}} class="btn btn-sm variant-ghost-secondary mr-1 p-1.5 group hover:variant-filled-primary content-center">
+				<button onclick={()=>{showCrewSearch = true}} class="btn btn-sm preset-tonal-secondary border border-secondary-500 mr-1 p-1.5 group hover:preset-filled-primary-500 content-center">
 					<Avatar width="w-5" rounded="rounded-full" background="color-secondary-500">
 						<span class="material-symbols-outlined">add</span>
 					</Avatar>
@@ -250,7 +250,7 @@
 		</div>
 		
 		
-		<div class="h-full rounded-3xl p-3 bg-surface-100-800-token relative overflow-hidden">
+		<div class="h-full rounded-3xl p-3 bg-surface-100-900 relative overflow-hidden">
 		  
 			{#if editDescription}
 			  <!-- TipTap editor with scrolling -->
@@ -260,7 +260,7 @@
 			{:else}
 				<!-- Edit Button -->
 				<button 
-				class="btn-icon variant-ghost-secondary absolute t-2 r-2 z-1"
+				class="btn-icon preset-tonal-secondary border border-secondary-500 absolute t-2 r-2 z-1"
 				aria-label="Edit"
 				onclick={() => { editDescription = true }}
 				>
