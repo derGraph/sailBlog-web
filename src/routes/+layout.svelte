@@ -23,12 +23,6 @@
 		dark.mode = !dark.mode;
 	}
 
-	function getInitials() {
-		if (user != null && user.firstName && user.lastName) {
-			return user.firstName.charAt(0) + user.lastName.charAt(0);
-		}
-	}
-
 	function getPictureUrl() {
 		return 'https://uapload.wikimedia.org/wikipedia/en/9/9a/Trollface_non-free.png';
 	}
@@ -79,14 +73,16 @@
 								>
 							</div>
 							{#if user.firstName && user.lastName}
-								<a href="/user" class="grow flex flex-auto h-full ml-1"
+								<a href="/user" class="grow flex flex-auto space-x-2 h-auto ml-1 items-center justify-center"
 								aria-label="Get to the Users page!"
 									><Avatar
 										name={user.firstName + " " + user.lastName}
 										src={getProfilePicture(user)}
 										background="bg-primary-500"
-										size="px-2 py-1"
-										fallbackClasses="size-[24px]"
+										size=""
+										imageClasses="size-[36px]"
+										fallbackBase=""
+										fallbackClasses="btn px-2"
 										rounded="rounded-full"
 									/></a
 								>

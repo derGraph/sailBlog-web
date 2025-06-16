@@ -48,7 +48,6 @@
             // Combine all conditions
             return locationMatch && deletionMatch && isMyTrip && userMatch;
         });
-        tableArr = tableArr.concat(tableArr);
         maxTrips = tableArr.length;
         tableArr = tableArr.slice(page*10, (page+1)*10);
     }
@@ -179,20 +178,20 @@
         <spacer class="flex-1"></spacer>
         <button type="button" onclick={()=>{addTrip()}} class="btn btn-md preset-tonal-success border border-success-500"><span class="material-symbols-outlined">add</span>add Trip</button>
     </div>
-    <table class="text-wrap table card bg-surface-200-800 overflow-hidden">
+    <table class="table text-wrap card bg-surface-200-800 overflow-hidden">
 		<thead>
 			<tr>
-                <th class="min-w-16 w-16">active</th>
-				<th>Trip name</th>
-				<th>Start Date</th>
-				<th>End Date</th>
-				<th>Distance</th>
-                <th>Location</th>
-                <th>Skipper</th>
-                <th>Crew</th>
+                <th class="min-w-16 w-16 !font-bold text-surface-950-50">active</th>
+				<th class="!font-bold text-surface-950-50">Trip name</th>
+				<th class="!font-bold text-surface-950-50">Start Date</th>
+				<th class="!font-bold text-surface-950-50">End Date</th>
+				<th class="!font-bold text-surface-950-50">Distance</th>
+                <th class="!font-bold text-surface-950-50">Location</th>
+                <th class="!font-bold text-surface-950-50">Skipper</th>
+                <th class="!font-bold text-surface-950-50">Crew</th>
 			</tr>
 		</thead>
-		<tbody class="bg-surface-900">
+		<tbody class="bg-surface-100-900">
 			{#each tableArr as row}
                 <tr class="group">
                     <td onclick={() => selectActiveTrip(row.id)} class="align-middle!"><button type="button" class="material-symbols-outlined align-middle!">{@html data.user ? parseRadioButton(row.id, data.user) : 'radio_button_unchecked'}</button></td>
