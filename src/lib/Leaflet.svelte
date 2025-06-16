@@ -6,12 +6,9 @@
 	import { onDestroy, onMount, setContext } from 'svelte';
 	import errorStore from './errorStore';
 
-	let checked = $state(false);
+	import {dark} from './darkMode.svelte';
 
-	$effect(() => {
-		const mode = localStorage.getItem('mode') || 'light';
-		checked = mode === 'dark';
-	});
+	let mode = $state(localStorage.getItem('mode') || 'light');
 
 	let map: L.Map | undefined = $state();
 	let mapElement: HTMLDivElement = $state();
@@ -53,7 +50,7 @@
 
 	onMount(() => {
 		const mode = localStorage.getItem('mode') || 'light';
-    	document.documentElement.setAttribute('data-mode', mode);
+    	document.documentElement.setAttribute('class', mode);
 		map = L.map(mapElement);
 
 		var osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -264,7 +261,7 @@
 	{/if}
 </div>
 
-{#if !checked}
+{#if dark.mode}
 	<style lang="">
 		.osm-layer,
 		.leaflet-control-zoom-in,

@@ -5,26 +5,22 @@
 	import { onMount } from 'svelte';
 	import errorStore from '$lib/errorStore';
 	import { getProfilePicture } from '$lib/functions';
+	import {dark} from '$lib/darkMode.svelte';
 
 	let navHeight = 2;
 	let { data, children } = $props();
-	let checked = $state(false);
-
-	$effect(() => {
-		const mode = localStorage.getItem('mode') || 'light';
-		checked = mode === 'dark';
-	});
 
 	onMount(() => {
 		const mode = localStorage.getItem('mode') || 'light';
-		document.documentElement.setAttribute('data-mode', mode);
+		document.documentElement.setAttribute('class', mode);
+		dark.mode = mode === 'dark';
 	});
 
 	function changeDarkMode() {
-		const mode = !checked ? 'dark' : 'light';
-		document.documentElement.setAttribute('data-mode', mode);
+		const mode = dark.mode ? 'light' : 'dark';
+		document.documentElement.setAttribute('class', mode);
 		localStorage.setItem('mode', mode);
-		checked = !checked;
+		dark.mode = !dark.mode;
 	}
 
 	function getInitials() {
@@ -72,7 +68,7 @@
 								style="margin:0;"
 							>
 								<button onclick={changeDarkMode} style="s"
-									>{checked ? 'dark_mode' : 'light_mode'}</button
+									>{dark.mode ? 'dark_mode' : 'light_mode'}</button
 								>
 								<span
 									class="divider-vertical h-8"
@@ -83,13 +79,14 @@
 								>
 							</div>
 							{#if user.firstName && user.lastName}
-								<a href="/user" class="grow flex flex-auto btn-sm"
+								<a href="/user" class="grow flex flex-auto h-full ml-1"
 								aria-label="Get to the Users page!"
 									><Avatar
 										name={user.firstName + " " + user.lastName}
 										src={getProfilePicture(user)}
 										background="bg-primary-500"
-										size="grow flex flex-auto"
+										size="px-2 py-1"
+										fallbackClasses="size-[24px]"
 										rounded="rounded-full"
 									/></a
 								>
