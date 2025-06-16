@@ -206,7 +206,7 @@
 			{/each}
 		</tbody>
 		<tfoot class="rounded overflow-hidden">
-            {#if maxTrips >= 10}
+            {#if maxTrips > 10}
 			<tr class="group rounded">
 				<td  colspan="8">
                     <div class="card preset-tonal-secondary border border-secondary-500 [&>*+*]:border-secondary-500 w-fit">
