@@ -87,7 +87,7 @@
     />
 
     {#if isDropdownOpen && filteredItems.length > 0}
-      <ul class="absolute left-0 w-full mt-1 card rounded-md shadow-lg max-h-40 overflow-y-auto z-10">
+      <ul class="absolute left-0 w-full mt-1.5 card rounded-md bg-surface-300-700/70 max-h-40 overflow-y-auto z-10">
         {#each filteredItems as item, index}
           <!-- svelte-ignore a11y_click_events_have_key_events -->
           <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->

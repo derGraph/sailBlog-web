@@ -211,7 +211,7 @@
 				{#if requestedUserName == user?.username}
 					<!-- Edit Button -->
 					<button 
-					class="btn-icon preset-tonal-secondary border border-secondary-500 absolute t-2 r-2 z-1"
+					class="btn-icon preset-tonal-secondary border border-secondary-500 absolute t-2 r-2 opacity-80"
 					aria-label="Edit"
 					onclick={() => { editDescription = true }}
 					>

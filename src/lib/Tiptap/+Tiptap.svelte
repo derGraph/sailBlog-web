@@ -127,72 +127,72 @@
 		let html = editor?.getHTML();
 		saveEditor(html);
 	}
-	run(() => {
+	$effect(() => {
 		setContent(description);
 	});
+	let buttonClass = "material-symbols-outlined p-1"
 </script>
 
 <div class="items-center h-full flex flex-col">
 	{#if editing && editor}
 		<div>
-			<div class=" preset-tonal-secondary border border-secondary-500 m-1 [&>*+*]:border-secondary-500">
+			<div class="rounded-full preset-tonal-secondary border border-secondary-500 [&>*+*]:border-secondary-500 flex overflow-hidden">
 				<button
 					onclick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
-					class:active={editor.isActive('heading', { level: 2 })}
-					class="pl-1! pr-1! py-1! text-end! material-symbols-outlined"
+					class={buttonClass + ((editor.isActive("heading", {level: 2} )) ? ' !bg-secondary-200-800' : ' aaa')}
 					style="font-size: 1.5rem">title</button
 				>
 				<button
 					onclick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
 					class:active={editor.isActive('heading', { level: 3 })}
-					class="px-1! py-1! material-symbols-outlined"
+					class={buttonClass}
 					style="font-size: 1.25rem">title</button
 				>
 				<button
 					onclick={() => editor?.chain().focus().setParagraph().run()}
 					class:active={editor.isActive('paragraph')}
-					class="px-1! py-1! py-1! material-symbols-outlined"
+					class={buttonClass}
 					style="font-size: 1rem">title</button
 				>
 				<button
 					onclick={() => editor?.chain().focus().toggleBlockquote().run()}
-					class="px-1! py-1! py-1! material-symbols-outlined"
+					class={buttonClass}
 					class:active={editor.isActive('blockquote')}
 					style="font-size: 1.5rem">read_more</button
 				>
 				<button
 					onclick={() => editor?.chain().focus().toggleBulletList().run()}
-					class="px-1! py-1! py-1! material-symbols-outlined"
+					class={buttonClass}
 					class:active={editor.isActive('bulletList')}
 					style="font-size: 1.5rem">format_list_bulleted</button
 				>
 				<button
 					onclick={() => editor?.chain().focus().toggleOrderedList().run()}
-					class="px-1! py-1! py-1! material-symbols-outlined"
+					class={buttonClass}
 					class:active={editor.isActive('orderedList')}
 					style="font-size: 1.5rem">format_list_numbered</button
 				>
 				<button
 					onclick={() => editor?.chain().focus().setTextAlign('left').run()}
-					class="px-1! py-1! py-1! material-symbols-outlined"
+					class={buttonClass}
 					class:active={editor.isActive({ textAlign: 'left' })}
 					style="font-size: 1.5rem">format_align_left</button
 				>
 				<button
 					onclick={() => editor?.chain().focus().setTextAlign('center').run()}
-					class="px-1! py-1! py-1! material-symbols-outlined"
+					class={buttonClass}
 					class:active={editor.isActive({ textAlign: 'center' })}
 					style="font-size: 1.5rem">format_align_center</button
 				>
 				<button
 					onclick={() => editor?.chain().focus().setTextAlign('right').run()}
-					class="px-1! py-1! py-1! material-symbols-outlined"
+					class={buttonClass}
 					class:active={editor.isActive({ textAlign: 'right' })}
 					style="font-size: 1.5rem">format_align_right</button
 				>
 				<button
 					onclick={() => isOpen=true}
-					class="pl-1! pr-2! py-1! material-symbols-outlined"
+					class={buttonClass}
 					style="font-size: 1.5rem">add_photo_alternate</button
 				>
 			</div>
