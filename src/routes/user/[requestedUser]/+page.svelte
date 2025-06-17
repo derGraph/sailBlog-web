@@ -135,18 +135,17 @@
 					<Avatar
 						name={requestedUser.firstName + " " + requestedUser.lastName}
 						src={getProfilePicture(requestedUser)}
-						size="mt-3 shrink-0 size-60"
+						size="mt-3 shrink-0 size-60 group hover:opacity-50"
 						background="bg-primary-500"
 						rounded="rounded-full"
 					/>
 				</button>
 				{:else}
 					<Avatar
-						initials={getInitials(requestedUser)}
+						name={requestedUser.firstName + " " + requestedUser.lastName}
 						src={getProfilePicture(requestedUser)}
-						class="mt-3 shrink-0"
+						size="mt-3 shrink-0 size-60"
 						background="bg-primary-500"
-						width="w-40"
 						rounded="rounded-full"
 					/>
 				{/if}

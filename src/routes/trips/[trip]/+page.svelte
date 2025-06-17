@@ -80,12 +80,6 @@
 		}
 		return isContained;
 	}
-	
-	function getInitials(user:User) {
-		if (user != null && user.firstName && user.lastName) {
-			return user.firstName.charAt(0) + user.lastName.charAt(0);
-		}
-	}
 
 </script>
 <div class="felx-1 h-full flex felx-col md:container md:mx-auto p-3 rounded table-container">
@@ -109,14 +103,12 @@
 			<div class="rounded-3xl bg-surface-100-900 p-1 content-center mb-2 flex flex-wrap justify-center items-center space-x-2">
 				<div class="flex items-center">
 					<h3 class="h5 align-middle mr-2">Skipper:</h3>
-					<a href="/user/{requestedTripData.skipper?.username}" class="btn btn-sm preset-tonal-secondary border border-secondary-500 mr-1 pl-2 flex items-center">
-						<Avatar initials={getInitials(requestedTripData.skipper)}
+					<a href="/user/{requestedTripData.skipper?.username}" class="btn btn-sm preset-tonal-secondary border border-secondary-500 mr-1 pl-1 flex items-center text-sm">
+						<Avatar name={requestedTripData.skipper?.firstName + " " + requestedTripData.skipper?.lastName}
 								src={getProfilePicture(requestedTripData.skipper)}
 								background="bg-primary-500"
-								width="w-5"
-								link
+								classes="!ml-0 !size-6"
 								rounded="rounded-full"
-								class="mr-1"
 						/>
 						{requestedTripData.skipper?.username}
 					</a>
@@ -127,13 +119,11 @@
 					{#each requestedTripData?.crew as member, i}
 						{#if member.username != requestedTripData?.skipper?.username}
 							<a href="/user/{member.username}" class="btn btn-sm preset-tonal-secondary border border-secondary-500 mr-1 pl-2 flex items-center">
-								<Avatar initials={getInitials(member)}
+								<Avatar name={member.firstName + " " + member.lastName}
 										src={getProfilePicture(member)}
 										background="bg-primary-500"
-										width="w-5"
-										link
+										classes="!ml-0 !size-6"
 										rounded="rounded-full"
-										class="mr-1"
 								/>
 								{member.username}
 							</a>

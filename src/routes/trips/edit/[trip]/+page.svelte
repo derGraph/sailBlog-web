@@ -208,16 +208,14 @@
 		<div class="rounded-3xl bg-surface-100-900 p-1 content-center mb-2 flex flex-wrap justify-center items-center space-x-2">
 			<div class="flex flex-wrap items-center">
 				<h3 class="h5 align-middle mr-2">Skipper:</h3>
-				<button onclick={()=>{showSkipperSearch = true}} class="btn btn-sm preset-tonal-secondary border border-secondary-500 mr-1 pl-2 group hover:preset-filled-warning-500">
-					<Avatar initials={getInitials(requestedTripData.skipper)}
-							src={getProfilePicture(requestedTripData.skipper)}
+				<button onclick={()=>{showSkipperSearch = true}} class="btn btn-sm preset-tonal-secondary border border-secondary-500 mr-1 pl-1 group hover:preset-filled-warning-500">
+					<Avatar name={requestedTripData.skipper?.firstName + " " + requestedTripData.skipper?.lastName}
+							src={getProfilePicture(requestedTripData?.skipper)}
 							background="bg-primary-500"
-							width="w-5"
-							link
+							classes="!size-6 group-hover:hidden"
 							rounded="rounded-full"
-							class="group-hover:hidden mr-1"
 					/>
-					<span class="ml-0! mr-1! h-5 w-5 text-base! material-symbols-outlined hidden! group-hover:block!">autorenew</span>
+					<span class="h-6 !w-6 !text-md material-symbols-outlined hidden! group-hover:block!">autorenew</span>
 					{requestedTripData.skipper?.username}
 				</button>
 				<SearchBar bind:displayed={showSkipperSearch} onSelected={changeSkipper} getList={search}/>
@@ -226,22 +224,19 @@
 			<div class="flex flex-wrap items-center">
 				<h3 class="h5 align-middle mr-2">Crew:</h3>
 				{#each requestedTripData?.crew as member, i}
-					<button onclick={()=>{deleteUser(member.username)}} class="btn btn-sm preset-tonal-secondary border border-secondary-500 mr-1 pl-2 group hover:preset-filled-error-500">
-						<Avatar initials={getInitials(member)}
+					<button onclick={()=>{deleteUser(member.username)}} class="btn btn-sm preset-tonal-secondary border border-secondary-500 mr-1 pl-1 group hover:preset-filled-error-500 text-sm">
+						<Avatar name={member.firstName + " " + member.lastName}
 								src={getProfilePicture(member)}
 								background="bg-primary-500"
-								width="w-5"
-								link
+								classes="!ml-0 !size-6 group-hover:hidden"
 								rounded="rounded-full"
-								class="group-hover:hidden mr-1"
-								/>
-						<span class="ml-0! mr-1! h-5 w-5 text-base! material-symbols-outlined hidden! group-hover:block!">close</span>
-
+						/>
+						<span class="h-6 !w-6 !text-md material-symbols-outlined hidden! group-hover:block!">close</span>
 						{member.username}
 					</button>
 				{/each}
-				<button onclick={()=>{showCrewSearch = true}} class="btn btn-sm preset-tonal-secondary border border-secondary-500 mr-1 p-1.5 group hover:preset-filled-primary-500 content-center">
-					<Avatar width="w-5" rounded="rounded-full" background="color-secondary-500">
+				<button onclick={()=>{showCrewSearch = true}} class="btn btn-sm !p-1 preset-tonal-secondary border border-secondary-500 mr-1 group hover:preset-filled-primary-500 content-center">
+					<Avatar name="+" classes="!size-6" rounded="rounded-full" background="color-secondary-500">
 						<span class="material-symbols-outlined">add</span>
 					</Avatar>
 				</button>
