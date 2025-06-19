@@ -8,14 +8,14 @@ module.exports = {
             },
             exec_mode: "cluster",
             instances: 4
-        }/*,
+        },
         {
             name: "simplifier",
             script: "/app/workers/workers/index.js",
             env_production: {
                 NODE_ENV: "production"
             }
-        }*/
+        }
     ]
 };
   
