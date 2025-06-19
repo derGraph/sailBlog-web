@@ -11,7 +11,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		return resolve(event);
 	}
 
-	const {session, user} = await auth.validateSession(sessionId);
+	const {session, user, role} = await auth.validateSession(sessionId);
 
 	if(session != null && user != null){
 		try{
@@ -52,5 +52,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	event.locals.user = user;
 	event.locals.session = session;
+	event.locals.role = role;
 	return resolve(event);
 }

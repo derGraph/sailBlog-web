@@ -7,11 +7,11 @@ export const load = async ({ locals, cookies }) => {
 		redirect(302, '/');
 	}
 	await auth.invalidateSession(locals.session.id);
-	let { session, user } = await auth.validateSession(locals.session.id);
+	let { session, user, role} = await auth.validateSession(locals.session.id);
 
 	cookies.set("session_token", "", { path: '/' });
 
-	if (session == null && user == null) {
+	if (session == null && user == null && role == null) {
 		return { confirmed: true };
 	} else {
 		return { confirmed: false };

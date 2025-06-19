@@ -37,6 +37,9 @@ export async function POST(event: {
 		let activeUser = await prisma.user.findFirstOrThrow({
 			where: {
 				username: username
+			},
+			include: {
+				role: true
 			}
 		});
 
@@ -88,10 +91,15 @@ export async function POST(event: {
 		}
 
 		try {
-			await prisma.datapoint.createMany({ data: datapoints });
 			if(activeUser.activeTripId == null){
 				error(400, { message: 'User has no active trip, select one or create trip!' });
 			}
+			
+			if(!activeUser.role.canAddDatapoint) {
+				error(401, { message: 'User not allowed to add Datapoint!' });
+			}
+
+			await prisma.datapoint.createMany({ data: datapoints });
 			await prisma.trip.update({
 				where: {
 					id: activeUser.activeTripId
@@ -290,12 +298,6 @@ function compareObjects(
 }
 
 export async function GET(event) {
-	locals: {
-		user: {
-			username: String;
-		}
-	}
-
 	let requestedTrip = event.url.searchParams.get('tripId');
 	let unparsedStart = event.url.searchParams.get('start');
 	let unparsedEnd = event.url.searchParams.get('end');
@@ -353,28 +355,37 @@ export async function GET(event) {
 
 	try {
 		if (event.locals.user?.username) {
-			let tripData = await prisma.trip.findFirstOrThrow({
-				where: {
-					OR: [
-						{
-							id: requestedTrip,
-							visibility: 1
-						},
-						{
-							id: requestedTrip,
-							visibility: 2
-						},
-						{
-							id: requestedTrip,
-							crew: {
-								some: {
-									username: event.locals.user?.username
+			if(event.locals.role.canViewAllTrips) {
+				let tripData = await prisma.trip.findFirstOrThrow({
+					where: {
+						id: requestedTrip
+					}
+				});
+			} else {
+				let tripData = await prisma.trip.findFirstOrThrow({
+					where: {
+						OR: [
+							{
+								id: requestedTrip,
+								visibility: 1
+							},
+							{
+								id: requestedTrip,
+								visibility: 2
+							},
+							{
+								id: requestedTrip,
+								crew: {
+									some: {
+										username: event.locals.user?.username
+									}
 								}
 							}
-						}
-					]
-				}
-			});
+						]
+					}
+				});
+			}
+			
 		} else {
 			let tripData = await prisma.trip.findFirstOrThrow({
 				where: {

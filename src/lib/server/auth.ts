@@ -1,9 +1,9 @@
-import type { Session, User } from "@prisma/client";
+import type { Role, Session, User } from "@prisma/client";
 import { prisma } from "./prisma";
 
 class Authenticator {
 	
-	async validateSession(sessionId: string): Promise<{session:Session|null, user:User|null}> {
+	async validateSession(sessionId: string): Promise<{session:Session|null, user:User|null, role:Role|null}> {
 		const id = sessionId.split(".")[0];
 		const secret = sessionId.split(".")[1];
 
@@ -12,21 +12,25 @@ class Authenticator {
 				id: id
 			},
 			include: {
-				user: true
+				user: {
+					include: {
+						role: true
+					}
+				}
 			}
 		});
 
 		if(session == undefined){
-			return {session:null, user:null};
+			return {session:null, user:null, role:null};
 		}
 
 		const hashedSecret = await hashSecret(secret);
 
 		if(!constantTimeEqual(hashedSecret, session?.secret)){
-			return {session:null, user:null};
+			return {session:null, user:null, role:null};
 		}
 
-		return {session, user:session.user};
+		return {session, user:session.user, role:session.user.role};
 	}
 
 	async createSession(username: string): Promise<{id:string, secret:string}> {

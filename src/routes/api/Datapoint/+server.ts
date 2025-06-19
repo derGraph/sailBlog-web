@@ -132,13 +132,19 @@ export async function POST(event) {
 		let activeUser = await prisma.user.findFirstOrThrow({
 			where: {
 				username: username
+			},
+			include: {
+				role: true
 			}
 		});
 
 		if(activeUser.activeTripId == null){
 			error(400, { message: 'User has no active trip, select one or create trip!' });
 		}
-
+		
+		if(!activeUser.role.canAddDatapoint) {
+			error(401, { message: 'User not allowed to add Datapoint!' });
+		}
 
 		await prisma.datapoint.create({
 			data: {

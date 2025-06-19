@@ -51,6 +51,25 @@ model Session {
 model Role {
   id                String    @id
   users             User[]
+  // TRIPS
+  canViewAllTrips   Boolean   @default(false)
+  canEditOwnTrips   Boolean   @default(true)
+  canEditAllTrips   Boolean   @default(false)
+  canDeleteOwnTrips Boolean   @default(true)
+  canDeleteCrewedTrips  Boolean @default(true)
+  canDeleteAllTrips Boolean   @default(false)
+
+  // USER
+  canEditOwnUser    Boolean   @default(true)
+  canEditAllUser    Boolean   @default(false)
+  canViewAllUserdata  Boolean @default(false)
+
+  //DATAPOINT
+  canAddDatapoint   Boolean   @default(true)
+
+  //MEDIA
+  canSeeAllMedia    Boolean   @default(false)
+  canAddMedia       Boolean   @default(true)
 }
 
 model Key {
