@@ -51,6 +51,14 @@ model Session {
 model Role {
   id                String    @id
   users             User[]
+
+  //DATAPOINT
+  canAddDatapoint   Boolean   @default(true)
+
+  //MEDIA
+  canSeeAllMedia    Boolean   @default(false)
+  canAddMedia       Boolean   @default(true)
+  
   // TRIPS
   canViewAllTrips   Boolean   @default(false)
   canEditOwnTrips   Boolean   @default(true)
@@ -64,12 +72,6 @@ model Role {
   canEditAllUser    Boolean   @default(false)
   canViewAllUserdata  Boolean @default(false)
 
-  //DATAPOINT
-  canAddDatapoint   Boolean   @default(true)
-
-  //MEDIA
-  canSeeAllMedia    Boolean   @default(false)
-  canAddMedia       Boolean   @default(true)
 }
 
 model Key {
