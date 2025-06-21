@@ -31,7 +31,7 @@ export async function GET(event) {
 	}
 
 	try {
-		if (event.locals.user?.username == requestedUsername) {
+		if (event.locals.user?.username == requestedUsername || event.locals.role?.canViewAllUserdata) {
 			let userdata = await prisma.user.findFirstOrThrow({
 				where: {
 					username: event.locals.user?.username
@@ -148,9 +148,13 @@ export async function PUT(event) {
 		activeTripId = event.url.searchParams.get('activeTrip');
 		profilePictureId = event.url.searchParams.get('picture');
 
+		if(!event.locals.role?.canEditOwnUser) {
+			return error(401, 'You are not allowed to change your own userdata!');
+		}
+
 		if(usernameToChange != null){
-			if(usernameToChange != username){
-				return error(400, 'Only changing your own userdata is allowed!');
+			if(usernameToChange != username && !event.locals.role?.canEditAllUser){
+				return error(401, 'Only changing your own userdata is allowed!');
 			}
 		}
 
