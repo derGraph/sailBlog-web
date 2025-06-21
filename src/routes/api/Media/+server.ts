@@ -47,6 +47,13 @@ export async function POST(event) {
 			message: 'Log in first!'
 		});
 	}
+
+	if (!event.locals.role?.canAddMedia) {
+		return error(401, {
+			message: 'You are not allowed to upload Media!'
+		});
+	}
+
 	let media:Media = {
 		id: '',
 		visibility: 0,
@@ -120,6 +127,13 @@ export async function GET(event) {
 			let results = <Media[]>(<unknown>await prisma.media.findMany({
 				where: {
 					username: event.locals.user?.username
+				}
+			}));
+			return new Response(JSON.stringify(results));
+		} else if (event.locals.role?.canSeeAllMedia) {
+			let results = <Media[]>(<unknown>await prisma.media.findMany({
+				where: {
+					username: requestedUsername
 				}
 			}));
 			return new Response(JSON.stringify(results));

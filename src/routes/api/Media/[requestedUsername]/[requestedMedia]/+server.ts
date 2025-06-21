@@ -31,6 +31,13 @@ export async function GET(event) {
 					id: requestedName
 				}
 			});
+		} else if (event.locals.role?.canSeeAllMedia) {
+			await prisma.media.findFirstOrThrow({
+				where: {
+					username: requestedUsername,
+					id: requestedName
+				}
+			});
 		} else if (event.locals.user?.username) {
 			await prisma.media.findFirstOrThrow({
 				where: {
@@ -58,7 +65,7 @@ export async function GET(event) {
 	} catch (error_message) {
 		if (error_message instanceof Error) {
 			error(404, {
-				message: error_message.message
+				message: 'Not Found!'
 			});
 		} else {
 			error(500, {

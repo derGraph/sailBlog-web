@@ -61,6 +61,8 @@ model Role {
   
   // TRIPS
   canViewAllTrips   Boolean   @default(false)
+  canCreateOwnTrips Boolean   @default(true)
+  canCreateAllTrips Boolean   @default(false)
   canEditOwnTrips   Boolean   @default(true)
   canEditAllTrips   Boolean   @default(false)
   canDeleteOwnTrips Boolean   @default(true)
