@@ -100,36 +100,10 @@ export const actions: Actions = {
 								}
 							]
 						}
-					},
-					activeTrip: {
-						create: {
-							name: 'newTrip'
-						}
 					}
 				}
 			});
-			await prisma.user.update({
-				where: {
-					username: username
-				},
-				data: {
-					crewedTrips: {
-						connect: {
-							id: (await prisma.user.findFirstOrThrow({ where: { username: username } }))
-								.activeTripId!
-						}
-					}
-				}
-			});
-			await prisma.trip.update({
-				where: {
-					id: (await prisma.user.findFirstOrThrow({ where: { username: username } }))
-					.activeTripId!
-				},
-				data : {
-					skipperName: username
-				}
-			})
+			
 		} catch (error) {
 			if (error instanceof Error) {
 				console.log(error);

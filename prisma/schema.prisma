@@ -13,7 +13,7 @@ datasource db {
 
 model User {
   username          String    @id @unique
-  email             String    @unique
+  email             String?
   firstName         String?
   lastName          String?
   description       String?   @db.Text
@@ -70,10 +70,15 @@ model Role {
   canDeleteAllTrips Boolean   @default(false)
 
   // USER
+  canCreateUser     Boolean   @default(false)
   canEditOwnUser    Boolean   @default(true)
   canEditAllUser    Boolean   @default(false)
   canViewAllUserdata  Boolean @default(false)
+  needsPassword     Boolean   @default(true)
+  canUseMagicLink   Boolean   @default(false)
 
+  // ROLES
+  canViewRoles      Boolean   @default(false)
 }
 
 model Key {

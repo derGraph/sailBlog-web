@@ -79,9 +79,8 @@
 										name={user.firstName + " " + user.lastName}
 										src={getProfilePicture(user)}
 										background="bg-primary-500"
-										size=""
-										imageClasses="size-[36px]"
-										fallbackBase=""
+										size="!size-[32px]"
+										imageClasses="!size-[32px]"
 										fallbackClasses="btn px-2"
 										rounded="rounded-full"
 									/></a
