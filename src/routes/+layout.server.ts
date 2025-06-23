@@ -5,10 +5,14 @@ export async function load({ locals }) {
 		let user = await prisma.user.findFirst({
 			where: {
 				username: locals.user.username
+			},
+			include: {
+				role: true
 			}
 		});
 		return {
 			user: user,
+			role: user?.role,
 			session: locals.session
 		};
 	} else {

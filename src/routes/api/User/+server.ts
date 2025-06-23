@@ -192,11 +192,18 @@ export async function PUT(event) {
 				await prisma.trip.findFirstOrThrow({
 					where: {
 						id: activeTripId,
-						crew: {
-							some: {
-								username: usernameToChange
+						OR: [{
+								crew: {
+								some: {
+									username: usernameToChange
+								}
 							}
-						}
+						},
+							{
+								skipperName: usernameToChange
+							}
+						]
+						
 					}
 				});
 			} catch (error_message) {
@@ -343,7 +350,7 @@ export async function POST(event) {
 		}
 
 		let passwordHash = null;
-		if (parsedRole.needsPassword) {
+		if (password != null && password != "") {
 			if (typeof password !== 'string' || password.length < 8 || password.length > 255) {
 				error(400, 'Password must be between 8 and 255 characters Password!');
 			} else if (!passwordRegex.test(password)) {
@@ -377,6 +384,24 @@ export async function POST(event) {
 			error(400, { message: 'Invalid Date of Birth!' });
 		}
 
+		let secretString = null;
+		let magicId = null;
+
+		if(magicLink != null && magicLink != "") {
+			magicId = magicLink.split(".")[0];
+			const secret = magicLink.split(".")[1];
+			const secretBytes = new TextEncoder().encode(secret);
+			const secretHashBuffer = await crypto.subtle.digest("SHA-256", secretBytes);
+			const hashedSecret = new Uint8Array(secretHashBuffer);
+			secretString = Array.from(hashedSecret!).map(byte => byte.toString(16).padStart(2, '0')).join('');
+		} else {
+			magicLink = null;
+		}
+
+		if(!(passwordHash != null || magicLink != null)) {
+			error(400, { message: 'User has to use magic Link or Password!' });
+		}
+
 		try {
 			await prisma.user.create({
 				data: {
@@ -390,7 +415,7 @@ export async function POST(event) {
 						...(passwordHash && { createMany: {
 							data: [
 								{
-									...(passwordHash && { passwordHash }),
+									passwordHash: passwordHash,
 									type: 'email',
 									primary: true
 								}
@@ -399,7 +424,8 @@ export async function POST(event) {
 						...(magicLink && { createMany: {
 							data: [
 								{
-									...(passwordHash && { passwordHash: magicLink }),
+									id: magicId!,
+									passwordHash: secretString,
 									type: 'magicLink',
 									primary: true
 								}

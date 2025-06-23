@@ -129,9 +129,8 @@
 			<MediaPicker bind:isOpen = {mediaPickerOpen} usernameToFetch = {requestedUserName} onFinished={(owner:String, imageId:String)=>{changePicture(owner, imageId)}}/>
 		{/if}
 		<div class="flex flex-col mb-2 p-3 w-min bg-surface-100-900 rounded-3xl items-center">
-			{#if requestedUser.firstName && requestedUser.lastName}
-				{#if requestedUserName == user?.username}
-				<button onclick={()=>{mediaPickerOpen = true}}>
+				{#if (data.role?.canEditOwnUser && requestedUserName == data.user?.username) || data.role?.canEditAllUser}
+					<button onclick={()=>{mediaPickerOpen = true}}>
 					<Avatar
 						name={requestedUser.firstName + " " + requestedUser.lastName}
 						src={getProfilePicture(requestedUser)}
@@ -139,7 +138,8 @@
 						background="bg-primary-500"
 						rounded="rounded-full"
 					/>
-				</button>
+					</button>
+
 				{:else}
 					<Avatar
 						name={requestedUser.firstName + " " + requestedUser.lastName}
@@ -149,9 +149,6 @@
 						rounded="rounded-full"
 					/>
 				{/if}
-			{:else}
-				<div class="placeholder-circle w-40 mt-3 shrink-0"></div>
-			{/if}
 			{#if requestedUser.firstName && requestedUser.lastName}
 			<div class="flex flex-row mt-3">
 				{#if editName == false}

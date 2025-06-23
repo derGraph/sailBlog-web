@@ -86,7 +86,7 @@
 									/></a
 								>
 							{:else}
-								<a href="/user" aria-label="profile Picture" ><div class="placeholder-circle w-11" ></div></a>
+								<a href="/user" aria-label="profile Picture" ><div class="placeholder-circle !size-[32px]" ></div></a>
 							{/if}
 						{/if}
 					

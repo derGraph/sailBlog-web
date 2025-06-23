@@ -5,6 +5,9 @@
 
     let roles: Role[] = $state([]);
     let roleHasPassword = $state(true);
+    let roleHasMagicLink = $state(false);
+
+    let magicLink: null|string = null;
 
     onMount(async () => {
         let result = await fetch("/api/Roles", {method:"GET"});
@@ -21,6 +24,11 @@
         const selectedRoleId = selectElement.value;
         // Check if the selected role requires a password
         roleHasPassword = roles.some(role => role.id === selectedRoleId && role.needsPassword);
+        roleHasMagicLink = roles.some(role => role.id === selectedRoleId && role.canUseMagicLink);
+
+        if (!roleHasMagicLink) {
+            magicLink = null;
+        }
     }
 
     async function createUser(event: Event) {
@@ -53,19 +61,44 @@
             url.searchParams.append('password', password.toString());
         }
 
+        if (magicLink != null) {
+            url.searchParams.append('magicLink', magicLink);
+        }
+
         url.searchParams.append('role', (event.target as HTMLFormElement).querySelector('select')?.value || '');
 
         let result = await fetch(url, {method:"POST"});
         if (result.ok) {
-            console.log(result);
+            magicLink = null;
+            (document.getElementById("createUserForm") as HTMLFormElement)?.reset();
+            alert("User created!");
         } else {
             $errorStore = result;
         }
     }
+
+
+	function generateMagicLink(event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement; }) {
+        magicLink = generateSecureRandomString()+"."+generateSecureRandomString();        
+        navigator.clipboard.writeText(window.location.protocol+"//"+window.location.host+"/sign_in?magicLink="+encodeURIComponent(magicLink));
+        alert("Link copied to Clipboard!\nWarning: This cannot be regenerated!");
+	}
+
+    function generateSecureRandomString(): string {
+        const alphabet = "abcdefghijklmnpqrstuvwxyz23456789";
+        const bytes = new Uint8Array(24);
+        crypto.getRandomValues(bytes);
+        let returnString = "";
+        for (let i = 0; i < bytes.length; i++) {
+            // >> 3 s"removes" the right-most 3 bits of the byte
+            returnString += alphabet[bytes[i] >> 3];
+        }
+        return returnString;
+    }
 </script>
 
 <div class="md:container md:mx-auto py-3 rounded-3xl my-3 bg-surface-100-900">
-	<form class="md:mx-auto max-w-max space-y-3.5" action="javascript:void(0);" onsubmit={createUser}>
+	<form class="md:mx-auto max-w-max space-y-3.5" action="javascript:void(0);" onsubmit={createUser} id="createUserForm">
 		<h3 class="h3 md:mx-auto">Sign up!</h3>
 		<label class="label">
 			<span>Username</span>
@@ -91,14 +124,25 @@
                 {/each}
             </select>
         </label>
+
         {#if roleHasPassword}
             <label class="label">
                 <span>Password</span>
                 <input name="password" class="input" type="password" placeholder="password" />
             </label>
         {/if}
+
+        {#if roleHasMagicLink}
+            <label class="label">
+                <span>Magic Link</span>
+                <button type="button" class="btn preset-filled" onclick={generateMagicLink}>
+                    <span>Generate</span>
+                </button>
+            </label>
+        {/if}
 		<button type="submit" class="btn preset-filled">
 			<span>Submit</span>
 		</button>
+
 	</form>
 </div>
