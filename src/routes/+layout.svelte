@@ -91,11 +91,9 @@
 						{/if}
 					
 					{/snippet}
-					{#if user}
-						{#if user.firstName && user.lastName}
-							<button type="button" class="text-xl" onclick={() => {window.location.href = "/trips"}}>Trips</button>
-							<span class="divider-vertical h-3"></span>
-						{/if}
+					{#if user?.username}
+						<button type="button" class="text-xl" onclick={() => {window.location.href = "/trips"}}>Trips</button>
+						<span class="divider-vertical h-3"></span>
 					{/if}
 			</AppBar>
 		</div>

@@ -36,6 +36,9 @@ export const load: PageServerLoad = async (event) => {
 			}
 		}
 		if (constantTimeEqual(hexStringToUint8Array(key!.passwordHash!), hashedSecret)) {
+			if (event.locals.session) {
+				await auth.invalidateSession(event.locals.session.id);
+			}
 			await loginUser(event, key!.userId);
 			return redirect(302, '/');
 		} else {
