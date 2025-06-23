@@ -302,6 +302,10 @@ export async function POST(event) {
 
 		if(usernameToCreate == null || usernameToCreate == "") {
 			return error(400, 'No username given! Please choose a username for the user!');
+		} else {
+			if(!usernameRegex.test(usernameToCreate)){
+				return error(400, 'Invalid username!');
+			}
 		}
 
 		if (
@@ -365,7 +369,6 @@ export async function POST(event) {
 				parallelism: 1
 			});
 		}
-		
 		if (description != null) {
 			try {
 				description = DOMPurify.sanitize(description);
@@ -403,6 +406,24 @@ export async function POST(event) {
 		}
 
 		try {
+			let keyData = [];
+			if (passwordHash) {
+				keyData.push({
+					passwordHash: passwordHash,
+					type: 'email',
+					primary: true
+				})
+			}
+
+			if (magicLink) {
+				keyData.push({
+					id: magicId!,
+					passwordHash: secretString,
+					type: 'magicLink',
+					primary: passwordHash ? false : true
+				});
+			}
+			
 			await prisma.user.create({
 				data: {
 					username: usernameToCreate,
@@ -412,25 +433,9 @@ export async function POST(event) {
 					...(lastName && { lastName }),
 					...(role && { roleId: parsedRole.id}),
 					key: {
-						...(passwordHash && { createMany: {
-							data: [
-								{
-									passwordHash: passwordHash,
-									type: 'email',
-									primary: true
-								}
-							]
-						}}),
-						...(magicLink && { createMany: {
-							data: [
-								{
-									id: magicId!,
-									passwordHash: secretString,
-									type: 'magicLink',
-									primary: true
-								}
-							]
-						}}),
+						createMany: {
+							data: keyData
+						}
 					}
 				}
 			});
