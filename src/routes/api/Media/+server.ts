@@ -3,6 +3,7 @@ import { error, fail } from '@sveltejs/kit';
 import { existsSync, mkdirSync } from 'fs';
 import path from 'path';
 import sharp from 'sharp';
+import exif from 'exif-reader';
 
 interface Media {
 	id: string;
@@ -65,6 +66,49 @@ export async function POST(event) {
 		const buffer = Buffer.from(arrayBuffer);
 		let inputImage = await sharp(buffer);
 		let metadata = await inputImage.metadata();
+
+		let exifData: null|Object = null;
+
+		if (metadata.exif) {
+			let exifReader = exif(metadata.exif);
+			let lat = null;
+			let long = null;
+			let timestamp = null;
+
+			if (exifReader.GPSInfo) {
+				lat = exifReader.GPSInfo.GPSLatitude![0] + exifReader.GPSInfo.GPSLatitude![1]/60 + exifReader.GPSInfo.GPSLatitude![2]/3600;
+				if(exifReader.GPSInfo.GPSLatitudeRef === "S") {
+					lat = -lat;
+				}
+
+				long = exifReader.GPSInfo.GPSLongitude![0] + exifReader.GPSInfo.GPSLongitude![1]/60 + exifReader.GPSInfo.GPSLongitude![2]/3600;
+				if(exifReader.GPSInfo.GPSLongitudeRef === "W") {
+					long = -long;
+				}
+
+				if(exifReader.GPSInfo.GPSDateStamp) {
+					timestamp = new Date(Date.parse(exifReader.GPSInfo.GPSDateStamp.replaceAll(":", "-") + "T" +
+											String(exifReader.GPSInfo.GPSTimeStamp![0]).padStart(2, '0') + ":" +
+											String(exifReader.GPSInfo.GPSTimeStamp![1]).padStart(2, '0') + ":" +
+											String(exifReader.GPSInfo.GPSTimeStamp![2]).padStart(2, '0') + "Z"));
+				}
+			}
+
+			//if (exifReader.Image.)
+
+			exifData = {
+				...(exifReader.GPSInfo && {
+					lat: lat,
+					long: long,
+					...(exifReader.GPSInfo.GPSTimeStamp && {
+						created: timestamp
+					})
+				}),
+			};
+
+			console.log(exifData)
+		}
+
 		if (metadata.format == 'svg') {
 			if (metadata.width == undefined) metadata.width = 0;
 			if (metadata.width <= 2000) {
@@ -75,7 +119,9 @@ export async function POST(event) {
 			data: {
 				username: event.locals.user?.username,
 				visibility: visibility,
-				...(alt && {alt}),  
+				...(alt && {alt}),
+				...(exifData && exifData),
+
 			}
 		});
 

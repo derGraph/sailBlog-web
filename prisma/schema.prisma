@@ -108,6 +108,7 @@ model Trip {
   skipperName       String?
   crew              User[]    @relation("crew")
   location          Location[]
+  media             Media[]   @relation("gallery")
   visibility        Int       @default(1) // 0: private
                                           // 1: logged in
                                           // 2: public 
@@ -150,5 +151,10 @@ model Media {
   user              User      @relation("uploader", fields: [username], references: [username])
   profilePicture    User?     @relation("profilePicture")
   username          String
+  trip              Trip?     @relation("gallery", fields: [tripId], references: [id])
+  tripId            String?
+  created           DateTime?
+  lat               Decimal?
+  long              Decimal?
   alt               String?
 }

@@ -101,6 +101,7 @@ export async function GET(event) {
 			});
 		} else {
 			if (imageError instanceof Object) {
+				console.log(imageError)
 				error(400, {
 					message: imageError.toString()
 				});
