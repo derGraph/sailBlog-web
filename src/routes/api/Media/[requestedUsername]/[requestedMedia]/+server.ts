@@ -89,23 +89,23 @@ export async function GET(event) {
 			buffer = await readFile(filePath);
 		}
 		if (buffer == null) {
-			error(503, {
-					message: "Wait for this image!"
-				});
+			error(503);
 		}
 		return new Response(buffer, {
 			headers: {
 				'Content-Type': 'image/' + requestedFiletype, // or other appropriate content type
 			}
 		});
-	} catch (imageError) {
+	} catch (imageError: any) {
+		if (imageError.status == 503) {
+			error(503, "Wait a little!");
+		}
 		if (imageError == 'Error: Input buffer contains unsupported image format') {
 			error(415, {
 				message: 'Only JPEG, PNG, WebP, GIF, AVIF, TIFF and SVG allowed!'
 			});
 		} else {
 			if (imageError instanceof Object) {
-				console.log(imageError)
 				error(400, {
 					message: imageError.toString()
 				});
