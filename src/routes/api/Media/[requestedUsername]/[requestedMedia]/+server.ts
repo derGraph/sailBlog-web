@@ -88,10 +88,14 @@ export async function GET(event) {
 		} else {
 			buffer = await readFile(filePath);
 		}
+		if (buffer == null) {
+			error(503, {
+					message: "Wait for this image!"
+				});
+		}
 		return new Response(buffer, {
 			headers: {
 				'Content-Type': 'image/' + requestedFiletype, // or other appropriate content type
-				'empty': (filePath == null) ? 'y' : 'n'
 			}
 		});
 	} catch (imageError) {
