@@ -88,7 +88,7 @@ export async function GET(event) {
 		} else {
 			buffer = await readFile(filePath);
 		}
-
+		console.log("ImageBuffer: " + buffer.length)
 		return new Response(buffer, {
 			headers: {
 				'Content-Type': 'image/' + requestedFiletype // or other appropriate content type
