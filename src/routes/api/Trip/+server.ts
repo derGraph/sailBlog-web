@@ -234,7 +234,7 @@ export async function PUT(event) {
     let tripId = null;
     let unparsedVisibility = null;
     let restore = false;
-    let oldData: ({ crew: { username: string; description: string | null; recalculate: boolean; email: string; firstName: string | null; lastName: string | null; profilePictureId: string | null; dateOfBirth: Date | null; roleId: string; activeTripId: string | null; crewedLengthSail: number; crewedLengthMotor: number; skipperedLengthSail: number; skipperedLengthMotor: number; lastPing: Date; }[]; } & { id: string; name: string; description: string | null; startPointId: string | null; endPointId: string | null; last_update: Date; length_sail: Decimal | null; length_motor: Decimal | null; skipperName: string | null; visibility: number; recalculate: boolean; }) | null = null;
+    let oldData: ({ crew: { username: string; description: string | null; recalculate: boolean; email: string | null; firstName: string | null; lastName: string | null; profilePictureId: string | null; dateOfBirth: Date | null; roleId: string; activeTripId: string | null; crewedLengthSail: number; crewedLengthMotor: number; skipperedLengthSail: number; skipperedLengthMotor: number; lastPing: Date; }[]; } & { id: string; name: string; description: string | null; startPointId: string | null; endPointId: string | null; last_update: Date; length_sail: Decimal | null; length_motor: Decimal | null; skipperName: string | null; visibility: number; recalculate: boolean; }) | null = null;
 
     if(event.locals.user?.username){
         let username = event.locals.user?.username;

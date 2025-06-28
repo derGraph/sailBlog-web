@@ -20,6 +20,7 @@ export async function POST(event) {
 	}
 	let unparsedVisibility = event.url.searchParams.get('visibility');
 	let alt = event.url.searchParams.get('alt');
+	let tripId = event.url.searchParams.get('tripId');
 	let visibility = 1;
 
 	if (unparsedVisibility != null) {
@@ -53,6 +54,42 @@ export async function POST(event) {
 		return error(401, {
 			message: 'You are not allowed to upload Media!'
 		});
+	}
+
+	if (tripId != null && tripId != '') {
+		let trip = null;
+		try {
+			if (event.locals.role?.canEditAllTrips) {
+				trip = await prisma.trip.findFirst({
+					where: {
+						id: tripId
+					}
+				});
+			} else if (event.locals.role?.canEditOwnTrips) {
+				trip = await prisma.trip.findFirst({
+					where: {
+						id: tripId,
+						OR: [{
+							crew: {
+								some: {
+									username: event.locals.user.username
+								}
+							}
+						},{
+							skipperName: event.locals.user.username
+						}]
+					}
+				});
+			}
+		} catch (exception: any) {
+			error(500, {message: exception.toString()})
+		}
+		if (trip == undefined) {
+			tripId = null;
+			error(400, {message: "Trip not found or not allowed!"});
+		}
+	} else {
+		tripId = null;
 	}
 
 	let media:Media = {
@@ -94,8 +131,6 @@ export async function POST(event) {
 				}
 			}
 
-			//if (exifReader.Image.)
-
 			exifData = {
 				...(exifReader.GPSInfo && {
 					lat: lat,
@@ -104,9 +139,10 @@ export async function POST(event) {
 						created: timestamp
 					})
 				}),
+				...(exifReader.Photo?.DateTimeOriginal && {
+					created: exifReader.Photo.DateTimeOriginal
+				})
 			};
-
-			console.log(exifData)
 		}
 
 		if (metadata.format == 'svg') {
@@ -115,13 +151,14 @@ export async function POST(event) {
 				inputImage = await inputImage.resize(2000);
 			}
 		}
+
 		media = await prisma.media.create({
 			data: {
 				username: event.locals.user?.username,
 				visibility: visibility,
 				...(alt && {alt}),
 				...(exifData && exifData),
-
+				...(tripId && {tripId: tripId})
 			}
 		});
 
