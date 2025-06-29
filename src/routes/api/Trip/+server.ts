@@ -21,7 +21,19 @@ export async function GET(event) {
             error(400, { message: 'tripId missing!' });
         }else{
             let responseData;
-            if(username != "" && username != null){
+            if(event.locals.role?.canViewAllTrips) {
+                responseData = await prisma.trip.findMany({
+                    where:{
+                        id: tripId
+                    },
+                    include:{
+                        crew: true,
+                        skipper: true,
+                        startPoint: true,
+                        endPoint: true
+                    }
+                });
+            } else if(username != "" && username != null){
                 responseData = await prisma.trip.findMany({
                     where:{
                         id: tripId,
@@ -141,12 +153,20 @@ export async function POST(event) {
                 }
                 parsedCrew = parsedCrew.flat();
             }catch (error_message){
-                if(error_message instanceof PrismaClientKnownRequestError){
-                    return error(403, "Crew: "+error_message.message)
+                if(error_message?.constructor.name == "PrismaClientKnownRequestError"){
+                    return error(400, "Crew: "+error_message?.meta.cause);
                 }else{
                     return error(500, "ERROR")
                 }
             }
+        }
+
+        if(!event.locals.role?.canCreateOwnTrips) {
+            return error(401, "You are not allowed to create Trips!");
+        }
+
+        if(!parsedCrew?.includes(username) && skipper!=username && !event.locals.role?.canCreateAllTrips) {
+            return error(400, "Trip must inlude yourself!");
         }
 
         if(unparsedVisibility != null){
@@ -214,7 +234,7 @@ export async function PUT(event) {
     let tripId = null;
     let unparsedVisibility = null;
     let restore = false;
-    let oldData: ({ crew: { username: string; description: string | null; recalculate: boolean; email: string; firstName: string | null; lastName: string | null; profilePictureId: string | null; dateOfBirth: Date | null; roleId: string; activeTripId: string | null; crewedLengthSail: number; crewedLengthMotor: number; skipperedLengthSail: number; skipperedLengthMotor: number; lastPing: Date; }[]; } & { id: string; name: string; description: string | null; startPointId: string | null; endPointId: string | null; last_update: Date; length_sail: Decimal | null; length_motor: Decimal | null; skipperName: string | null; visibility: number; recalculate: boolean; }) | null = null;
+    let oldData: ({ crew: { username: string; description: string | null; recalculate: boolean; email: string | null; firstName: string | null; lastName: string | null; profilePictureId: string | null; dateOfBirth: Date | null; roleId: string; activeTripId: string | null; crewedLengthSail: number; crewedLengthMotor: number; skipperedLengthSail: number; skipperedLengthMotor: number; lastPing: Date; }[]; } & { id: string; name: string; description: string | null; startPointId: string | null; endPointId: string | null; last_update: Date; length_sail: Decimal | null; length_motor: Decimal | null; skipperName: string | null; visibility: number; recalculate: boolean; }) | null = null;
 
     if(event.locals.user?.username){
         let username = event.locals.user?.username;
@@ -230,7 +250,21 @@ export async function PUT(event) {
 
         if(tripId == null || tripId!.length === 0){
             return error(400, 'tripId is needed!');
-        }else{
+        }else if (event.locals.role?.canEditAllTrips) {
+            try{
+                oldData = await prisma.trip.findFirstOrThrow({
+                    where: {
+                        id: tripId,
+                        ...(restore ? { deleted: true } : { deleted: false })
+                    },
+                    include: {
+                        crew: true
+                    }
+                });
+            }catch (error_message){
+                return error(400, 'Trip not found or not skipper/crew of trip!');
+            }
+        } else if (event.locals.role?.canEditOwnTrips) {
             try{
                 oldData = await prisma.trip.findFirstOrThrow({
                     where: {
@@ -254,6 +288,8 @@ export async function PUT(event) {
             }catch (error_message){
                 return error(400, 'Trip not found or not skipper/crew of trip!');
             }
+        } else {
+            return error(401, 'You are not allowed to edit this trip!');
         }
 
         if (description != null) {
@@ -287,8 +323,8 @@ export async function PUT(event) {
                 }
                 parsedCrew = parsedCrew.flat();
             }catch (error_message){
-                if(error_message instanceof PrismaClientKnownRequestError){
-                    return error(400, "Crew: " + error_message.message)
+                if(error_message?.constructor.name == "PrismaClientKnownRequestError"){
+                    return error(400, "Crew: "+error_message?.meta.cause);
                 }else{
                     return error(500, "ERROR")
                 }
@@ -421,34 +457,71 @@ export async function DELETE(event) {
         tripId = event.url.searchParams.get('tripId');
         if(tripId){
             try{
-                await prisma.trip.update({
-                    where: {
-                        id: tripId,
-                        deleted: false,
-                        OR: [{
+                if(event.locals.role?.canDeleteAllTrips) {
+                    await prisma.trip.update({
+                        where: {
+                            id: tripId,
+                            deleted: false
+                        },
+                        data: {
+                            deleted: true,
+                            name: "deletedTrip "+(new Date(Date.now())).toISOString(),
+                            description: null,
+                            visibility: 0,
+                            recalculate: true,
+                        }
+                    });
+                    return new Response('200');
+                } else if(event.locals.role?.canDeleteOwnedTrips) {
+                    await prisma.trip.update({
+                        where: {
+                            id: tripId,
+                            deleted: false,
                             crew: {
                                 some:{
                                     username: event.locals.user?.username
                                 }
                             }
-                        },{
-                            skipper: {
-                                username: event.locals.user?.username
-                            }
-                        }]
-                    },
-                    data: {
-                        deleted: true,
-                        name: "deletedTrip "+(new Date(Date.now())).toISOString(),
-                        description: null,
-                        visibility: 0,
-                        recalculate: true,
-                    }
-                });
-                return new Response('200');
+                        },
+                        data: {
+                            deleted: true,
+                            name: "deletedTrip "+(new Date(Date.now())).toISOString(),
+                            description: null,
+                            visibility: 0,
+                            recalculate: true,
+                        }
+                    });
+                    return new Response('200');
+                } else if(event.locals.role?.canDeleteCrewedTrips) {
+                    await prisma.trip.update({
+                        where: {
+                            id: tripId,
+                            deleted: false,
+                            OR: [{
+                                crew: {
+                                    some:{
+                                        username: event.locals.user?.username
+                                    }
+                                }
+                            },{
+                                skipper: {
+                                    username: event.locals.user?.username
+                                }
+                            }]
+                        },
+                        data: {
+                            deleted: true,
+                            name: "deletedTrip "+(new Date(Date.now())).toISOString(),
+                            description: null,
+                            visibility: 0,
+                            recalculate: true,
+                        }
+                    });
+                    return new Response('200');
+                }
             }catch(error_message){
-                if(error_message instanceof PrismaClientKnownRequestError){
-                    return error(400, "Update: " + error_message.message)
+                if(error_message?.constructor.name == "PrismaClientKnownRequestError"){
+                    return error(400, "Update: "+error_message?.meta.cause);
                 }else{
                     return error(500, "ERROR")
                 }

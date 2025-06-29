@@ -31,6 +31,13 @@ export async function GET(event) {
 					id: requestedName
 				}
 			});
+		} else if (event.locals.role?.canSeeAllMedia) {
+			await prisma.media.findFirstOrThrow({
+				where: {
+					username: requestedUsername,
+					id: requestedName
+				}
+			});
 		} else if (event.locals.user?.username) {
 			await prisma.media.findFirstOrThrow({
 				where: {
@@ -58,7 +65,7 @@ export async function GET(event) {
 	} catch (error_message) {
 		if (error_message instanceof Error) {
 			error(404, {
-				message: error_message.message
+				message: 'Not Found!'
 			});
 		} else {
 			error(500, {
@@ -81,13 +88,18 @@ export async function GET(event) {
 		} else {
 			buffer = await readFile(filePath);
 		}
-
+		if (buffer == null) {
+			error(503);
+		}
 		return new Response(buffer, {
 			headers: {
-				'Content-Type': 'image/' + requestedFiletype // or other appropriate content type
+				'Content-Type': 'image/' + requestedFiletype, // or other appropriate content type
 			}
 		});
-	} catch (imageError) {
+	} catch (imageError: any) {
+		if (imageError.status == 503) {
+			error(503, "Wait a little!");
+		}
 		if (imageError == 'Error: Input buffer contains unsupported image format') {
 			error(415, {
 				message: 'Only JPEG, PNG, WebP, GIF, AVIF, TIFF and SVG allowed!'

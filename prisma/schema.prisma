@@ -13,7 +13,7 @@ datasource db {
 
 model User {
   username          String    @id @unique
-  email             String    @unique
+  email             String?
   firstName         String?
   lastName          String?
   description       String?   @db.Text
@@ -42,14 +42,43 @@ model Session {
   userId            String
   expiresAt         DateTime
   user              User      @relation(references: [username], fields: [userId], onDelete: Cascade)
+  secret            Bytes     @default("")
   ip                String?
-  session_created   DateTime?
+  session_created   DateTime? @default(now())
   last_use          DateTime?
 }
 
 model Role {
   id                String    @id
   users             User[]
+
+  //DATAPOINT
+  canAddDatapoint   Boolean   @default(true)
+
+  //MEDIA
+  canSeeAllMedia    Boolean   @default(false)
+  canAddMedia       Boolean   @default(true)
+  
+  // TRIPS
+  canViewAllTrips   Boolean   @default(false)
+  canCreateOwnTrips Boolean   @default(true)
+  canCreateAllTrips Boolean   @default(false)
+  canEditOwnTrips   Boolean   @default(true)
+  canEditAllTrips   Boolean   @default(false)
+  canDeleteOwnTrips Boolean   @default(true)
+  canDeleteCrewedTrips  Boolean @default(true)
+  canDeleteAllTrips Boolean   @default(false)
+
+  // USER
+  canCreateUser     Boolean   @default(false)
+  canEditOwnUser    Boolean   @default(true)
+  canEditAllUser    Boolean   @default(false)
+  canViewAllUserdata  Boolean @default(false)
+  needsPassword     Boolean   @default(true)
+  canUseMagicLink   Boolean   @default(false)
+
+  // ROLES
+  canViewRoles      Boolean   @default(false)
 }
 
 model Key {
@@ -79,6 +108,7 @@ model Trip {
   skipperName       String?
   crew              User[]    @relation("crew")
   location          Location[]
+  media             Media[]   @relation("gallery")
   visibility        Int       @default(1) // 0: private
                                           // 1: logged in
                                           // 2: public 
@@ -121,5 +151,10 @@ model Media {
   user              User      @relation("uploader", fields: [username], references: [username])
   profilePicture    User?     @relation("profilePicture")
   username          String
+  trip              Trip?     @relation("gallery", fields: [tripId], references: [id])
+  tripId            String?
+  created           DateTime?
+  lat               Decimal?
+  long              Decimal?
   alt               String?
 }

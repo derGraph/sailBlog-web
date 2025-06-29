@@ -1,0 +1,17 @@
+@import 'tailwindcss';
+
+@import '@skeletonlabs/skeleton';
+@import '@skeletonlabs/skeleton/optional/presets';
+@import "./ocean.css";
+
+@source '../node_modules/@skeletonlabs/skeleton-svelte/dist';
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Add your theme import for your theme: "ocean" here */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+html,
+body {
+	@apply h-full overflow-hidden;
+}

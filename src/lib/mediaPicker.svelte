@@ -85,8 +85,8 @@
     }
 </script>
 {#if mediaVisibilityPopup}
-    <div class="fixed flex h-full inset-0 content-center items-center place-content-center bg-black bg-opacity-80 z-[1002]">
-        <div class="variant-glass-surface rounded-3xl p-4 shadow-lg content-center justify-center w-11/12 md:w-1/3">
+    <div class="fixed flex h-full inset-0 content-center items-center place-content-center bg-black bg-opacity-80 z-1002">
+        <div class="preset-tonal-surface rounded-3xl p-4 shadow-lg content-center justify-center w-11/12 md:w-1/3">
             <label for="options" class="h3">Choose visibility and describe photo</label>
             <select id="options" class="input mt-2 border w-full mb-1">
                 <option value=0 class="h4">only you</option>
@@ -95,12 +95,12 @@
             </select>
             <input id="altText" placeholder="description" class="input mb-1"/>
             <button 
-                class="btn variant-filled"
+                class="btn preset-filled"
                 onclick={uploadImage}>
                 OK
             </button>
             <button 
-                class="btn variant-filled"
+                class="btn preset-filled"
                 onclick={() => {mediaVisibilityPopup=false}}>
                 Cancel
             </button>
@@ -108,16 +108,16 @@
     </div>
 {/if}
 {#if isOpen}
-    <div class="fixed h-full inset-0 content-center bg-black bg-opacity-50 z-[1001]">
+    <div class="fixed h-full inset-0 content-center bg-black bg-opacity-50 z-1001">
         <div class="flex content-center justify-center h-[91.6%] md:h-5/6">
-            <div class="variant-glass-surface rounded-3xl shadow-lg w-11/12 md:w-3/4 lg:w-3/4 p-4 flex flex-col">
+            <div class="preset-tonal-surface rounded-3xl shadow-lg w-11/12 md:w-3/4 lg:w-3/4 p-4 flex flex-col">
                 <div class="text-right">
                     <button onclick={() => (isOpen = false)} class="hover:text-gray-500 material-symbols-outlined">
                         close
                     </button>
                 </div>
 
-                <div class="grid grid-cols-2 lg:grid-cols-3 gap-2 overflow-auto flex-grow">
+                <div class="grid grid-cols-2 lg:grid-cols-3 gap-2 overflow-auto grow">
                             <button
                                 class="border rounded cursor-pointer max-h-72"
                                 onclick={() => document.getElementById("mediaPickerUpload")?.click()}

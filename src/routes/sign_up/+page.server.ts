@@ -1,4 +1,4 @@
-import { lucia } from '$lib/server/auth';
+import { auth } from '$lib/server/auth';
 import { fail, redirect } from '@sveltejs/kit';
 import { hash } from '@node-rs/argon2';
 import { prisma } from '$lib/server/prisma';
@@ -100,36 +100,10 @@ export const actions: Actions = {
 								}
 							]
 						}
-					},
-					activeTrip: {
-						create: {
-							name: 'newTrip'
-						}
 					}
 				}
 			});
-			await prisma.user.update({
-				where: {
-					username: username
-				},
-				data: {
-					crewedTrips: {
-						connect: {
-							id: (await prisma.user.findFirstOrThrow({ where: { username: username } }))
-								.activeTripId!
-						}
-					}
-				}
-			});
-			await prisma.trip.update({
-				where: {
-					id: (await prisma.user.findFirstOrThrow({ where: { username: username } }))
-					.activeTripId!
-				},
-				data : {
-					skipperName: username
-				}
-			})
+			
 		} catch (error) {
 			if (error instanceof Error) {
 				console.log(error);
@@ -158,16 +132,19 @@ export const actions: Actions = {
 			}
 		}
 
-		const session = await lucia.createSession(username, {});
-		const sessionCookie = lucia.createSessionCookie(session.id);
-		event.cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: '.',
-			...sessionCookie.attributes
+		const {id, secret} = await auth.createSession(username);
+		
+		
+		event.cookies.set("session_token", id+"."+secret, {
+			path: '/',
+			httpOnly: true,
+			secure: true,
+			expires: new Date(Date.now() + 90*1000*60*60*24)
 		});
-
+		
 		await prisma.session.update({
 			where:{
-				id: session.id
+				id: id
 			},
 			data: {
 				last_use: new Date(Date.now()),

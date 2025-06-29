@@ -22,7 +22,7 @@ export async function POST(event) {
 
 export async function GET(event: {
 	url: any;
-    locals: { user: { username: any}}
+    locals: { user: { username: any}, role: {canViewAllTrips:boolean}}
 }) {
 	let deleted = false;
 	let username: string|null = null;
@@ -34,42 +34,54 @@ export async function GET(event: {
 		let responseData;
 		if(event.locals.user){
 			if(username == null){
-				responseData = await prisma.trip.findMany({
-					where:{
-						deleted: deleted,
-						OR: [{
-							crew: {
-								some: {
+				if(event.locals.role?.canViewAllTrips) {
+					responseData = await prisma.trip.findMany({
+						where:{
+							deleted: deleted,
+						},
+						include:{
+							crew: true,
+							startPoint: true,
+							endPoint: true,
+							location: true
+						}
+					});
+				} else {
+					responseData = await prisma.trip.findMany({
+						where:{
+							deleted: deleted,
+							OR: [{
+								crew: {
+									some: {
+										username: event.locals.user.username
+									}
+								}
+							},
+							{
+								skipper: {
 									username: event.locals.user.username
 								}
-							}
+							},
+							{
+								visibility: 1
+							},
+							{
+								visibility: 2
+							}]
 						},
-						{
-							skipper: {
-								username: event.locals.user.username
-							}
-						},
-						{
-							visibility: 1
-						},
-						{
-							visibility: 2
-						}]
-					},
-					include:{
-						crew: true,
-						startPoint: true,
-						endPoint: true,
-						location: true
-					}
-				});
+						include:{
+							crew: true,
+							startPoint: true,
+							endPoint: true,
+							location: true
+						}
+					});
+				}
 			}else{
-				responseData = await prisma.trip.findMany({
-					where:{
-						deleted: deleted,
-						OR: [
-						{
-							visibility: 1,
+				if(event.locals.role?.canViewAllTrips) {
+					responseData = await prisma.trip.findMany({
+						where:{
+							deleted: deleted,
 							...(username ? {
 								OR: [
 									{crew: {some: {username: username}}},
@@ -77,23 +89,45 @@ export async function GET(event: {
 								],
 							} : {})
 						},
-						{
-							visibility: 2,
-							...(username ? {
-								OR: [
-									{crew: {some: {username: username}}},
-									{skipper: {username: username}},
-								],
-							} : {})
-						}]
-					},
-					include:{
-						crew: true,
-						startPoint: true,
-						endPoint: true,
-						location: true
-					}
-				});
+						include:{
+							crew: true,
+							startPoint: true,
+							endPoint: true,
+							location: true
+						}
+					});
+				} else {
+					responseData = await prisma.trip.findMany({
+						where:{
+							deleted: deleted,
+							OR: [
+							{
+								visibility: 1,
+								...(username ? {
+									OR: [
+										{crew: {some: {username: username}}},
+										{skipper: {username: username}},
+									],
+								} : {})
+							},
+							{
+								visibility: 2,
+								...(username ? {
+									OR: [
+										{crew: {some: {username: username}}},
+										{skipper: {username: username}},
+									],
+								} : {})
+							}]
+						},
+						include:{
+							crew: true,
+							startPoint: true,
+							endPoint: true,
+							location: true
+						}
+					});
+				}
 			}
 		}else{
 			responseData = await prisma.trip.findMany({

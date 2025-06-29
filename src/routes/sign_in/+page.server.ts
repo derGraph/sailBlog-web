@@ -1,14 +1,101 @@
-import { lucia } from '$lib/server/auth';
-import { fail, redirect } from '@sveltejs/kit';
-import { hash, verify } from '@node-rs/argon2';
+import { auth } from '$lib/server/auth';
+import { error, fail, redirect } from '@sveltejs/kit';
+import { verify } from '@node-rs/argon2';
 import { prisma } from '$lib/server/prisma';
 import type { Actions, PageServerLoad } from './$types';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 export const load: PageServerLoad = async (event) => {
-	if (event.locals.user) {
+	if (event.locals.user && !event.url.searchParams.has("magicLink")) {
 		redirect(302, '/');
 	}
+	if (event.url.searchParams.has("magicLink")) {
+		let magicLink = event.url.searchParams.get("magicLink");
+		const linkId = magicLink!.split(".")[0];
+		const linkSecret = magicLink!.split(".")[1];
+		const hashedSecret = await hashSecret(linkSecret);
+
+		let key;
+		try {
+			
+			key = await prisma.key.findFirstOrThrow({
+				where: {
+					id: linkId
+				}
+			});
+		} catch (dbException) {
+			if (dbException instanceof Error) {
+				if(dbException.name == "PrismaClientKnownRequestError") {
+					const prismaError = dbException as PrismaClientKnownRequestError;
+					if(prismaError.code == 'P2025') {
+						return error(400, 'Wrong magic link!');
+					}
+				}
+			} else {
+				return dbException;
+			}
+		}
+		if (constantTimeEqual(hexStringToUint8Array(key!.passwordHash!), hashedSecret)) {
+			if (event.locals.session) {
+				await auth.invalidateSession(event.locals.session.id);
+			}
+			await loginUser(event, key!.userId);
+			return redirect(302, '/');
+		} else {
+			return error(400, 'Wrong magic link!');
+		}
+	}
 };
+
+function constantTimeEqual(a: Uint8Array, b: Uint8Array): boolean {
+	if (a.byteLength !== b.byteLength) {
+		return false;
+	}
+	let c = 0;
+	for (let i = 0; i < a.byteLength; i++) {
+		c |= a[i] ^ b[i];
+	}
+	return c === 0;
+}
+
+async function hashSecret(secret: string): Promise<Uint8Array> {
+	const secretBytes = new TextEncoder().encode(secret);
+	const secretHashBuffer = await crypto.subtle.digest("SHA-256", secretBytes);
+	return new Uint8Array(secretHashBuffer);
+}
+
+function hexStringToUint8Array(hexString: string) {
+  if (hexString.length % 2 !== 0) {
+    throw new Error("Hex string must have an even number of characters.");
+  }
+  const uint8Array = new Uint8Array(hexString.length / 2);
+  for (let i = 0; i < hexString.length; i += 2) {
+    uint8Array[i / 2] = parseInt(hexString.substring(i, i + 2), 16);
+  }
+  return uint8Array;
+}
+
+async function loginUser(event: any, user:string) {
+	const {id, secret} = await auth.createSession(user);
+
+	event.cookies.set("session_token", id+"."+secret, {
+		path: '/',
+		httpOnly: true,
+		secure: true,
+		expires: new Date(Date.now() + 90*1000*60*60*24)
+	});
+
+	await prisma.session.update({
+		where:{
+			id: id
+		},
+		data: {
+			last_use: new Date(Date.now()),
+			ip: event.getClientAddress(),
+			session_created: new Date(Date.now())
+		}
+	});
+}
 
 export const actions: Actions = {
 	default: async (event) => {
@@ -75,24 +162,7 @@ export const actions: Actions = {
 			}
 		}
 
-		const session = await lucia.createSession(user.username, {});
-		const sessionCookie = lucia.createSessionCookie(session.id);
-		event.cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: '.',
-			...sessionCookie.attributes
-		});
-
-		await prisma.session.update({
-			where:{
-				id: session.id
-			},
-			data: {
-				last_use: new Date(Date.now()),
-				ip: event.getClientAddress(),
-				session_created: new Date(Date.now())
-			}
-		});
-
+		await loginUser(event, user.username);
 		redirect(302, '/');
 	}
 };

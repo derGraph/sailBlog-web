@@ -142,89 +142,111 @@
 
 </script>
 
-<div class="md:container md:mx-auto pb-3 h-full rounded table-container">
+<div class="md:container md:mx-auto py-5 px-3 h-full rounded table-wrap">
     <div class="flex flex-row my-1 flex-wrap">
-        <button type="button" onclick={()=>{if(showMyTrips){showDeletedTrips=false} showMyTrips = !showMyTrips; reloadTable()}} class="btn btn-md variant-ghost mr-2">
+        <button type="button" onclick={()=>{if(showMyTrips){showDeletedTrips=false} showMyTrips = !showMyTrips; reloadTable()}} class="btn btn-md preset-tonal border border-surface-500 mr-2">
             <span class="material-symbols-outlined">{#if showMyTrips}check_box{:else}check_box_outline_blank{/if}</span>
             my Trips
         </button>
-        <button type="button" onclick={()=>{if(!showDeletedTrips){showMyTrips=true} showDeletedTrips = !showDeletedTrips; reloadTable()}} class="btn btn-md variant-ghost-error mr-4">
+        <button type="button" onclick={()=>{if(!showDeletedTrips){showMyTrips=true} showDeletedTrips = !showDeletedTrips; reloadTable()}} class="btn btn-md preset-tonal-error border border-error-500 mr-4">
             <span class="material-symbols-outlined">{#if showDeletedTrips}check_box{:else}check_box_outline_blank{/if}</span>
             deleted Trips
         </button>
         <spacer class="flex-1"></spacer>
-        <button type="button" onclick={()=>{showLocationSearch = !showLocationSearch}} class="btn btn-md variant-ghost mr-2">
+        <button type="button" onclick={()=>{showLocationSearch = !showLocationSearch}} class="btn btn-md preset-tonal border border-surface-500 mr-2">
             <span class="material-symbols-outlined">search</span>
             search for Location
         </button>
         <SearchBar bind:displayed = {showLocationSearch} getList={getLocations} onSelected={addLocationTerm}></SearchBar>
         {#each filterLocations as filterLocation}
-            <button type="button" onclick={()=>{filterLocations = filterLocations.filter(e => e !== filterLocation); applyTripFilter()}} class="btn btn-md variant-ghost-tertiary mr-2">
+            <button type="button" onclick={()=>{filterLocations = filterLocations.filter(e => e !== filterLocation); applyTripFilter()}} class="btn btn-md preset-tonal-tertiary border border-tertiary-500 mr-2">
                 <span class="material-symbols-outlined">close</span>
                 {filterLocation}
             </button>
         {/each}
-        <button type="button" onclick={()=>{showUserSearch = !showUserSearch}} class="btn btn-md variant-ghost mr-2">
+        <button type="button" onclick={()=>{showUserSearch = !showUserSearch}} class="btn btn-md preset-tonal border border-surface-500 mr-2">
             <span class="material-symbols-outlined">search</span>
             search for User
         </button>
         <SearchBar bind:displayed = {showUserSearch} getList={searchUser} onSelected={addUserTerm}></SearchBar>
         {#each filterUsers as filterUser}
-            <button type="button" onclick={()=>{filterUsers = filterUsers.filter(e => e !== filterUser); applyTripFilter()}} class="btn btn-md variant-ghost-tertiary mr-2">
+            <button type="button" onclick={()=>{filterUsers = filterUsers.filter(e => e !== filterUser); applyTripFilter()}} class="btn btn-md preset-tonal-tertiary border border-tertiary-500 mr-2">
                 <span class="material-symbols-outlined">close</span>
                 {filterUser}
             </button>
         {/each}
         <spacer class="flex-1"></spacer>
-        <button type="button" onclick={()=>{addTrip()}} class="btn btn-md variant-ghost-success"><span class="material-symbols-outlined">add</span>add Trip</button>
+        <button type="button" onclick={()=>{addTrip()}} class="btn btn-md preset-tonal-success border border-success-500"><span class="material-symbols-outlined">add</span>add Trip</button>
     </div>
-    <table class="text-wrap table table-hover">
+    <table class="table text-wrap card bg-surface-200-800 overflow-hidden">
 		<thead>
 			<tr>
-                <th class="min-w-16 w-16">active</th>
-				<th>Trip name</th>
-				<th>Start Date</th>
-				<th>End Date</th>
-				<th>Distance</th>
-                <th>Location</th>
-                <th>Skipper</th>
-                <th>Crew</th>
+                <th class="min-w-16 w-16 !font-bold text-surface-950-50">active</th>
+				<th class="!font-bold text-surface-950-50">Trip name</th>
+				<th class="!font-bold text-surface-950-50">Start Date</th>
+				<th class="!font-bold text-surface-950-50">End Date</th>
+				<th class="!font-bold text-surface-950-50">Distance</th>
+                <th class="!font-bold text-surface-950-50">Location</th>
+                <th class="!font-bold text-surface-950-50">Skipper</th>
+                <th class="!font-bold text-surface-950-50">Crew</th>
 			</tr>
 		</thead>
-		<tbody>
+		<tbody class="bg-surface-100-900">
 			{#each tableArr as row}
                 <tr class="group">
-                    <td onclick={() => selectActiveTrip(row.id)} class="!align-middle"><button type="button" class="material-symbols-outlined !align-middle">{@html data.user ? parseRadioButton(row.id, data.user) : 'radio_button_unchecked'}</button></td>
-                    <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{row.name}</td>
-                    <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{parseDate(row.startPoint)}</td>
-                    <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{parseDate(row.endPoint)}</td>
-                    <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{((Number(row.length_sail) + Number(row.length_motor))/1853).toFixed(0)} NM<div class="hidden group-hover:block"><span class="!text-xs material-symbols-outlined">sailing</span>{(Number(row.length_sail)/1853).toFixed(0)} <span class="!text-xs material-symbols-outlined">mode_heat</span>{(Number(row.length_motor)/1853).toFixed(0)}</div></td>
-                    <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{parseLocation(row.location)}</td>
-                    <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{row.skipperName}</td>
-                    <td onclick={()=>{window.location.href='/trips/'+row.id}} class="!align-middle">{parseCrew(row.crew)}</td>
+                    <td onclick={() => selectActiveTrip(row.id)} class="align-middle!"><button type="button" class="material-symbols-outlined align-middle!">{@html data.user ? parseRadioButton(row.id, data.user) : 'radio_button_unchecked'}</button></td>
+                    <td onclick={()=>{window.location.href='/trips/'+row.id}} class="align-middle!">{row.name}</td>
+                    <td onclick={()=>{window.location.href='/trips/'+row.id}} class="align-middle!">{parseDate(row.startPoint)}</td>
+                    <td onclick={()=>{window.location.href='/trips/'+row.id}} class="align-middle!">{parseDate(row.endPoint)}</td>
+                    <td onclick={()=>{window.location.href='/trips/'+row.id}} class="align-middle!">{((Number(row.length_sail) + Number(row.length_motor))/1853).toFixed(0)} NM<div class="hidden group-hover:block"><span class="text-xs! material-symbols-outlined">sailing</span>{(Number(row.length_sail)/1853).toFixed(0)} <span class="text-xs! material-symbols-outlined">mode_heat</span>{(Number(row.length_motor)/1853).toFixed(0)}</div></td>
+                    <td onclick={()=>{window.location.href='/trips/'+row.id}} class="align-middle!">{parseLocation(row.location)}</td>
+                    <td onclick={()=>{window.location.href='/trips/'+row.id}} class="align-middle!">{row.skipperName}</td>
+                    <td onclick={()=>{window.location.href='/trips/'+row.id}} class="align-middle!">{parseCrew(row.crew)}</td>
                 </tr>
 			{/each}
 		</tbody>
-		<tfoot>
-			<tr class="group">
-				<td>
-                    {#if maxTrips >= 10}
-                    <div class="btn-group variant-ghost-secondary [&>*+*]:border-secondary-500">
+		<tfoot class="rounded overflow-hidden">
+            {#if maxTrips > 10}
+			<tr class="group rounded">
+				<td  colspan="8">
+                    <div class="card preset-tonal-secondary border border-secondary-500 [&>*+*]:border-secondary-500 w-fit">
                         {#each {length: maxTrips}, i }
                             {#if i%10 == 0}
-                            <button
-                                onclick={() => {page = (i/10); applyTripFilter()}}
-                                class="!btn-sm"
-                                class:variant-filled-secondary={page == (i/10)}>
-                                {i/10 + 1}
-                            </button>
+                                {#if i/10 == 0}
+                                <button
+                                    onclick={() => {page = (i/10); applyTripFilter()}}
+                                    class="px-2 rounded-s-full" 
+                                    class:preset-filled-secondary-500={page == (i/10)}>
+                                    {i/10 + 1}
+                                </button>
+                                {:else if i>maxTrips-10} 
+                                 <button
+                                    onclick={() => {page = (i/10); applyTripFilter()}}
+                                    class="px-2 rounded-e-full" 
+                                    class:preset-filled-secondary-500={page == (i/10)}>
+                                    {i/10 + 1}
+                                </button>
+                                {:else}
+                                <button
+                                    onclick={() => {page = (i/10); applyTripFilter()}}
+                                    class="px-2" 
+                                    class:preset-filled-secondary-500={page == (i/10)}>
+                                    {i/10 + 1}
+                                </button>
+                                {/if}
                             {/if}
                         {/each}
                     </div>
-                    {/if}
                 </td>
 			</tr>
-		</tfoot>
+            {:else}
+            <tr class="group">
+                <td colspan="8" class="rounded">
+                    <div class="rounded"></div>
+                </td>
+			</tr>
+            {/if}
+        </tfoot>
 	</table>
 </div>
 

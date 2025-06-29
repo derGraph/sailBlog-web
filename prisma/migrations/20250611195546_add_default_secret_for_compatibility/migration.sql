@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE `session` MODIFY `session_created` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3),
+    MODIFY `secret` LONGBLOB NOT NULL;
