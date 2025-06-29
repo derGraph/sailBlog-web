@@ -198,66 +198,128 @@ export async function POST(event) {
 /** @type {import('./$types').RequestHandler} */
 export async function GET(event) {
 	let requestedUsername = event.url.searchParams.get('username');
+	let requestedTrip = event.url.searchParams.get('tripId');
 
-	if (requestedUsername == null || requestedUsername == '') {
+	if ((requestedUsername == null || requestedUsername == '') && (requestedTrip == null || requestedTrip == null)) {
 		error(400, {
 			message: 'No username requested!'
 		});
 	}
 
 	try {
-		if (event.locals.user?.username == requestedUsername) {
-			let results = <Media[]>(<unknown>await prisma.media.findMany({
-				where: {
-					username: event.locals.user?.username
+		if (requestedUsername != null && requestedUsername != "") {
+			if (event.locals.user?.username == requestedUsername) {
+				let results = <Media[]>(<unknown>await prisma.media.findMany({
+					where: {
+						username: event.locals.user?.username
+					}
+				}));
+				return new Response(JSON.stringify(results));
+			} else if (event.locals.role?.canSeeAllMedia) {
+				let results = <Media[]>(<unknown>await prisma.media.findMany({
+					where: {
+						username: requestedUsername
+					}
+				}));
+				return new Response(JSON.stringify(results));
+			} else if (event.locals.user) {
+				let returnMedia = await prisma.media.findMany({
+					where: {
+						username: requestedUsername,
+						OR: [
+							{
+								visibility: 1
+							},
+							{
+								visibility: 2
+							}
+						]
+					}
+				});
+				var results: { [a: string]: any } = {};
+				for (let media of returnMedia) {
+					results[media.id] = {
+						visibility: media.visibility,
+						username: media.username,
+						lat: media.lat,
+						long: media.long,
+						time: media.created,
+						tripId: media.tripId
+					};
 				}
-			}));
-			return new Response(JSON.stringify(results));
-		} else if (event.locals.role?.canSeeAllMedia) {
-			let results = <Media[]>(<unknown>await prisma.media.findMany({
-				where: {
-					username: requestedUsername
+				return new Response(JSON.stringify(results));
+			} else {
+				let returnMedia = await prisma.media.findMany({
+					where: {
+						username: requestedUsername,
+						visibility: 2
+					}
+				});
+				var results: { [a: string]: any } = {};
+				for (let media of returnMedia) {
+					results[media.id] = {
+						visibility: media.visibility,
+						username: media.username
+					};
 				}
-			}));
-			return new Response(JSON.stringify(results));
-		} else if (event.locals.user) {
-			let returnMedia = await prisma.media.findMany({
-				where: {
-					username: requestedUsername,
-					OR: [
-						{
-							visibility: 1
-						},
-						{
-							visibility: 2
-						}
-					]
-				}
-			});
-			var results: { [a: string]: any } = {};
-			for (let media of returnMedia) {
-				results[media.id] = {
-					visibility: media.visibility,
-					username: media.username
-				};
+				return new Response(JSON.stringify(results));
 			}
-			return new Response(JSON.stringify(results));
-		} else {
-			let returnMedia = await prisma.media.findMany({
-				where: {
-					username: requestedUsername,
-					visibility: 2
+		} else if (requestedTrip != null && requestedTrip != "") {
+			if (event.locals.role?.canSeeAllMedia) {
+				let results = <Media[]>(<unknown>await prisma.media.findMany({
+					where: {
+						tripId: requestedTrip
+					}
+				}));
+				return new Response(JSON.stringify(results));
+			} else if (event.locals.user) {
+				let returnMedia = await prisma.media.findMany({
+					where: {
+						tripId: requestedTrip,
+						OR: [
+							{
+								visibility: 1
+							},
+							{
+								visibility: 2
+							}
+						]
+					}
+				});
+				var results: { [a: string]: any } = {};
+				for (let media of returnMedia) {
+					results[media.id] = {
+						visibility: media.visibility,
+						username: media.username,
+						lat: media.lat,
+						long: media.long,
+						time: media.created,
+						tripId: media.tripId
+					};
 				}
-			});
-			var results: { [a: string]: any } = {};
-			for (let media of returnMedia) {
-				results[media.id] = {
-					visibility: media.visibility,
-					username: media.username
-				};
+				return new Response(JSON.stringify(results));
+			} else {
+				let returnMedia = await prisma.media.findMany({
+					where: {
+						tripId: requestedTrip,
+						visibility: 2
+					}
+				});
+				var results: { [a: string]: any } = {};
+				for (let media of returnMedia) {
+					results[media.id] = {
+						visibility: media.visibility,
+						username: media.username,
+						lat: media.lat,
+						long: media.long,
+						time: media.created,
+						tripId: media.tripId
+					};
+				}
+				return new Response(JSON.stringify(results));
 			}
-			return new Response(JSON.stringify(results));
 		}
+		
 	} catch (error_message) {
 		if (error_message instanceof Error) {
 			console.log(error_message);
