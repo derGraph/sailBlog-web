@@ -410,7 +410,10 @@ export async function GET(event) {
 					}
 				]
 			},
-			take: maxAmount
+			take: maxAmount,
+			orderBy: {
+				time: 'asc'
+			}
 		});
 		let responseData: { [k: string]: any } = {};
 		datapoints.forEach((datapoint) => {
