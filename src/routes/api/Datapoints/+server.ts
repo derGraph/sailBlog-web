@@ -25,7 +25,7 @@ export async function POST(event: {
 		input = await event.request.json();
 	} catch (errorMessage: unknown) {
 		let result = errorMessage as Error;
-  console.log("Error parsing json:" + event.request)
+  console.log("Error parsing json:" + event.request);
 		error(400, result.name + ': ' + result.message);
 	}
 
@@ -115,7 +115,7 @@ export async function POST(event: {
 			});
 		} catch (errorMessage) {
 			if (errorMessage instanceof Error) {
-    console.log("Error message occurred:" + Error message);
+    console.log("Error message occurred:" + errorMessage);
 				return error(400, errorMessage.name + ': ' + errorMessage.message);
 			} else {
 				return error(400, 'Internal Error!');
