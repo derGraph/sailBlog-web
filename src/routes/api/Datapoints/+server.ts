@@ -87,6 +87,8 @@ export async function POST(event: {
 		}
 
 		if (errorHappened) {
+   let data = await request.json();
+   console.log("Error with: request" + data);
 			return json(results, { status: 400 });
 		}
 
