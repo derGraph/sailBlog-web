@@ -115,7 +115,7 @@ export async function POST(event: {
 			});
 		} catch (errorMessage) {
 			if (errorMessage instanceof Error) {
-    console.log("Error message occurred:" + errorMessage);
+    console.log("Error message occurred: " + errorMessage + " at Object " + k);
 				return error(400, errorMessage.name + ': ' + errorMessage.message);
 			} else {
 				return error(400, 'Internal Error!');
