@@ -57,6 +57,8 @@ export async function POST(event: {
 		var results: { [k: string]: any } = {};
 		let errorHappened = false;
 
+  console.log("Input: " +input);
+
 		for (const k of Object.keys(input)) {
 			try {
 				input[k].id = k;
