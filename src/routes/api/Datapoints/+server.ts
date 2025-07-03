@@ -23,6 +23,7 @@ export async function POST(event: {
 	let input;
 	try {
 		input = await event.request.json();
+  console.log(JSON.stringify(input));
 	} catch (errorMessage: unknown) {
 		let result = errorMessage as Error;
   console.log("Error parsing json:" + event.request);
