@@ -1,4 +1,4 @@
-import { prisma } from '$lib/server/prisma';
+import { prisma } from '$lib/server/prisma'
 import { error, json } from '@sveltejs/kit';
 
 interface Datapoint {
@@ -115,8 +115,7 @@ export async function POST(event: {
 			});
 		} catch (errorMessage) {
 			if (errorMessage instanceof Error) {
-    console.log("Error message occurred: " + errorMessage + " at Object " + k);
-				return error(400, errorMessage.name + ': ' + errorMessage.message);
+				return error(400, errorMessage.name + ': ' + errorMessage.message + " Datapoints: " + datapoints);
 			} else {
 				return error(400, 'Internal Error!');
 			}
