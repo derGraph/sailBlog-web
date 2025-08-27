@@ -23,10 +23,10 @@ export async function POST(event: {
 	let input;
 	try {
 		input = await event.request.json();
-  console.log(JSON.stringify(input));
+  		console.log(JSON.stringify(input));
 	} catch (errorMessage: unknown) {
 		let result = errorMessage as Error;
-  console.log("Error parsing json:" + event.request);
+  		console.log("Error parsing json:" + event.request);
 		error(400, result.name + ': ' + result.message);
 	}
 
@@ -59,7 +59,7 @@ export async function POST(event: {
 		let errorHappened = false;
 
 		for (const k of Object.keys(input)) {
-   console.log(k +": "+input[k]);
+   			console.log(k +": "+input[k]);
 			try {
 				input[k].id = k;
 				if (k == '') {
@@ -90,8 +90,8 @@ export async function POST(event: {
 		}
 
 		if (errorHappened) {
-   let data = await request.json();
-   console.log("Error with: request" + data);
+			console.log("Error with: request " + JSON.stringify(input));
+			console.log("Results: " + JSON.stringify(results));
 			return json(results, { status: 400 });
 		}
 
