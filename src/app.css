@@ -13,5 +13,5 @@
 @tailwind utilities;
 html,
 body {
-	@apply h-full overflow-hidden;
+	@apply h-dvh overflow-hidden;
 }
