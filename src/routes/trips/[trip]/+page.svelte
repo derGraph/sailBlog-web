@@ -82,7 +82,7 @@
 	}
 
 </script>
-<div class="felx-1 h-full flex felx-col md:container md:mx-auto p-3 rounded table-container">
+<div class="flex-1 h-full flex felx-col md:container md:mx-auto p-3 rounded table-container overflow-auto">
     <div class="flex-1 flex flex-wrap flex-row">
         <div class="basis-full md:basis-1/3 w-1/3 md:h-full flex flex-col">
 			<div class="rounded-3xl bg-surface-100-900 p-3 content-center mb-2 justify-center">
