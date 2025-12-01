@@ -1,5 +1,5 @@
 -- AlterTable
-ALTER TABLE `role` ADD COLUMN `canAddDatapoint` BOOLEAN NOT NULL DEFAULT true,
+ALTER TABLE `Role` ADD COLUMN `canAddDatapoint` BOOLEAN NOT NULL DEFAULT true,
     ADD COLUMN `canAddMedia` BOOLEAN NOT NULL DEFAULT true,
     ADD COLUMN `canDeleteAllTrips` BOOLEAN NOT NULL DEFAULT false,
     ADD COLUMN `canDeleteCrewedTrips` BOOLEAN NOT NULL DEFAULT true,
@@ -13,4 +13,4 @@ ALTER TABLE `role` ADD COLUMN `canAddDatapoint` BOOLEAN NOT NULL DEFAULT true,
     ADD COLUMN `canViewAllUserdata` BOOLEAN NOT NULL DEFAULT false;
 
 -- AlterTable
-ALTER TABLE `session` MODIFY `secret` LONGBLOB NOT NULL;
+ALTER TABLE `Session` MODIFY `secret` LONGBLOB NOT NULL;

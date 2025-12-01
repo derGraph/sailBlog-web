@@ -41,15 +41,21 @@
 />
 	<div class="h-dvh flex flex-col">
 		<div class="md:container md:mx-auto justify-center items-center">
-			<AppBar classes="rounded-b-3xl" padding="p-3 pt-2" leadClasses="flex items-end" leadSpaceX="space-x-2" centerAlign="flex flex-auto items-end" trailClasses="flex items-end" trailSpaceX="space-x-2">
-				{#snippet lead()}
-					
+			<AppBar class="rounded-b-3xl">
+				<AppBar.Toolbar class="flex flex-auto items-end">
+					<AppBar.Lead class="flex items-end">
 						<a href="/" class="material-symbols-outlined" style="font-size: {navHeight}rem">map</a>
 						<a href="/" class="text-2xl">sailBlog</a>
-					
-					{/snippet}
-				{#snippet trail()}
-					
+					</AppBar.Lead>
+
+					<AppBar.Headline>
+						{#if user?.username}
+							<button type="button" class="text-xl" onclick={() => {window.location.href = "/trips"}}>Trips</button>
+							<span class="divider-vertical h-3"></span>
+						{/if}
+					</AppBar.Headline>
+
+					<AppBar.Trail class="flex items-end">
 						{#if !user}
 							<div class="btn-md btn preset-tonal-secondary border border-secondary-500">
 								<a href="/sign_in"><button type="button" class="">Sign in!</button></a>
@@ -75,26 +81,22 @@
 							{#if user.firstName && user.lastName}
 								<a href="/user" class="grow flex flex-auto space-x-2 h-auto ml-1 items-center justify-center"
 								aria-label="Get to the Users page!"
-									><Avatar
-										name={user.firstName + " " + user.lastName}
-										src={getProfilePicture(user)}
-										background="bg-primary-500"
-										size="!size-[32px]"
-										imageClasses="!size-[32px]"
+									><Avatar class="!size-[32px]">
+										<Avatar.Image src={getProfilePicture(user)} class="!size-[32px]"/>
+										<Avatar.Fallback>{user.firstName.charAt(0)+user.lastName.charAt(0)}</Avatar.Fallback>
+										<!-- background="bg-primary-500"
 										fallbackClasses="btn px-2"
-										rounded="rounded-full"
-									/></a
-								>
+										rounded="rounded-full" -->
+									</Avatar>
+								</a>
 							{:else}
 								<a href="/user" aria-label="profile Picture" ><div class="placeholder-circle !size-[32px]" ></div></a>
 							{/if}
 						{/if}
+					</AppBar.Trail>
+
+				</AppBar.Toolbar>
 					
-					{/snippet}
-					{#if user?.username}
-						<button type="button" class="text-xl" onclick={() => {window.location.href = "/trips"}}>Trips</button>
-						<span class="divider-vertical h-3"></span>
-					{/if}
 			</AppBar>
 		</div>
 		{#if $errorStore.status && $errorStore.status != 200}

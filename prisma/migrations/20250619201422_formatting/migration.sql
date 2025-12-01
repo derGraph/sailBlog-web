@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE `session` MODIFY `secret` LONGBLOB NOT NULL;
+ALTER TABLE `Session` MODIFY `secret` LONGBLOB NOT NULL;

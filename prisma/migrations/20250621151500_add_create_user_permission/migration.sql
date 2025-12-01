@@ -1,5 +1,5 @@
 -- AlterTable
-ALTER TABLE `role` ADD COLUMN `canCreateUser` BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE `Role` ADD COLUMN `canCreateUser` BOOLEAN NOT NULL DEFAULT false;
 
 -- AlterTable
-ALTER TABLE `session` MODIFY `secret` LONGBLOB NOT NULL;
+ALTER TABLE `Session` MODIFY `secret` LONGBLOB NOT NULL;
