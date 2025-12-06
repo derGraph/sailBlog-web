@@ -40,9 +40,9 @@
 	href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0"
 />
 	<div class="h-dvh flex flex-col">
-		<div class="md:container md:mx-auto justify-center items-center">
-			<AppBar class="rounded-b-3xl">
-				<AppBar.Toolbar class="flex flex-auto items-end">
+		<div class="md:container md:mx-auto">
+			<AppBar class="rounded-b-3xl p-2">
+				<AppBar.Toolbar class="grid-cols-[auto_1fr_auto]">
 					<AppBar.Lead class="flex items-end">
 						<a href="/" class="material-symbols-outlined" style="font-size: {navHeight}rem">map</a>
 						<a href="/" class="text-2xl">sailBlog</a>

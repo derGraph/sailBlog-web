@@ -209,12 +209,10 @@
 			<div class="flex flex-wrap items-center">
 				<h3 class="h5 align-middle mr-2">Skipper:</h3>
 				<button onclick={()=>{showSkipperSearch = true}} class="btn btn-sm preset-tonal-secondary border border-secondary-500 mr-1 pl-1 group hover:preset-filled-warning-500">
-					<Avatar name={requestedTripData.skipper?.firstName + " " + requestedTripData.skipper?.lastName}
-							src={getProfilePicture(requestedTripData?.skipper)}
-							background="bg-primary-500"
-							classes="!size-6 group-hover:hidden"
-							rounded="rounded-full"
-					/>
+					<Avatar class="!ml-0 !size-6 group-hover:hidden">
+						<Avatar.Image src={getProfilePicture(requestedTripData.skipper)} class="!size-6"/>
+						<Avatar.Fallback>{requestedTripData.skipper?.firstName.charAt(0)+requestedTripData.skipper?.lastName.charAt(0)}</Avatar.Fallback>
+					</Avatar>
 					<span class="h-6 !w-6 !text-md material-symbols-outlined hidden! group-hover:block!">autorenew</span>
 					{requestedTripData.skipper?.username}
 				</button>
@@ -225,20 +223,16 @@
 				<h3 class="h5 align-middle mr-2">Crew:</h3>
 				{#each requestedTripData?.crew as member, i}
 					<button onclick={()=>{deleteUser(member.username)}} class="btn btn-sm preset-tonal-secondary border border-secondary-500 mr-1 pl-1 group hover:preset-filled-error-500 text-sm">
-						<Avatar name={member.firstName + " " + member.lastName}
-								src={getProfilePicture(member)}
-								background="bg-primary-500"
-								classes="!ml-0 !size-6 group-hover:hidden"
-								rounded="rounded-full"
-						/>
+						<Avatar class="!ml-0 !size-6 group-hover:hidden">
+							<Avatar.Image src={getProfilePicture(member)} class="!size-6"/>
+							<Avatar.Fallback>{member.firstName?.charAt(0).toString()!+member.lastName?.charAt(0).toString()}</Avatar.Fallback>
+						</Avatar>
 						<span class="h-6 !w-6 !text-md material-symbols-outlined hidden! group-hover:block!">close</span>
 						{member.username}
 					</button>
 				{/each}
-				<button onclick={()=>{showCrewSearch = true}} class="btn btn-sm !p-1 preset-tonal-secondary border border-secondary-500 mr-1 group hover:preset-filled-primary-500 content-center">
-					<Avatar name="+" classes="!size-6" rounded="rounded-full" background="color-secondary-500">
-						<span class="material-symbols-outlined">add</span>
-					</Avatar>
+				<button onclick={()=>{showCrewSearch = true}} class="btn btn-sm !p-1 !size-8 preset-tonal-secondary border border-secondary-500 mr-1 group hover:preset-filled-primary-500 content-center">
+					+
 				</button>
 				<SearchBar bind:displayed={showCrewSearch} onSelected={addCrew} getList={search} inputClass="w-32"/>
 			</div>
