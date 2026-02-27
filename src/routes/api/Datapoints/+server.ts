@@ -152,25 +152,25 @@ function checkDatapoint(rawData: {
 	let propulsion = rawData.propulsion;
 	let time;
 
-	const gpsRegex =
-		/^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$/;
 	if (lat == null) {
 		throw new Error('Latitude required!');
 	} else {
-		if (gpsRegex.test(lat)) {
+		const latNum = Number(lat);
+		if (!Number.isFinite(latNum) || latNum < -90 || latNum > 90) {
 			throw new Error('Wrong Latitude format!');
 		} else {
-			lat = parseFloat(lat);
+			lat = latNum;
 		}
 	}
 
 	if (long == null) {
 		throw new Error('Longitude required!');
 	} else {
-		if (gpsRegex.test(long)) {
+		const longNum = Number(long);
+		if (!Number.isFinite(longNum) || longNum < -180 || longNum > 180) {
 			throw new Error('Wrong Longitude format!');
 		} else {
-			long = parseFloat(long);
+			long = longNum;
 		}
 	}
 
@@ -181,54 +181,56 @@ function checkDatapoint(rawData: {
 		}
 	}
 
-	try {
-		if (unparesedTime != null) {
-			time = new Date(parseInt(unparesedTime));
-		} else {
-			time = null;
+	if (unparesedTime != null) {
+		const parsedTime = Number(unparesedTime);
+		if (!Number.isFinite(parsedTime)) {
+			throw new Error('Invalid Timestamp!');
 		}
-	} catch (error_message) {
-		throw new Error('Invalid Timestamp!');
+		time = new Date(parsedTime);
+		if (Number.isNaN(time.getTime())) {
+			throw new Error('Invalid Timestamp!');
+		}
+	} else {
+		time = null;
 	}
 
-	const decimalRegex = /^\d*\.?\d*$/;
 	if (speed != null) {
-		if (decimalRegex.test(speed)) {
-			speed = parseFloat(speed);
-		} else {
+		const parsed = Number(speed);
+		if (!Number.isFinite(parsed)) {
 			throw new Error('Invalid speed!');
 		}
+		speed = parsed;
 	}
 	if (heading != null) {
-		if (decimalRegex.test(heading)) {
-			heading = parseFloat(heading);
-		} else {
+		const parsed = Number(heading);
+		if (!Number.isFinite(parsed)) {
 			throw new Error('Invalid heading!');
 		}
+		heading = parsed;
 	}
 
 	if (depth != null) {
-		if (decimalRegex.test(depth)) {
-			depth = parseFloat(depth);
-		} else {
+		const parsed = Number(depth);
+		if (!Number.isFinite(parsed)) {
 			throw new Error('Invalid depth!');
 		}
+		depth = parsed;
 	}
 
 	if (h_accuracy != null) {
-		if (decimalRegex.test(h_accuracy)) {
-			h_accuracy = parseFloat(h_accuracy);
-		} else {
+		const parsed = Number(h_accuracy);
+		if (!Number.isFinite(parsed)) {
 			throw new Error('Invalid h_accuracy!');
 		}
+		h_accuracy = parsed;
 	}
 
 	if (v_accuracy != null) {
-		if (decimalRegex.test(v_accuracy)) {
-			v_accuracy = parseFloat(v_accuracy);
-		} else {
+		const parsed = Number(v_accuracy);
+		if (!Number.isFinite(parsed)) {
 			throw new Error('Invalid v_accuracy!');
 		}
+		v_accuracy = parsed;
 	}
 
 	if (propulsion != null) {
@@ -258,8 +260,8 @@ function checkDatapoint(rawData: {
 		...(speed !== null && speed !== undefined ? { speed } : {}),
 		...(heading !== null && heading !== undefined ? { heading } : {}),
 		...(depth !== null && depth !== undefined ? { depth } : {}),
-		...(h_accuracy && { h_accuracy }),
-		...(v_accuracy && { v_accuracy }),
+		...(h_accuracy !== null && h_accuracy !== undefined ? { h_accuracy } : {}),
+		...(v_accuracy !== null && v_accuracy !== undefined ? { v_accuracy } : {}),
 		...(propulsion !== null && propulsion !== undefined ? { propulsion } : {})
 	};
 	return returnData;

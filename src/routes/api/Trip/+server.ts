@@ -85,12 +85,12 @@ export async function GET(event) {
         }
 
 	} catch (error_message) {
-		if (error_message instanceof Error) {
+		if (isHttpError(error_message)) {
+			error(error_message.status, error_message.body);
+		} else if (error_message instanceof Error) {
 			error(404, {
 				message: error_message.message
 			});
-		} else if(isHttpError(error_message)){
-			error(error_message.status, error_message.body);
 		} else {
 			error(500, {
 				message: 'ERROR'
@@ -189,7 +189,7 @@ export async function POST(event) {
                 name: name,
                 deleted: false,
                 skipperName: skipper,
-                ...(visibility && {visibility}),                
+                ...(visibility !== null && visibility !== undefined ? { visibility } : {}),                
                 ...(description && {description})
             }
         });
@@ -351,7 +351,7 @@ export async function PUT(event) {
             data: {
                 ...(name && {name}),
                 ...(skipperName && {skipperName}),
-                ...(visibility && {visibility}),                
+                ...(visibility !== null && visibility !== undefined ? { visibility } : {}),                
                 ...(description && {description}),
                 ...(restore ? { deleted: false } : {}),
             }
@@ -526,7 +526,11 @@ export async function DELETE(event) {
                     return error(500, "ERROR")
                 }
             }
+            return error(401, 'You are not allowed to delete this trip!');
+        } else {
+            return error(400, 'tripId is needed!');
         }
-
+    } else {
+        return error(401, 'Not logged in!');
     }
 }

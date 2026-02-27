@@ -80,6 +80,8 @@ export async function POST(event) {
 						}]
 					}
 				});
+			} else {
+				return error(401, { message: 'You are not allowed to attach media to trips!' });
 			}
 		} catch (exception: any) {
 			error(500, {message: exception.toString()})
@@ -168,7 +170,7 @@ export async function POST(event) {
 		}
 
 		filePath = path.join(filePath, media.id + '.avif');
-		inputImage.avif({ lossless: false, quality: 50 }).toFile(filePath);
+		await inputImage.avif({ lossless: false, quality: 50 }).toFile(filePath);
 	} catch (imageError) {
 		if(media.id != ''){
 			await prisma.media.delete({
