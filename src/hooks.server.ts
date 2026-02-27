@@ -16,9 +16,16 @@ export const handle: Handle = async ({ event, resolve }) => {
 	if(session != null && user != null){
 		try{
 			const now = new Date();
-			await prisma.session.update({
+			// Throttle session writes to avoid update conflicts on concurrent requests.
+			const minSessionAgeMs = 30_000;
+			const sessionCutoff = new Date(now.getTime() - minSessionAgeMs);
+			await prisma.session.updateMany({
 				where:{
-					id: session.id
+					id: session.id,
+					OR: [
+						{ last_use: { lt: sessionCutoff } },
+						{ last_use: null }
+					]
 				},
 				data: {
 					last_use: now,
