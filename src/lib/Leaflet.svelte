@@ -248,9 +248,6 @@
 		}
 	});
 	run(() => {
-		onTracksChange(tracks);
-	});
-	run(() => {
 		onLineChange(lines);
 	});
 </script>
