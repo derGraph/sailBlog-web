@@ -89,6 +89,9 @@ export async function POST(event) {
 		if (trip == undefined) {
 			tripId = null;
 			error(400, {message: "Trip not found or not allowed!"});
+		} else if (typeof trip.visibility === 'number') {
+			// Inherit visibility from parent trip when attached to a trip.
+			visibility = trip.visibility;
 		}
 	} else {
 		tripId = null;
