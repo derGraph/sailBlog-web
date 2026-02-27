@@ -146,13 +146,13 @@ export async function GET(event: {
 		responseData = removeSensitiveData(responseData);
 		return new Response(JSON.stringify(responseData));
 	} catch (error_message) {
-		if (error_message instanceof Error) {
+		if (isHttpError(error_message)) {
+			return error_message;
+		} else if (error_message instanceof Error) {
 			console.log(error_message)
 			error(404, {
 				message: error_message.message
 			});
-		} else if(isHttpError(error_message)){
-			return error_message;
 		} else {
 			error(500, {
 				message: 'ERROR'

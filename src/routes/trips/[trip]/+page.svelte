@@ -82,7 +82,7 @@
 	}
 
 </script>
-<div class="felx-1 h-full flex felx-col md:container md:mx-auto p-3 rounded table-container">
+<div class="flex-1 h-full flex felx-col md:container md:mx-auto p-3 rounded table-container overflow-auto">
     <div class="flex-1 flex flex-wrap flex-row">
         <div class="basis-full md:basis-1/3 w-1/3 md:h-full flex flex-col">
 			<div class="rounded-3xl bg-surface-100-900 p-3 content-center mb-2 justify-center">
@@ -104,12 +104,10 @@
 				<div class="flex items-center">
 					<h3 class="h5 align-middle mr-2">Skipper:</h3>
 					<a href="/user/{requestedTripData.skipper?.username}" class="btn btn-sm preset-tonal-secondary border border-secondary-500 mr-1 pl-1 flex items-center text-sm">
-						<Avatar name={requestedTripData.skipper?.firstName + " " + requestedTripData.skipper?.lastName}
-								src={getProfilePicture(requestedTripData.skipper)}
-								background="bg-primary-500"
-								classes="!ml-0 !size-6"
-								rounded="rounded-full"
-						/>
+						<Avatar class="!ml-0 !size-6">
+							<Avatar.Image src={getProfilePicture(requestedTripData.skipper)} class="!size-6"/>
+							<Avatar.Fallback>{requestedTripData.skipper?.firstName.charAt(0)+requestedTripData.skipper?.lastName.charAt(0)}</Avatar.Fallback>
+						</Avatar>
 						{requestedTripData.skipper?.username}
 					</a>
 				</div>
@@ -119,12 +117,10 @@
 					{#each requestedTripData?.crew as member, i}
 						{#if member.username != requestedTripData?.skipper?.username}
 							<a href="/user/{member.username}" class="btn btn-sm preset-tonal-secondary border border-secondary-500 mr-1 pl-2 flex items-center">
-								<Avatar name={member.firstName + " " + member.lastName}
-										src={getProfilePicture(member)}
-										background="bg-primary-500"
-										classes="!ml-0 !size-6"
-										rounded="rounded-full"
-								/>
+								<Avatar class="!ml-0 !size-6">
+									<Avatar.Image src={getProfilePicture(member)} class="!size-6"/>
+									<Avatar.Fallback>{member.firstName?.toUpperCase().charAt(0)}{member.firstName?.toUpperCase().charAt(1)}</Avatar.Fallback>
+								</Avatar>
 								{member.username}
 							</a>
 						{/if}

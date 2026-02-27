@@ -5,4 +5,4 @@
 
 */
 -- AlterTable
-ALTER TABLE `session` ADD COLUMN `secret` LONGBLOB NOT NULL;
+ALTER TABLE `Session` ADD COLUMN `secret` LONGBLOB NOT NULL;
