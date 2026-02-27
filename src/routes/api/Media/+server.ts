@@ -204,7 +204,7 @@ export async function GET(event) {
 
 	if ((requestedUsername == null || requestedUsername == '') && (requestedTrip == null || requestedTrip == null)) {
 		error(400, {
-			message: 'No username requested!'
+			message: 'No username/trip requested!'
 		});
 	}
 

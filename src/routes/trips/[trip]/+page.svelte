@@ -86,7 +86,11 @@
     <div class="flex-1 flex flex-wrap flex-row">
         <div class="basis-full md:basis-1/3 w-1/3 md:h-full flex flex-col">
 			<div class="rounded-3xl bg-surface-100-900 p-3 content-center mb-2 justify-center">
-				<h1 class="h1 text-center">{String(requestedTripData.name).trim()}{#if isUser(requestedTripData)}<a class="text-4xl! material-symbols-outlined max-h" href="/trips/edit/{requestedTrip}">edit</a>{/if}
+				<h1 class="h1 text-center">
+					{String(requestedTripData.name).trim()}
+					{#if isUser(requestedTripData)}
+						<a class="text-4xl! material-symbols-outlined max-h" href="/trips/edit/{requestedTrip}">edit</a>
+					{/if}
 				</h1>
 			</div>
 			<div class="rounded-3xl bg-surface-100-900 p-1 content-center mb-2">
@@ -128,6 +132,14 @@
 				</div>
 			</div>
 			<div class="h-full rounded-3xl p-3 bg-surface-100-900 md:overflow-auto">
+				{#if isUser(requestedTripData)}
+					<div class="mb-2 flex justify-end">
+						<a class="btn btn-sm preset-tonal-secondary border border-secondary-500" href="/trips/uploadImages/{requestedTrip}">
+							<span class="material-symbols-outlined mr-1">upload</span>
+							Upload Images
+						</a>
+					</div>
+				{/if}
 				<div class="md:mx-1 md:my-0 text-wrap">
 					{@html requestedTripData.description}
 				</div>
