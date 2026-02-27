@@ -6,6 +6,7 @@
 	import errorStore from '$lib/errorStore';
 	import { getProfilePicture } from '$lib/functions';
 	import {dark} from '$lib/darkMode.svelte';
+	import { page } from '$app/stores';
 
 	let navHeight = 2;
 	let { data, children } = $props();
@@ -32,7 +33,9 @@
 	}
 
 	let user = $derived(data.user);
+	let role = $derived(data.role);
 	let session = $derived(data.session);
+	let pathname = $derived($page.url.pathname);
 </script>
 
 <link
@@ -50,8 +53,25 @@
 
 					<AppBar.Headline>
 						{#if user?.username}
-							<button type="button" class="text-xl" onclick={() => {window.location.href = "/trips"}}>Trips</button>
-							<span class="divider-vertical h-3"></span>
+							<div class="inline-flex items-center">
+								<button
+									type="button"
+									class={`px-4 py-1.5 text-sm font-semibold rounded-md hover:bg-surface-200-800 ${pathname.startsWith('/trips') ? 'underline underline-offset-4' : ''}`}
+									onclick={() => {window.location.href = "/trips"}}
+								>
+									Trips
+								</button>
+								{#if role?.canCreateUser}
+									<span class="mx-2 h-5 w-px bg-surface-400/60"></span>
+									<button
+										type="button"
+										class={`px-4 py-1.5 text-sm font-semibold rounded-md hover:bg-surface-200-800 ${pathname.startsWith('/createUser') ? 'underline underline-offset-4' : ''}`}
+										onclick={() => {window.location.href = "/createUser"}}
+									>
+										Create User
+									</button>
+								{/if}
+							</div>
 						{/if}
 					</AppBar.Headline>
 
@@ -99,23 +119,27 @@
 					
 			</AppBar>
 		</div>
-		{#if $errorStore.status && $errorStore.status != 200}
-			<div class="md:container md:mx-auto flex flex-row flex flex-col pt-3 rounded-t-3xl">
-				<aside class="alert preset-tonal-warning border border-warning-500 text-warning-500">
-					<div class="material-symbols-outlined">warning</div>
-					<div class="alert-message">
-						{#await $errorStore.json()}
-							<h3 class="h3">"Loading..."</h3>
-						{:then parsed}
-							<h3 class="h3">{$errorStore.status} {$errorStore.statusText}: {parsed.message}</h3>
-						{:catch parsingError}
-							<h3 class="h3">Error in response: {parsingError}</h3>
-						{/await}
+		{#if $errorStore.status >= 400}
+			<div class="md:container md:mx-auto px-3 pt-3">
+				<aside class="alert preset-tonal-warning border border-warning-600 text-warning-900 dark:border-warning-500 dark:text-warning-200 rounded-2xl flex items-stretch gap-3">
+					<div class="flex items-center self-stretch px-3">
+						<span class="material-symbols-outlined leading-none" style="font-size: 4.5rem;">warning</span>
 					</div>
-					<div class="alert-actions">
-						<button class="btn preset-filled-warning-500" onclick={resetError}>
-							<span>Ok</span>
-						</button>
+					<div class="flex-1 flex flex-col">
+						<div class="alert-message">
+						{#await $errorStore.json()}
+							<p class="text-base">{$errorStore.status} {$errorStore.statusText}</p>
+						{:then parsed}
+							<p class="text-base">{$errorStore.status} {$errorStore.statusText}: {parsed.message}</p>
+						{:catch parsingError}
+							<p class="text-base">Error in response: {parsingError}</p>
+						{/await}
+						</div>
+						<div class="alert-actions mt-2 flex justify-end pr-2 pb-2">
+							<button class="btn preset-filled-warning-500" onclick={resetError}>
+								<span>Ok</span>
+							</button>
+						</div>
 					</div>
 				</aside>
 			</div>
