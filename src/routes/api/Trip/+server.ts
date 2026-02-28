@@ -356,6 +356,16 @@ export async function PUT(event) {
                 ...(restore ? { deleted: false } : {}),
             }
         });
+        if(visibility !== null && visibility !== undefined && oldData && oldData.visibility !== visibility){
+            await prisma.media.updateMany({
+                where: {
+                    tripId: responseData.id
+                },
+                data: {
+                    visibility: visibility
+                }
+            });
+        }
         if(skipperName != null){
             await prisma.user.updateMany({
                 where: {

@@ -99,6 +99,10 @@
 
 	let user = $derived(data.user);
 	let session = $derived(data.session);
+	let role = $derived(data.role);
+	let canEditUser = $derived(
+		(role?.canEditAllUser || (role?.canEditOwnUser && requestedUserName == user?.username)) ?? false
+	);
 	const saveEditor = (message: any) => {
 		fetch(
 			'/api/User?username=' + requestedUserName + '&description=' + encodeURIComponent(message),
@@ -125,11 +129,11 @@
 
 <div class="md:container md:mx-auto py-3 h-full w-full flex flex-col items-center justify-center">
 	{#if requestedUser}
-		{#if requestedUserName == user?.username}
-			<MediaPicker bind:isOpen = {mediaPickerOpen} usernameToFetch = {requestedUserName} onFinished={(owner:String, imageId:String)=>{changePicture(owner, imageId)}}/>
+		{#if canEditUser}
+			<MediaPicker bind:isOpen = {mediaPickerOpen} usernameToFetch = {requestedUserName} canUpload={role?.canAddMedia ?? false} onFinished={(owner:String, imageId:String)=>{changePicture(owner, imageId)}}/>
 		{/if}
 		<div class="flex flex-col mb-2 p-3 w-min bg-surface-100-900 rounded-3xl items-center">
-				{#if (data.role?.canEditOwnUser && requestedUserName == data.user?.username) || data.role?.canEditAllUser}
+				{#if canEditUser}
 					<button onclick={()=>{mediaPickerOpen = true}}>
 					<Avatar
 						name={requestedUser.firstName + " " + requestedUser.lastName}
@@ -152,8 +156,8 @@
 			{#if requestedUser.firstName && requestedUser.lastName}
 			<div class="flex flex-row mt-3">
 				{#if editName == false}
-						<h1 class="h1 text-nowrap">{requestedUser.firstName + ' ' + requestedUser.lastName}</h1>
-						{#if user?.username == requestedUserName}
+				<h1 class="h1 text-nowrap">{requestedUser.firstName + ' ' + requestedUser.lastName}</h1>
+						{#if canEditUser}
 							<button class="h1 material-symbols-outlined max-h" onclick={editNameChange}
 								>edit</button>
 						{/if}
@@ -172,7 +176,7 @@
 							placeholder={requestedUser.lastName}
 							required
 						/>
-						{#if user?.username == requestedUserName}
+						{#if canEditUser}
 							<button class="h1 material-symbols-outlined max-h" onclick={editNameChange}
 								>check</button
 							>
@@ -202,10 +206,10 @@
 			{#if editDescription}
 				<!-- TipTap editor with scrolling -->
 				<div class="h-full z-0">
-					<Tiptap {saveEditor} usernameToFetch={user?.username} description={requestedUser.description} />
+					<Tiptap {saveEditor} usernameToFetch={user?.username} description={requestedUser.description} canUpload={role?.canAddMedia ?? false} />
 				</div>
 			{:else}
-				{#if requestedUserName == user?.username}
+				{#if canEditUser}
 					<!-- Edit Button -->
 					<button 
 					class="btn-icon preset-tonal-secondary border border-secondary-500 absolute t-2 r-2 opacity-80"

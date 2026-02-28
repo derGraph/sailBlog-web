@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import L, { LatLngBounds } from 'leaflet';
 	import 'leaflet/dist/leaflet.css';
+	import 'leaflet.markercluster';
+	import 'leaflet.markercluster/dist/MarkerCluster.css';
+	import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 	import { onDestroy, onMount, setContext } from 'svelte';
 	import errorStore from './errorStore';
 
@@ -13,10 +14,12 @@
 	let map: L.Map | undefined = $state();
 	let mapElement: HTMLDivElement = $state();
 	let lines: L.Polyline[][] = $state([]);
+	let tripImageLayer: L.LayerGroup | undefined = $state();
+	let fullscreenImageSrc: string | null = $state(null);
+	let fullscreenImageAlt: string = $state('Image');
 	let mapMoved: Boolean = false;
 	let myEvent: number = 0;
 	let maxBounds: LatLngBounds;
-	let changed = $state(false);
 
 	let recenterButtonStructure = L.Control.extend({
 		options: {
@@ -48,10 +51,31 @@
 
 	let recenterButton = new recenterButtonStructure();
 
+	function createTripImageClusterGroup() {
+		return (L as any).markerClusterGroup({
+			chunkedLoading: true,
+			showCoverageOnHover: false,
+			maxClusterRadius: 80,
+			disableClusteringAtZoom: 22,
+			spiderfyOnMaxZoom: true,
+			spiderfyDistanceMultiplier: 2.4,
+			iconCreateFunction: (cluster: any) => {
+				const count = cluster.getChildCount();
+				return L.divIcon({
+					className: 'trip-image-cluster',
+					html: `<span>${count}</span>`,
+					iconSize: [44, 44]
+				});
+			}
+		});
+	}
+
 	onMount(() => {
 		const mode = localStorage.getItem('mode') || 'light';
     	document.documentElement.setAttribute('class', mode);
 		map = L.map(mapElement);
+		tripImageLayer = createTripImageClusterGroup();
+		tripImageLayer.addTo(map);
 
 		var osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			maxZoom: 19,
@@ -86,6 +110,7 @@
 		view?: L.LatLngExpression | undefined;
 		zoom?: number | undefined;
 		tracks?: String[] | null;
+		showTripImages?: boolean;
 		children?: import('svelte').Snippet;
 	}
 
@@ -94,6 +119,7 @@
 		view = undefined,
 		zoom = undefined,
 		tracks = null,
+		showTripImages = false,
 		children
 	}: Props = $props();
 
@@ -139,10 +165,10 @@
 
 	async function onTracksChange(tracks: any[] | null) {
 		if(!map){
-			changed = true;
 			return;
 		}
 		lines = []; // Reset the lines2D array
+		clearTripImages();
 		if (tracks != null) {
 			recenterButton.addTo(map!);
 			for (const trackId of tracks) {
@@ -150,6 +176,9 @@
 				let oldStartDate = 0;
 				do{
 					let tripData = await getTrip(trackId, oldStartDate);
+					if(!tripData){
+						break;
+					}
 					tripLength = Object.keys(tripData).length;
 					let trackLines: L.Polyline[] = [];
 					let currentLine: L.LatLng[] = [];
@@ -190,9 +219,80 @@
 					// Add the trackLines to the lines2D array
 					lines = [...lines, trackLines];
 				}while(tripLength >= 5000);
+				if(showTripImages){
+					await addTripImages(trackId);
+				}
 			}
 		}else{
 			recenterButton.remove();
+		}
+	}
+
+	function clearTripImages(){
+		if(tripImageLayer){
+			tripImageLayer.clearLayers();
+		}
+	}
+
+	function getTripImageLayer(){
+		if(!tripImageLayer){
+			tripImageLayer = createTripImageClusterGroup();
+			tripImageLayer.addTo(map!);
+		}
+		return tripImageLayer;
+	}
+
+	async function addTripImages(tripId: String){
+		let response = await fetch('/api/Media?tripId=' + tripId);
+		if (!response.ok) {
+			$errorStore = response;
+			return;
+		}
+		let raw = await response.json();
+		let images: { id: string; username: string; lat?: number | null; long?: number | null; alt?: string | null }[] = [];
+
+		if(Array.isArray(raw)){
+			images = raw.map((item: any) => ({
+				id: item.id,
+				username: item.username,
+				lat: item.lat,
+				long: item.long,
+				alt: item.alt
+			}));
+		} else {
+			for (const id of Object.keys(raw)) {
+				const item = raw[id];
+				images.push({
+					id,
+					username: item.username,
+					lat: item.lat,
+					long: item.long,
+					alt: item.alt
+				});
+			}
+		}
+
+		const layer = getTripImageLayer();
+		for (const image of images) {
+			if(image.lat == null || image.long == null){
+				continue;
+			}
+			const altText = image.alt ?? 'Image';
+			const imageUrl = `/api/Media/${image.username}/${image.id}.avif`;
+			const thumbHtml = `<div class="trip-image-thumb-wrap" role="img" aria-label="${altText}" style="background-image:url('${imageUrl}')"></div>`;
+			const marker = L.marker([image.lat, image.long], {
+				icon: L.divIcon({
+					className: 'image-marker trip-image-marker',
+					html: thumbHtml,
+					iconSize: [72, 72],
+					iconAnchor: [36, 36]
+				})
+			});
+			marker.on('click', () => {
+				fullscreenImageSrc = `/api/Media/${image.username}/${image.id}.avif`;
+				fullscreenImageAlt = altText;
+			});
+			marker.addTo(layer);
 		}
 	}
 
@@ -230,7 +330,7 @@
 		}
 		return await response.json();
 	}
-	run(() => {
+	$effect(() => {
 		if (map) {
 			if (bounds) {
 				map.fitBounds(bounds);
@@ -241,17 +341,18 @@
 			map?.on("mousedown", onMouseDown);
 			map?.on("zoomstart", onZoomStart);
 			map?.on("dragstart", onDrag);
-			if(changed){
-				changed = false;
-				onTracksChange(tracks);
-			}
 		}
 	});
-	run(() => {
-		onTracksChange(tracks);
-	});
-	run(() => {
+	$effect(() => {
 		onLineChange(lines);
+	});
+	$effect(() => {
+		if(!map){
+			return;
+		}
+		tracks;
+		showTripImages;
+		onTracksChange(tracks);
 	});
 </script>
 
@@ -260,6 +361,30 @@
 		{@render children?.()}
 	{/if}
 </div>
+
+{#if fullscreenImageSrc}
+	<div
+		class="fixed inset-0 z-[1100] bg-black/90 flex items-center justify-center p-4"
+		role="button"
+		tabindex="0"
+		aria-label="Close image preview"
+		onclick={() => { fullscreenImageSrc = null; }}
+		onkeydown={(event) => { if (event.key === 'Escape') fullscreenImageSrc = null; }}
+	>
+		<img
+			src={fullscreenImageSrc}
+			alt={fullscreenImageAlt}
+			class="max-w-[96vw] max-h-[92vh] object-contain rounded-lg"
+		/>
+		<button
+			type="button"
+			class="absolute top-4 right-4 btn preset-tonal-secondary border border-secondary-500"
+			onclick={(event) => { event.stopPropagation(); fullscreenImageSrc = null; }}
+		>
+			Close
+		</button>
+	</div>
+{/if}
 
 {#if dark.mode}
 	<style lang="">
@@ -273,3 +398,65 @@
 		}
 	</style>
 {/if}
+
+<style lang="css">
+	:global(.trip-image-cluster) {
+		border-radius: 9999px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 700;
+		font-size: 0.9rem;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+		border: 2px solid var(--color-surface-700);
+		opacity: 1 !important;
+		background: var(--color-secondary-700) !important;
+		color: #ffffff;
+	}
+
+	:global(.leaflet-marker-icon.trip-image-cluster) {
+		background: var(--color-secondary-700) !important;
+		border: 2px solid var(--color-surface-700) !important;
+		backdrop-filter: none !important;
+		filter: none !important;
+	}
+
+	:global(.leaflet-marker-icon.trip-image-cluster div) {
+		background: transparent !important;
+		border: 0 !important;
+		backdrop-filter: none !important;
+		filter: none !important;
+		opacity: 1 !important;
+	}
+
+	:global(.trip-image-cluster span) {
+		display: inline-flex;
+		width: 100%;
+		height: 100%;
+		align-items: center;
+		justify-content: center;
+		background: transparent !important;
+		opacity: 1 !important;
+	}
+
+	:global(.trip-image-marker) {
+		background: transparent !important;
+		border: 0 !important;
+		opacity: 1 !important;
+	}
+
+	:global(.trip-image-thumb-wrap) {
+		width: 72px;
+		height: 72px;
+		border-radius: 10px;
+		overflow: hidden;
+		border: 2px solid var(--color-secondary-700) !important;
+		background-color: var(--color-surface-700) !important;
+		background-size: cover;
+		background-position: center center;
+		background-repeat: no-repeat;
+		box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+		opacity: 1 !important;
+	}
+
+</style>

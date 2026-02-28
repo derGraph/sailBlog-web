@@ -50,8 +50,9 @@
 
 	let user = $derived(data.user);
 	let session = $derived(data.session);
+	let role = $derived(data.role);
 
-	let tracks: String[] = [];
+	let tracks: String[] = $state([]);
 	const initialView: LatLngExpression = [43.95, 14.79];
 
 
@@ -65,7 +66,11 @@
 				$errorStore = response;
 			}
 		});
-		tracks.push(requestedTrip);
+	});
+	$effect(() => {
+		if (requestedTrip) {
+			tracks = [requestedTrip];
+		}
 	});
 
 	function isUser(trip: any){
@@ -80,13 +85,21 @@
 		}
 		return isContained;
 	}
+	
+	function canEditTrip(trip: any){
+		return !!(role?.canEditAllTrips || (role?.canEditOwnTrips && isUser(trip)));
+	}
 
 </script>
 <div class="flex-1 h-full flex felx-col md:container md:mx-auto p-3 rounded table-container overflow-auto">
     <div class="flex-1 flex flex-wrap flex-row">
         <div class="basis-full md:basis-1/3 w-1/3 md:h-full flex flex-col">
 			<div class="rounded-3xl bg-surface-100-900 p-3 content-center mb-2 justify-center">
-				<h1 class="h1 text-center">{String(requestedTripData.name).trim()}{#if isUser(requestedTripData)}<a class="text-4xl! material-symbols-outlined max-h" href="/trips/edit/{requestedTrip}">edit</a>{/if}
+				<h1 class="h1 text-center">
+					{String(requestedTripData.name).trim()}
+					{#if canEditTrip(requestedTripData)}
+						<a class="text-4xl! material-symbols-outlined max-h" href="/trips/edit/{requestedTrip}">edit</a>
+					{/if}
 				</h1>
 			</div>
 			<div class="rounded-3xl bg-surface-100-900 p-1 content-center mb-2">
@@ -128,6 +141,14 @@
 				</div>
 			</div>
 			<div class="h-full rounded-3xl p-3 bg-surface-100-900 md:overflow-auto">
+				{#if role?.canAddMedia && (role?.canEditAllTrips || isUser(requestedTripData))}
+					<div class="mb-2 flex justify-end">
+						<a class="btn btn-sm preset-tonal-secondary border border-secondary-500" href="/trips/uploadImages/{requestedTrip}">
+							<span class="material-symbols-outlined mr-1">upload</span>
+							Upload Images
+						</a>
+					</div>
+				{/if}
 				<div class="md:mx-1 md:my-0 text-wrap">
 					{@html requestedTripData.description}
 				</div>
@@ -135,7 +156,7 @@
         </div>
         <div class="basis-full flex-1 md:basis-2/3 h-[90%] md:h-full">
 			<div class="pl-0 my-3 md:my-0 md:pl-2 h-full">
-				<Leaflet zoom={8} view={initialView} {tracks} />
+				<Leaflet zoom={8} view={initialView} {tracks} showTripImages={true} />
 			</div>
         </div>
     </div>

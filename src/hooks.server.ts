@@ -15,21 +15,33 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	if(session != null && user != null){
 		try{
-			await prisma.session.update({
+			const now = new Date();
+			// Throttle session writes to avoid update conflicts on concurrent requests.
+			const minSessionAgeMs = 30_000;
+			const sessionCutoff = new Date(now.getTime() - minSessionAgeMs);
+			await prisma.session.updateMany({
 				where:{
-					id: session.id
+					id: session.id,
+					OR: [
+						{ last_use: { lt: sessionCutoff } },
+						{ last_use: null }
+					]
 				},
 				data: {
-					last_use: new Date(Date.now()),
+					last_use: now,
 					ip: event.getClientAddress()
 				}
 			});
-			await prisma.user.update({
+			// Avoid hammering the user row on every request and reduce update conflicts.
+			const minPingAgeMs = 60_000;
+			const cutoff = new Date(now.getTime() - minPingAgeMs);
+			await prisma.user.updateMany({
 				where: {
-					username: user.username
+					username: user.username,
+					lastPing: { lt: cutoff }
 				},
 				data: {
-					lastPing: new Date(Date.now()),
+					lastPing: now,
 				}
 			});
 		}catch(error_message){

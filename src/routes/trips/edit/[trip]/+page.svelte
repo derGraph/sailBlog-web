@@ -51,6 +51,7 @@
 
 	let user = $derived(data.user);
 	let session = $derived(data.session);
+	let role = $derived(data.role);
 
 	let showCrewSearch = $state(false);
 	let showSkipperSearch = $state(false);
@@ -83,6 +84,31 @@
 		if (user != null && user.firstName && user.lastName) {
 			return user.firstName.charAt(0) + user.lastName.charAt(0);
 		}
+	}
+	
+	function isUser(trip: any){
+		let isContained = false;
+		trip.crew.forEach((element: { username: string; }) => {
+			if(element.username == user?.username){
+				isContained = true;
+			}
+		});
+		if(user?.username == trip.skipper?.username){
+			isContained = true;
+		}
+		return isContained;
+	}
+
+	function canEditTrip(trip: any){
+		return !!(role?.canEditAllTrips || (role?.canEditOwnTrips && isUser(trip)));
+	}
+
+	function canDeleteTrip(trip: any){
+		return !!(
+			role?.canDeleteAllTrips || 
+			(role?.canDeleteCrewedTrips && isUser(trip)) ||
+			(role?.canDeleteOwnTrips && trip.skipper?.username == user?.username)
+		);
 	}
 
 	function deleteUser(username: string) {
@@ -165,7 +191,7 @@
 	}
 </script>
 
-{#if showDeleteConfirm}
+{#if showDeleteConfirm && canDeleteTrip(requestedTripData)}
 	<div class="fixed flex h-full inset-0 content-center items-center place-content-center bg-black bg-opacity-80 z-1002">
 		<div class="preset-tonal-surface rounded-3xl p-4 shadow-lg content-center justify-center w-11/12 md:w-1/3">
 			<label for="options" class="h3 mb-2">Do you really want to delete this trip?</label>
@@ -189,7 +215,7 @@
 <div class="felx-1 h-full flex felx-col md:container md:mx-auto p-3 rounded table-container">
 	<div class="flex-1 basis-full md:basis-1/3 w-1/3 md:h-full flex flex-col">
 		<div class="rounded-3xl bg-surface-100-900 p-3 justify-center mb-2 flex flex-row">
-			{#if editName}
+			{#if editName && canEditTrip(requestedTripData)}
 			<input 	class="text-xl! input w-min" 
 					type="text" 
 					name="tripName"
@@ -200,15 +226,19 @@
 			{:else}
 			<h1 class="h1 text-center">
 				{requestedTripData.name}
-				<button class="text-4xl! material-symbols-outlined" onclick={()=>{editName=true}}>edit</button>
-				<button class="text-4xl! material-symbols-outlined" onclick={()=>{showDeleteConfirm=true}}>delete</button>
+				{#if canEditTrip(requestedTripData)}
+					<button class="text-4xl! material-symbols-outlined" onclick={()=>{editName=true}}>edit</button>
+				{/if}
+				{#if canDeleteTrip(requestedTripData)}
+					<button class="text-4xl! material-symbols-outlined" onclick={()=>{showDeleteConfirm=true}}>delete</button>
+				{/if}
 			</h1>
 			{/if}
 		</div>
 		<div class="rounded-3xl bg-surface-100-900 p-1 content-center mb-2 flex flex-wrap justify-center items-center space-x-2">
 			<div class="flex flex-wrap items-center">
 				<h3 class="h5 align-middle mr-2">Skipper:</h3>
-				<button onclick={()=>{showSkipperSearch = true}} class="btn btn-sm preset-tonal-secondary border border-secondary-500 mr-1 pl-1 group hover:preset-filled-warning-500">
+				<button onclick={()=>{showSkipperSearch = true}} class="btn btn-sm preset-tonal-secondary border border-secondary-500 mr-1 pl-1 group hover:preset-filled-warning-500" disabled={!canEditTrip(requestedTripData)}>
 					<Avatar class="!ml-0 !size-6 group-hover:hidden">
 						<Avatar.Image src={getProfilePicture(requestedTripData.skipper)} class="!size-6"/>
 						<Avatar.Fallback>{requestedTripData.skipper?.firstName.charAt(0)+requestedTripData.skipper?.lastName.charAt(0)}</Avatar.Fallback>
@@ -216,13 +246,15 @@
 					<span class="h-6 !w-6 !text-md material-symbols-outlined hidden! group-hover:block!">autorenew</span>
 					{requestedTripData.skipper?.username}
 				</button>
-				<SearchBar bind:displayed={showSkipperSearch} onSelected={changeSkipper} getList={search}/>
+				{#if canEditTrip(requestedTripData)}
+					<SearchBar bind:displayed={showSkipperSearch} onSelected={changeSkipper} getList={search}/>
+				{/if}
 			</div>
 		
 			<div class="flex flex-wrap items-center">
 				<h3 class="h5 align-middle mr-2">Crew:</h3>
 				{#each requestedTripData?.crew as member, i}
-					<button onclick={()=>{deleteUser(member.username)}} class="btn btn-sm preset-tonal-secondary border border-secondary-500 mr-1 pl-1 group hover:preset-filled-error-500 text-sm">
+					<button onclick={()=>{deleteUser(member.username)}} class="btn btn-sm preset-tonal-secondary border border-secondary-500 mr-1 pl-1 group hover:preset-filled-error-500 text-sm" disabled={!canEditTrip(requestedTripData)}>
 						<Avatar class="!ml-0 !size-6 group-hover:hidden">
 							<Avatar.Image src={getProfilePicture(member)} class="!size-6"/>
 							<Avatar.Fallback>{member.firstName?.charAt(0).toString()!+member.lastName?.charAt(0).toString()}</Avatar.Fallback>
@@ -231,10 +263,12 @@
 						{member.username}
 					</button>
 				{/each}
-				<button onclick={()=>{showCrewSearch = true}} class="btn btn-sm !p-1 !size-8 preset-tonal-secondary border border-secondary-500 mr-1 group hover:preset-filled-primary-500 content-center">
-					+
-				</button>
-				<SearchBar bind:displayed={showCrewSearch} onSelected={addCrew} getList={search} inputClass="w-32"/>
+				{#if canEditTrip(requestedTripData)}
+					<button onclick={()=>{showCrewSearch = true}} class="btn btn-sm !p-1 !size-8 preset-tonal-secondary border border-secondary-500 mr-1 group hover:preset-filled-primary-500 content-center">
+						+
+					</button>
+					<SearchBar bind:displayed={showCrewSearch} onSelected={addCrew} getList={search} inputClass="w-32"/>
+				{/if}
 			</div>
 		</div>
 		
@@ -244,17 +278,19 @@
 			{#if editDescription}
 			  <!-- TipTap editor with scrolling -->
 			  <div class="h-full z-0">
-				<Tiptap {saveEditor} usernameToFetch={user?.username} description={requestedTripData.description} />
+				<Tiptap {saveEditor} usernameToFetch={user?.username} description={requestedTripData.description} canUpload={role?.canAddMedia ?? false} />
 			  </div>
 			{:else}
 				<!-- Edit Button -->
-				<button 
-				class="btn-icon preset-tonal-secondary border border-secondary-500 absolute t-2 r-2 z-1 opacity-80"
-				aria-label="Edit"
-				onclick={() => { editDescription = true }}
-				>
-				<span class="material-symbols-outlined">edit</span>
-				</button>
+				{#if canEditTrip(requestedTripData)}
+					<button 
+					class="btn-icon preset-tonal-secondary border border-secondary-500 absolute t-2 r-2 z-1 opacity-80"
+					aria-label="Edit"
+					onclick={() => { editDescription = true }}
+					>
+					<span class="material-symbols-outlined">edit</span>
+					</button>
+				{/if}
 				<!-- Scrollable description with rounded corners -->
 				<div class="h-full overflow-auto md:mx-1 md:my-0 text-wrap z-0">
 					{@html requestedTripData.description}
