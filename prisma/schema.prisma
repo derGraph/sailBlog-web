@@ -16,6 +16,10 @@ model User {
   email             String?
   firstName         String?
   lastName          String?
+  ageConfirmedAt    DateTime?
+  legalAcceptedAt   DateTime?
+  termsVersionAccepted String?
+  privacyVersionAccepted String?
   description       String?   @db.Text
   profilePicture    Media?    @relation("profilePicture", fields: [profilePictureId], references: [id])
   profilePictureId  String?   @unique

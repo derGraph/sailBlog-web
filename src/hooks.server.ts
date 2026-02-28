@@ -12,6 +12,19 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	const {session, user, role} = await auth.validateSession(sessionId);
+	if (session == null || user == null) {
+		event.cookies.set("session_token", "", {
+			path: '/',
+			httpOnly: true,
+			secure: true,
+			sameSite: 'lax',
+			expires: new Date(0)
+		});
+		event.locals.user = null;
+		event.locals.session = null;
+		event.locals.role = null;
+		return resolve(event);
+	}
 
 	if(session != null && user != null){
 		try{
