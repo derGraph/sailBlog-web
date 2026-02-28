@@ -18,6 +18,7 @@
     let page = $state(0);
 
     let { data } = $props();
+    let role = $derived(data.role);
 
     onMount(()=>{
         reloadTable();
@@ -176,7 +177,9 @@
             </button>
         {/each}
         <spacer class="flex-1"></spacer>
-        <button type="button" onclick={()=>{addTrip()}} class="btn btn-md preset-tonal-success border border-success-500"><span class="material-symbols-outlined">add</span>add Trip</button>
+        {#if role?.canCreateAllTrips || role?.canCreateOwnTrips}
+            <button type="button" onclick={()=>{addTrip()}} class="btn btn-md preset-tonal-success border border-success-500"><span class="material-symbols-outlined">add</span>add Trip</button>
+        {/if}
     </div>
     <table class="table text-wrap card bg-surface-200-800 overflow-hidden">
 		<thead>
@@ -249,5 +252,4 @@
         </tfoot>
 	</table>
 </div>
-
 

@@ -26,9 +26,10 @@
 		saveEditor: any;
 		description: string | null;
 		usernameToFetch?: string;
+		canUpload?: boolean;
 	}
 
-	let { saveEditor, description = '', usernameToFetch = '' }:Props = $props();
+	let { saveEditor, description = '', usernameToFetch = '', canUpload = true }:Props = $props();
 
 
 	function setContent(description: string | null) {
@@ -205,7 +206,7 @@
 	{/if}
 
 	<div bind:this={element} class="overflow-hidden h-full w-full card p-2 m-1 preset-tonal-secondary border border-secondary-500"></div>
-	<MediaPicker {usernameToFetch} bind:isOpen={isOpen} onFinished={finishedImageUpload}/>
+	<MediaPicker {usernameToFetch} bind:isOpen={isOpen} onFinished={finishedImageUpload} {canUpload}/>
 </div>
 
 <style lang="css">

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import errorStore from "./errorStore";
     
-    let {isOpen = $bindable(false), usernameToFetch = "", onFinished = function(username:string, id:string){}} = $props();
+    let {isOpen = $bindable(false), usernameToFetch = "", onFinished = function(username:string, id:string){}, canUpload = true} = $props();
 
     let images: any[] = $state([]);
     let files: any[] = [];
@@ -118,19 +118,21 @@
                 </div>
 
                 <div class="grid grid-cols-2 lg:grid-cols-3 gap-2 overflow-auto grow">
-                            <button
-                                class="border rounded cursor-pointer max-h-72"
-                                onclick={() => document.getElementById("mediaPickerUpload")?.click()}
-                            >   
-                                <span class="material-symbols-outlined content-center h-min">add</span>
-                            </button>
-                            <input
-                                id="mediaPickerUpload" 
-                                type="file" 
-                                class="hidden h-0"
-                                accept="image/*"
-                                onchange={(event) => handleFileChange(event)}
-                            />
+                            {#if canUpload}
+                                <button
+                                    class="border rounded cursor-pointer max-h-72"
+                                    onclick={() => document.getElementById("mediaPickerUpload")?.click()}
+                                >   
+                                    <span class="material-symbols-outlined content-center h-min">add</span>
+                                </button>
+                                <input
+                                    id="mediaPickerUpload" 
+                                    type="file" 
+                                    class="hidden h-0"
+                                    accept="image/*"
+                                    onchange={(event) => handleFileChange(event)}
+                                />
+                            {/if}
                     {#each images as image}
                             <button
                                 class="border rounded cursor-pointer h-min"

@@ -50,6 +50,7 @@
 
 	let user = $derived(data.user);
 	let session = $derived(data.session);
+	let role = $derived(data.role);
 
 	let tracks: String[] = [];
 	const initialView: LatLngExpression = [43.95, 14.79];
@@ -80,6 +81,10 @@
 		}
 		return isContained;
 	}
+	
+	function canEditTrip(trip: any){
+		return !!(role?.canEditAllTrips || (role?.canEditOwnTrips && isUser(trip)));
+	}
 
 </script>
 <div class="flex-1 h-full flex felx-col md:container md:mx-auto p-3 rounded table-container overflow-auto">
@@ -88,7 +93,7 @@
 			<div class="rounded-3xl bg-surface-100-900 p-3 content-center mb-2 justify-center">
 				<h1 class="h1 text-center">
 					{String(requestedTripData.name).trim()}
-					{#if isUser(requestedTripData)}
+					{#if canEditTrip(requestedTripData)}
 						<a class="text-4xl! material-symbols-outlined max-h" href="/trips/edit/{requestedTrip}">edit</a>
 					{/if}
 				</h1>
@@ -132,7 +137,7 @@
 				</div>
 			</div>
 			<div class="h-full rounded-3xl p-3 bg-surface-100-900 md:overflow-auto">
-				{#if isUser(requestedTripData)}
+				{#if role?.canAddMedia && (role?.canEditAllTrips || isUser(requestedTripData))}
 					<div class="mb-2 flex justify-end">
 						<a class="btn btn-sm preset-tonal-secondary border border-secondary-500" href="/trips/uploadImages/{requestedTrip}">
 							<span class="material-symbols-outlined mr-1">upload</span>
