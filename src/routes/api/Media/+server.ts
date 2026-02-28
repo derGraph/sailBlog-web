@@ -1,6 +1,6 @@
 import { prisma } from '$lib/server/prisma';
 import { error, fail } from '@sveltejs/kit';
-import { existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 import exif from 'exif-reader';
@@ -13,7 +13,8 @@ interface Media {
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST(event) {
-	if (!event.request.headers.get('content-type')?.includes('image/')) {
+	const contentType = event.request.headers.get('content-type') ?? '';
+	if (!contentType.includes('image/')) {
 		error(400, {
 			message: 'Set Header to image/filetype!'
 		});
@@ -21,7 +22,11 @@ export async function POST(event) {
 	let unparsedVisibility = event.url.searchParams.get('visibility');
 	let alt = event.url.searchParams.get('alt');
 	let tripId = event.url.searchParams.get('tripId');
+	let latParam = event.url.searchParams.get('lat');
+	let longParam = event.url.searchParams.get('long');
+	let createdParam = event.url.searchParams.get('created');
 	let visibility = 1;
+	let clientExifData: { lat?: number; long?: number; created?: Date } = {};
 
 	if (unparsedVisibility != null) {
 		switch (unparsedVisibility) {
@@ -40,6 +45,20 @@ export async function POST(event) {
 			default:
 				visibility = 1;
 				break;
+		}
+	}
+	if (latParam != null && longParam != null) {
+		const latNum = Number(latParam);
+		const longNum = Number(longParam);
+		if (Number.isFinite(latNum) && Number.isFinite(longNum) && Math.abs(latNum) <= 90 && Math.abs(longNum) <= 180) {
+			clientExifData.lat = latNum;
+			clientExifData.long = longNum;
+		}
+	}
+	if (createdParam != null && createdParam !== '') {
+		const createdDate = new Date(createdParam);
+		if (!Number.isNaN(createdDate.getTime())) {
+			clientExifData.created = createdDate;
 		}
 	}
 
@@ -106,63 +125,74 @@ export async function POST(event) {
 	try {
 		const arrayBuffer = await event.request.arrayBuffer();
 		const buffer = Buffer.from(arrayBuffer);
-		let inputImage = await sharp(buffer);
-		let metadata = await inputImage.metadata();
+		const isAvif = contentType.includes('image/avif');
 
 		let exifData: null|Object = null;
+		let inputImage: sharp.Sharp | null = null;
+		let metadata: sharp.Metadata | null = null;
 
-		if (metadata.exif) {
-			let exifReader = exif(metadata.exif);
-			let lat = null;
-			let long = null;
-			let timestamp = null;
+		const shouldCheckMetadata = buffer.length > 500 * 1024;
+		if (shouldCheckMetadata || !isAvif) {
+			inputImage = await sharp(buffer);
+			metadata = await inputImage.metadata();
 
-			if (exifReader.GPSInfo) {
-				lat = exifReader.GPSInfo.GPSLatitude![0] + exifReader.GPSInfo.GPSLatitude![1]/60 + exifReader.GPSInfo.GPSLatitude![2]/3600;
-				if(exifReader.GPSInfo.GPSLatitudeRef === "S") {
-					lat = -lat;
+			if (metadata.exif) {
+				let exifReader = exif(metadata.exif);
+				let lat = null;
+				let long = null;
+				let timestamp = null;
+
+				if (exifReader.GPSInfo) {
+					lat = exifReader.GPSInfo.GPSLatitude![0] + exifReader.GPSInfo.GPSLatitude![1]/60 + exifReader.GPSInfo.GPSLatitude![2]/3600;
+					if(exifReader.GPSInfo.GPSLatitudeRef === "S") {
+						lat = -lat;
+					}
+
+					long = exifReader.GPSInfo.GPSLongitude![0] + exifReader.GPSInfo.GPSLongitude![1]/60 + exifReader.GPSInfo.GPSLongitude![2]/3600;
+					if(exifReader.GPSInfo.GPSLongitudeRef === "W") {
+						long = -long;
+					}
+
+					if(exifReader.GPSInfo.GPSDateStamp) {
+						timestamp = new Date(Date.parse(exifReader.GPSInfo.GPSDateStamp.replaceAll(":", "-") + "T" +
+												String(exifReader.GPSInfo.GPSTimeStamp![0]).padStart(2, '0') + ":" +
+												String(exifReader.GPSInfo.GPSTimeStamp![1]).padStart(2, '0') + ":" +
+												String(exifReader.GPSInfo.GPSTimeStamp![2]).padStart(2, '0') + "Z"));
+					}
 				}
 
-				long = exifReader.GPSInfo.GPSLongitude![0] + exifReader.GPSInfo.GPSLongitude![1]/60 + exifReader.GPSInfo.GPSLongitude![2]/3600;
-				if(exifReader.GPSInfo.GPSLongitudeRef === "W") {
-					long = -long;
-				}
-
-				if(exifReader.GPSInfo.GPSDateStamp) {
-					timestamp = new Date(Date.parse(exifReader.GPSInfo.GPSDateStamp.replaceAll(":", "-") + "T" +
-											String(exifReader.GPSInfo.GPSTimeStamp![0]).padStart(2, '0') + ":" +
-											String(exifReader.GPSInfo.GPSTimeStamp![1]).padStart(2, '0') + ":" +
-											String(exifReader.GPSInfo.GPSTimeStamp![2]).padStart(2, '0') + "Z"));
-				}
-			}
-
-			exifData = {
-				...(exifReader.GPSInfo && {
-					lat: lat,
-					long: long,
-					...(exifReader.GPSInfo.GPSTimeStamp && {
-						created: timestamp
+				exifData = {
+					...(exifReader.GPSInfo && {
+						lat: lat,
+						long: long,
+						...(exifReader.GPSInfo.GPSTimeStamp && {
+							created: timestamp
+						})
+					}),
+					...(exifReader.Photo?.DateTimeOriginal && {
+						created: exifReader.Photo.DateTimeOriginal
 					})
-				}),
-				...(exifReader.Photo?.DateTimeOriginal && {
-					created: exifReader.Photo.DateTimeOriginal
-				})
-			};
-		}
+				};
+			}
 
-		if (metadata.format == 'svg') {
-			if (metadata.width == undefined) metadata.width = 0;
-			if (metadata.width <= 2000) {
-				inputImage = await inputImage.resize(2000);
+			if (metadata.format == 'svg') {
+				if (metadata.width == undefined) metadata.width = 0;
+				if (metadata.width <= 2000) {
+					inputImage = await inputImage.resize(2000);
+				}
 			}
 		}
 
+		const mergedExifData = {
+			...clientExifData,
+			...(exifData ?? {})
+		};
 		media = await prisma.media.create({
 			data: {
 				username: event.locals.user?.username,
 				visibility: visibility,
 				...(alt && {alt}),
-				...(exifData && exifData),
+				...(Object.keys(mergedExifData).length > 0 && mergedExifData),
 				...(tripId && {tripId: tripId})
 			}
 		});
@@ -173,7 +203,22 @@ export async function POST(event) {
 		}
 
 		filePath = path.join(filePath, media.id + '.avif');
-		await inputImage.avif({ lossless: false, quality: 50 }).toFile(filePath);
+		if (isAvif && (!metadata || metadata.format === 'avif')) {
+			// Already AVIF: avoid recompression. If metadata wasn't checked (small file), trust content-type.
+			writeFileSync(filePath, buffer);
+		} else {
+			if (!inputImage) {
+				inputImage = await sharp(buffer);
+			}
+			// Resize before AVIF encode to reduce CPU cost for large uploads.
+			inputImage = inputImage.resize({
+				width: 2000,
+				height: 2000,
+				fit: 'inside',
+				withoutEnlargement: true
+			});
+			await inputImage.avif({ lossless: false, quality: 50, effort: 2 }).toFile(filePath);
+		}
 	} catch (imageError) {
 		if(media.id != ''){
 			await prisma.media.delete({

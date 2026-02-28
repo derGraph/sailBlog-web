@@ -1,6 +1,9 @@
 <script lang="ts">
 	import L, { LatLngBounds } from 'leaflet';
 	import 'leaflet/dist/leaflet.css';
+	import 'leaflet.markercluster';
+	import 'leaflet.markercluster/dist/MarkerCluster.css';
+	import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 	import { onDestroy, onMount, setContext } from 'svelte';
 	import errorStore from './errorStore';
 
@@ -12,6 +15,8 @@
 	let mapElement: HTMLDivElement = $state();
 	let lines: L.Polyline[][] = $state([]);
 	let tripImageLayer: L.LayerGroup | undefined = $state();
+	let fullscreenImageSrc: string | null = $state(null);
+	let fullscreenImageAlt: string = $state('Image');
 	let mapMoved: Boolean = false;
 	let myEvent: number = 0;
 	let maxBounds: LatLngBounds;
@@ -46,11 +51,31 @@
 
 	let recenterButton = new recenterButtonStructure();
 
+	function createTripImageClusterGroup() {
+		return (L as any).markerClusterGroup({
+			chunkedLoading: true,
+			showCoverageOnHover: false,
+			maxClusterRadius: 80,
+			disableClusteringAtZoom: 22,
+			spiderfyOnMaxZoom: true,
+			spiderfyDistanceMultiplier: 2.4,
+			iconCreateFunction: (cluster: any) => {
+				const count = cluster.getChildCount();
+				return L.divIcon({
+					className: 'trip-image-cluster',
+					html: `<span>${count}</span>`,
+					iconSize: [44, 44]
+				});
+			}
+		});
+	}
+
 	onMount(() => {
 		const mode = localStorage.getItem('mode') || 'light';
     	document.documentElement.setAttribute('class', mode);
 		map = L.map(mapElement);
-		tripImageLayer = L.layerGroup().addTo(map);
+		tripImageLayer = createTripImageClusterGroup();
+		tripImageLayer.addTo(map);
 
 		var osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			maxZoom: 19,
@@ -139,7 +164,6 @@
 	}
 
 	async function onTracksChange(tracks: any[] | null) {
-		console.log('[Leaflet] onTracksChange', { hasMap: !!map, tracks });
 		if(!map){
 			return;
 		}
@@ -212,7 +236,7 @@
 
 	function getTripImageLayer(){
 		if(!tripImageLayer){
-			tripImageLayer = L.layerGroup();
+			tripImageLayer = createTripImageClusterGroup();
 			tripImageLayer.addTo(map!);
 		}
 		return tripImageLayer;
@@ -253,16 +277,21 @@
 			if(image.lat == null || image.long == null){
 				continue;
 			}
-			const marker = L.marker([image.lat, image.long]);
 			const altText = image.alt ?? 'Image';
-			const imgEl = document.createElement('img');
-			imgEl.src = `/api/Media/${image.username}/${image.id}.avif`;
-			imgEl.alt = altText;
-			imgEl.style.maxWidth = '200px';
-			imgEl.style.maxHeight = '200px';
-			imgEl.style.borderRadius = '8px';
-			imgEl.style.objectFit = 'cover';
-			marker.bindPopup(imgEl);
+			const imageUrl = `/api/Media/${image.username}/${image.id}.avif`;
+			const thumbHtml = `<div class="trip-image-thumb-wrap" role="img" aria-label="${altText}" style="background-image:url('${imageUrl}')"></div>`;
+			const marker = L.marker([image.lat, image.long], {
+				icon: L.divIcon({
+					className: 'image-marker trip-image-marker',
+					html: thumbHtml,
+					iconSize: [72, 72],
+					iconAnchor: [36, 36]
+				})
+			});
+			marker.on('click', () => {
+				fullscreenImageSrc = `/api/Media/${image.username}/${image.id}.avif`;
+				fullscreenImageAlt = altText;
+			});
 			marker.addTo(layer);
 		}
 	}
@@ -294,20 +323,15 @@
 		if(startDate == null){
 			startDate = 0;
 		}
-		console.log('[Leaflet] getTrip datapoints', { tripId, startDate });
 		let response = await fetch('/api/Datapoints?tripId=' + tripId + "&start=" + startDate + "&amount=5000");
 		if (!response.ok) {
-			console.warn('[Leaflet] getTrip failed', response.status, response.statusText);
 			$errorStore = response;
 			return;
 		}
-		const data = await response.json();
-		console.log('[Leaflet] getTrip datapoints response size', Object.keys(data || {}).length);
-		return data;
+		return await response.json();
 	}
 	$effect(() => {
 		if (map) {
-			console.log('[Leaflet] map ready effect', { bounds, view, zoom });
 			if (bounds) {
 				map.fitBounds(bounds);
 			} else if (view && zoom) {
@@ -326,7 +350,6 @@
 		if(!map){
 			return;
 		}
-		console.log('[Leaflet] tracks effect', { tracks, showTripImages });
 		tracks;
 		showTripImages;
 		onTracksChange(tracks);
@@ -338,6 +361,30 @@
 		{@render children?.()}
 	{/if}
 </div>
+
+{#if fullscreenImageSrc}
+	<div
+		class="fixed inset-0 z-[1100] bg-black/90 flex items-center justify-center p-4"
+		role="button"
+		tabindex="0"
+		aria-label="Close image preview"
+		onclick={() => { fullscreenImageSrc = null; }}
+		onkeydown={(event) => { if (event.key === 'Escape') fullscreenImageSrc = null; }}
+	>
+		<img
+			src={fullscreenImageSrc}
+			alt={fullscreenImageAlt}
+			class="max-w-[96vw] max-h-[92vh] object-contain rounded-lg"
+		/>
+		<button
+			type="button"
+			class="absolute top-4 right-4 btn preset-tonal-secondary border border-secondary-500"
+			onclick={(event) => { event.stopPropagation(); fullscreenImageSrc = null; }}
+		>
+			Close
+		</button>
+	</div>
+{/if}
 
 {#if dark.mode}
 	<style lang="">
@@ -351,3 +398,65 @@
 		}
 	</style>
 {/if}
+
+<style lang="css">
+	:global(.trip-image-cluster) {
+		border-radius: 9999px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 700;
+		font-size: 0.9rem;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+		border: 2px solid var(--color-surface-700);
+		opacity: 1 !important;
+		background: var(--color-secondary-700) !important;
+		color: #ffffff;
+	}
+
+	:global(.leaflet-marker-icon.trip-image-cluster) {
+		background: var(--color-secondary-700) !important;
+		border: 2px solid var(--color-surface-700) !important;
+		backdrop-filter: none !important;
+		filter: none !important;
+	}
+
+	:global(.leaflet-marker-icon.trip-image-cluster div) {
+		background: transparent !important;
+		border: 0 !important;
+		backdrop-filter: none !important;
+		filter: none !important;
+		opacity: 1 !important;
+	}
+
+	:global(.trip-image-cluster span) {
+		display: inline-flex;
+		width: 100%;
+		height: 100%;
+		align-items: center;
+		justify-content: center;
+		background: transparent !important;
+		opacity: 1 !important;
+	}
+
+	:global(.trip-image-marker) {
+		background: transparent !important;
+		border: 0 !important;
+		opacity: 1 !important;
+	}
+
+	:global(.trip-image-thumb-wrap) {
+		width: 72px;
+		height: 72px;
+		border-radius: 10px;
+		overflow: hidden;
+		border: 2px solid var(--color-secondary-700) !important;
+		background-color: var(--color-surface-700) !important;
+		background-size: cover;
+		background-position: center center;
+		background-repeat: no-repeat;
+		box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+		opacity: 1 !important;
+	}
+
+</style>

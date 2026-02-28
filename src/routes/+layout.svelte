@@ -31,6 +31,18 @@
 	function resetError() {
 		$errorStore = new Response();
 	}
+	
+	async function parseErrorResponse(response: Response) {
+		try {
+			return { kind: 'json', value: await response.clone().json() };
+		} catch {
+			try {
+				return { kind: 'text', value: await response.clone().text() };
+			} catch {
+				return { kind: 'unknown', value: '' };
+			}
+		}
+	}
 
 	let user = $derived(data.user);
 	let role = $derived(data.role);
@@ -127,10 +139,16 @@
 					</div>
 					<div class="flex-1 flex flex-col">
 						<div class="alert-message">
-						{#await $errorStore.json()}
+						{#await parseErrorResponse($errorStore)}
 							<p class="text-base">{$errorStore.status} {$errorStore.statusText}</p>
 						{:then parsed}
-							<p class="text-base">{$errorStore.status} {$errorStore.statusText}: {parsed.message}</p>
+							{#if parsed.kind === 'json'}
+								<p class="text-base">{$errorStore.status} {$errorStore.statusText}: {parsed.value?.message ?? JSON.stringify(parsed.value)}</p>
+							{:else if parsed.kind === 'text'}
+								<p class="text-base">{$errorStore.status} {$errorStore.statusText}: {parsed.value}</p>
+							{:else}
+								<p class="text-base">{$errorStore.status} {$errorStore.statusText}</p>
+							{/if}
 						{:catch parsingError}
 							<p class="text-base">Error in response: {parsingError}</p>
 						{/await}
