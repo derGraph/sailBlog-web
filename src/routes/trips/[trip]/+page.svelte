@@ -52,7 +52,7 @@
 	let session = $derived(data.session);
 	let role = $derived(data.role);
 
-	let tracks: String[] = [];
+	let tracks: String[] = $state([]);
 	const initialView: LatLngExpression = [43.95, 14.79];
 
 
@@ -66,7 +66,11 @@
 				$errorStore = response;
 			}
 		});
-		tracks.push(requestedTrip);
+	});
+	$effect(() => {
+		if (requestedTrip) {
+			tracks = [requestedTrip];
+		}
 	});
 
 	function isUser(trip: any){
@@ -152,7 +156,7 @@
         </div>
         <div class="basis-full flex-1 md:basis-2/3 h-[90%] md:h-full">
 			<div class="pl-0 my-3 md:my-0 md:pl-2 h-full">
-				<Leaflet zoom={8} view={initialView} {tracks} />
+				<Leaflet zoom={8} view={initialView} {tracks} showTripImages={true} />
 			</div>
         </div>
     </div>

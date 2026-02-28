@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import L, { LatLngBounds } from 'leaflet';
 	import 'leaflet/dist/leaflet.css';
 	import { onDestroy, onMount, setContext } from 'svelte';
@@ -13,10 +11,10 @@
 	let map: L.Map | undefined = $state();
 	let mapElement: HTMLDivElement = $state();
 	let lines: L.Polyline[][] = $state([]);
+	let tripImageLayer: L.LayerGroup | undefined = $state();
 	let mapMoved: Boolean = false;
 	let myEvent: number = 0;
 	let maxBounds: LatLngBounds;
-	let changed = $state(false);
 
 	let recenterButtonStructure = L.Control.extend({
 		options: {
@@ -52,6 +50,7 @@
 		const mode = localStorage.getItem('mode') || 'light';
     	document.documentElement.setAttribute('class', mode);
 		map = L.map(mapElement);
+		tripImageLayer = L.layerGroup().addTo(map);
 
 		var osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			maxZoom: 19,
@@ -86,6 +85,7 @@
 		view?: L.LatLngExpression | undefined;
 		zoom?: number | undefined;
 		tracks?: String[] | null;
+		showTripImages?: boolean;
 		children?: import('svelte').Snippet;
 	}
 
@@ -94,6 +94,7 @@
 		view = undefined,
 		zoom = undefined,
 		tracks = null,
+		showTripImages = false,
 		children
 	}: Props = $props();
 
@@ -138,11 +139,12 @@
 	}
 
 	async function onTracksChange(tracks: any[] | null) {
+		console.log('[Leaflet] onTracksChange', { hasMap: !!map, tracks });
 		if(!map){
-			changed = true;
 			return;
 		}
 		lines = []; // Reset the lines2D array
+		clearTripImages();
 		if (tracks != null) {
 			recenterButton.addTo(map!);
 			for (const trackId of tracks) {
@@ -150,6 +152,9 @@
 				let oldStartDate = 0;
 				do{
 					let tripData = await getTrip(trackId, oldStartDate);
+					if(!tripData){
+						break;
+					}
 					tripLength = Object.keys(tripData).length;
 					let trackLines: L.Polyline[] = [];
 					let currentLine: L.LatLng[] = [];
@@ -190,9 +195,75 @@
 					// Add the trackLines to the lines2D array
 					lines = [...lines, trackLines];
 				}while(tripLength >= 5000);
+				if(showTripImages){
+					await addTripImages(trackId);
+				}
 			}
 		}else{
 			recenterButton.remove();
+		}
+	}
+
+	function clearTripImages(){
+		if(tripImageLayer){
+			tripImageLayer.clearLayers();
+		}
+	}
+
+	function getTripImageLayer(){
+		if(!tripImageLayer){
+			tripImageLayer = L.layerGroup();
+			tripImageLayer.addTo(map!);
+		}
+		return tripImageLayer;
+	}
+
+	async function addTripImages(tripId: String){
+		let response = await fetch('/api/Media?tripId=' + tripId);
+		if (!response.ok) {
+			$errorStore = response;
+			return;
+		}
+		let raw = await response.json();
+		let images: { id: string; username: string; lat?: number | null; long?: number | null; alt?: string | null }[] = [];
+
+		if(Array.isArray(raw)){
+			images = raw.map((item: any) => ({
+				id: item.id,
+				username: item.username,
+				lat: item.lat,
+				long: item.long,
+				alt: item.alt
+			}));
+		} else {
+			for (const id of Object.keys(raw)) {
+				const item = raw[id];
+				images.push({
+					id,
+					username: item.username,
+					lat: item.lat,
+					long: item.long,
+					alt: item.alt
+				});
+			}
+		}
+
+		const layer = getTripImageLayer();
+		for (const image of images) {
+			if(image.lat == null || image.long == null){
+				continue;
+			}
+			const marker = L.marker([image.lat, image.long]);
+			const altText = image.alt ?? 'Image';
+			const imgEl = document.createElement('img');
+			imgEl.src = `/api/Media/${image.username}/${image.id}.avif`;
+			imgEl.alt = altText;
+			imgEl.style.maxWidth = '200px';
+			imgEl.style.maxHeight = '200px';
+			imgEl.style.borderRadius = '8px';
+			imgEl.style.objectFit = 'cover';
+			marker.bindPopup(imgEl);
+			marker.addTo(layer);
 		}
 	}
 
@@ -223,15 +294,20 @@
 		if(startDate == null){
 			startDate = 0;
 		}
+		console.log('[Leaflet] getTrip datapoints', { tripId, startDate });
 		let response = await fetch('/api/Datapoints?tripId=' + tripId + "&start=" + startDate + "&amount=5000");
 		if (!response.ok) {
+			console.warn('[Leaflet] getTrip failed', response.status, response.statusText);
 			$errorStore = response;
 			return;
 		}
-		return await response.json();
+		const data = await response.json();
+		console.log('[Leaflet] getTrip datapoints response size', Object.keys(data || {}).length);
+		return data;
 	}
-	run(() => {
+	$effect(() => {
 		if (map) {
+			console.log('[Leaflet] map ready effect', { bounds, view, zoom });
 			if (bounds) {
 				map.fitBounds(bounds);
 			} else if (view && zoom) {
@@ -241,14 +317,19 @@
 			map?.on("mousedown", onMouseDown);
 			map?.on("zoomstart", onZoomStart);
 			map?.on("dragstart", onDrag);
-			if(changed){
-				changed = false;
-				onTracksChange(tracks);
-			}
 		}
 	});
-	run(() => {
+	$effect(() => {
 		onLineChange(lines);
+	});
+	$effect(() => {
+		if(!map){
+			return;
+		}
+		console.log('[Leaflet] tracks effect', { tracks, showTripImages });
+		tracks;
+		showTripImages;
+		onTracksChange(tracks);
 	});
 </script>
 
