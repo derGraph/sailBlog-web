@@ -17,8 +17,9 @@
     let maxTrips = $state(0);
     let page = $state(0);
 
-    let { data } = $props();
-    let role = $derived(data.role);
+	    let { data } = $props();
+	    let role = $derived(data.role);
+	    const minimumUserSearchLength = 3;
 
     onMount(()=>{
         reloadTable();
@@ -123,11 +124,16 @@
         }
     }
 
-    async function searchUser(searchTerm:string) {
-		let response = await fetch('/api/User?search='+searchTerm, {method: 'GET'});
-		if(!response.ok){
-			$errorStore = response;
-		}else{
+	    async function searchUser(searchTerm:string) {
+			const normalizedSearchTerm = searchTerm.trim();
+			if (!data.user || (!role?.canEnumerateAllUsers && normalizedSearchTerm.length < minimumUserSearchLength)) {
+				return [];
+			}
+
+			let response = await fetch('/api/User?search=' + encodeURIComponent(normalizedSearchTerm), {method: 'GET'});
+			if(!response.ok){
+				$errorStore = response;
+			}else{
 			let usernameArray:String[] = await response.json();
 			return usernameArray;
 		}
@@ -252,4 +258,3 @@
         </tfoot>
 	</table>
 </div>
-

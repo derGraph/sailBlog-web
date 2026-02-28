@@ -7,8 +7,22 @@ import DOMPurify from 'isomorphic-dompurify';
 export async function GET(event) {
 	let requestedUsername = event.url.searchParams.get('username');
 	let requestedSearch = event.url.searchParams.get('search');
+	const minimumSearchLength = 3;
 
 	if(requestedSearch != null) {
+		if (!event.locals.user) {
+			throw error(401, {
+				message: 'Authentication required.'
+			});
+		}
+
+		requestedSearch = requestedSearch.trim();
+		if (!event.locals.role?.canEnumerateAllUsers && requestedSearch.length < minimumSearchLength) {
+			throw error(400, {
+				message: `Search query must be at least ${minimumSearchLength} characters.`
+			});
+		}
+
 		let userlist = await prisma.user.findMany({
 			where: {
 				username: {

@@ -52,6 +52,7 @@
 	let user = $derived(data.user);
 	let session = $derived(data.session);
 	let role = $derived(data.role);
+	const minimumUserSearchLength = 3;
 
 	let showCrewSearch = $state(false);
 	let showSkipperSearch = $state(false);
@@ -169,7 +170,12 @@
 		});
 	}
 	async function search(searchTerm:string) {
-		let response = await fetch('/api/User?search='+searchTerm, {method: 'GET'});
+		const normalizedSearchTerm = searchTerm.trim();
+		if (!user || (!role?.canEnumerateAllUsers && normalizedSearchTerm.length < minimumUserSearchLength)) {
+			return [];
+		}
+
+		let response = await fetch('/api/User?search=' + encodeURIComponent(normalizedSearchTerm), {method: 'GET'});
 		if(!response.ok){
 			$errorStore = response;
 		}else{
