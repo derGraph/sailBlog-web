@@ -33,41 +33,28 @@
 
     async function createUser(event: Event) {
         const formdata = new FormData(event.target as HTMLFormElement);
-        let username = formdata.get('username');
-        let email = formdata.get('email');
-        let firstName = formdata.get('firstName');
-        let lastName = formdata.get('lastName');
-        let password = formdata.get('password');
-        
-        let url = new URL('/api/User', window.location.origin);
-        
-        if(username != null) {
-            url.searchParams.append('username', username.toString());
-        }
+        let username = formdata.get('username')?.toString();
+        let email = formdata.get('email')?.toString();
+        let firstName = formdata.get('firstName')?.toString();
+        let lastName = formdata.get('lastName')?.toString();
+        let password = formdata.get('password')?.toString();
+        const role = (event.target as HTMLFormElement).querySelector('select')?.value || '';
 
-        if(email != null) {
-            url.searchParams.append('email', email.toString());
-        }
-
-        if (firstName != null && firstName.toString() !== "") {
-            url.searchParams.append('firstName', firstName.toString());
-        }
-
-        if (lastName != null && lastName.toString() !== "") {
-            url.searchParams.append('lastName', lastName.toString());
-        }
-
-        if (password != null && password.toString() !== "") {
-            url.searchParams.append('password', password.toString());
-        }
-
-        if (magicLink != null) {
-            url.searchParams.append('magicLink', magicLink);
-        }
-
-        url.searchParams.append('role', (event.target as HTMLFormElement).querySelector('select')?.value || '');
-
-        let result = await fetch(url, {method:"POST"});
+        let result = await fetch('/api/User', {
+            method:"POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                ...(username && { username }),
+                ...(email && { email }),
+                ...(firstName && { firstName }),
+                ...(lastName && { lastName }),
+                ...(password && { password }),
+                ...(magicLink && { magicLink }),
+                role
+            })
+        });
         if (result.ok) {
             magicLink = null;
             (document.getElementById("createUserForm") as HTMLFormElement)?.reset();
@@ -80,7 +67,7 @@
 
 	function generateMagicLink(event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement; }) {
         magicLink = generateSecureRandomString()+"."+generateSecureRandomString();        
-        navigator.clipboard.writeText(window.location.protocol+"//"+window.location.host+"/sign_in?magicLink="+encodeURIComponent(magicLink));
+        navigator.clipboard.writeText(window.location.protocol+"//"+window.location.host+"/sign_in?allowMagicLink=1#magicLink="+encodeURIComponent(magicLink));
         alert("Link copied to Clipboard!\nWarning: This cannot be regenerated!");
 	}
 

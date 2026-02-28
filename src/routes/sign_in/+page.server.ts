@@ -3,47 +3,41 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { verify } from '@node-rs/argon2';
 import { prisma } from '$lib/server/prisma';
 import type { Actions, PageServerLoad } from './$types';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 export const load: PageServerLoad = async (event) => {
-	if (event.locals.user && !event.url.searchParams.has("magicLink")) {
-		redirect(302, '/');
-	}
-	if (event.url.searchParams.has("magicLink")) {
-		let magicLink = event.url.searchParams.get("magicLink");
-		const linkId = magicLink!.split(".")[0];
-		const linkSecret = magicLink!.split(".")[1];
+	const magicLink = event.url.searchParams.get('magicLink');
+	if (magicLink) {
+		if (!magicLink.includes('.')) {
+			return error(400, 'Wrong magic link!');
+		}
+		const linkId = magicLink.split(".")[0];
+		const linkSecret = magicLink.split(".")[1];
 		const hashedSecret = await hashSecret(linkSecret);
 
 		let key;
 		try {
-			
 			key = await prisma.key.findFirstOrThrow({
 				where: {
-					id: linkId
+					id: linkId,
+					type: 'magicLink'
 				}
 			});
-		} catch (dbException) {
-			if (dbException instanceof Error) {
-				if(dbException.name == "PrismaClientKnownRequestError") {
-					const prismaError = dbException as PrismaClientKnownRequestError;
-					if(prismaError.code == 'P2025') {
-						return error(400, 'Wrong magic link!');
-					}
-				}
-			} else {
-				return dbException;
-			}
-		}
-		if (constantTimeEqual(hexStringToUint8Array(key!.passwordHash!), hashedSecret)) {
-			if (event.locals.session) {
-				await auth.invalidateSession(event.locals.session.id);
-			}
-			await loginUser(event, key!.userId);
-			return redirect(302, '/');
-		} else {
+		} catch {
 			return error(400, 'Wrong magic link!');
 		}
+
+		if (!key.passwordHash || !constantTimeEqual(hexStringToUint8Array(key.passwordHash), hashedSecret)) {
+			return error(400, 'Wrong magic link!');
+		}
+
+		if (event.locals.session) {
+			await auth.invalidateSession(event.locals.session.id);
+		}
+		await loginUser(event, key.userId);
+		redirect(302, '/');
+	}
+	if (event.locals.user && event.url.searchParams.get('allowMagicLink') !== '1') {
+		redirect(302, '/');
 	}
 };
 
@@ -98,7 +92,46 @@ async function loginUser(event: any, user:string) {
 }
 
 export const actions: Actions = {
-	default: async (event) => {
+	magicLink: async (event) => {
+		const formData = await event.request.formData();
+		const magicLink = formData.get('magicLink');
+		if (typeof magicLink !== 'string' || !magicLink.includes('.')) {
+			return fail(422, {
+				error: 'Wrong magic link!'
+			});
+		}
+
+		const linkId = magicLink.split(".")[0];
+		const linkSecret = magicLink.split(".")[1];
+		const hashedSecret = await hashSecret(linkSecret);
+
+		let key;
+		try {
+			key = await prisma.key.findFirstOrThrow({
+				where: {
+					id: linkId,
+					type: 'magicLink'
+				}
+			});
+		} catch {
+			return fail(422, {
+				error: 'Wrong magic link!'
+			});
+		}
+
+		if (!key.passwordHash || !constantTimeEqual(hexStringToUint8Array(key.passwordHash), hashedSecret)) {
+			return fail(422, {
+				error: 'Wrong magic link!'
+			});
+		}
+
+		if (event.locals.session) {
+			await auth.invalidateSession(event.locals.session.id);
+		}
+		await loginUser(event, key.userId);
+		redirect(302, '/');
+	},
+	login: async (event) => {
 		const formData = await event.request.formData();
 		const identifier = formData.get('identifier');
 		const password = formData.get('password');

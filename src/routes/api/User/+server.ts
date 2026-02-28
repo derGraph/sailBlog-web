@@ -284,17 +284,29 @@ export async function POST(event) {
 		const usernameRegex = /^[a-zA-Z0-9_-]+$/;
 		const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 		const passwordRegex = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,255}$/;
+		let requestData: Record<string, unknown> = {};
 
-		firstName = event.url.searchParams.get('firstName');
-		usernameToCreate = event.url.searchParams.get("username");
-		lastName = event.url.searchParams.get('lastName');
-		unparsedDateOfBirth = event.url.searchParams.get('dateOfBirth');
-		role = event.url.searchParams.get('role');
-		description = event.url.searchParams.get('description');
-		email = event.url.searchParams.get('email');
-		password = event.url.searchParams.get('password');
-		role = event.url.searchParams.get('role');
-		magicLink = event.url.searchParams.get('magicLink');
+		const contentType = event.request.headers.get('content-type') ?? '';
+		try {
+			if (contentType.includes('application/json')) {
+				requestData = await event.request.json();
+			} else {
+				const formData = await event.request.formData();
+				requestData = Object.fromEntries(formData.entries());
+			}
+		} catch {
+			return error(400, 'Invalid request body!');
+		}
+
+		firstName = typeof requestData.firstName === 'string' ? requestData.firstName : null;
+		usernameToCreate = typeof requestData.username === 'string' ? requestData.username : null;
+		lastName = typeof requestData.lastName === 'string' ? requestData.lastName : null;
+		unparsedDateOfBirth = typeof requestData.dateOfBirth === 'string' ? requestData.dateOfBirth : null;
+		role = typeof requestData.role === 'string' ? requestData.role : null;
+		description = typeof requestData.description === 'string' ? requestData.description : null;
+		email = typeof requestData.email === 'string' ? requestData.email : null;
+		password = typeof requestData.password === 'string' ? requestData.password : null;
+		magicLink = typeof requestData.magicLink === 'string' ? requestData.magicLink : null;
 
 		if(!event.locals.role?.canCreateUser) {
 			return error(401, 'You are not allowed to create users!');
