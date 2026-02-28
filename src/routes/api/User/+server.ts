@@ -47,18 +47,17 @@ export async function GET(event) {
 
 	try {
 		if (event.locals.user?.username == requestedUsername || event.locals.role?.canViewAllUserdata) {
-			let userdata = await prisma.user.findFirstOrThrow({
-				where: {
-					username: event.locals.user?.username
-				},
-				include: {
-					uploadedMedia: true,
-					profilePicture: true,
-					skipperedTrips: true,
-					crewedTrips: true,
-					key: true
-				}
-			});
+				let userdata = await prisma.user.findFirstOrThrow({
+					where: {
+						username: event.locals.user?.username
+					},
+					include: {
+						uploadedMedia: true,
+						profilePicture: true,
+						skipperedTrips: true,
+						crewedTrips: true
+					}
+				});
 			const { username, ...results } = userdata;
 			return new Response(JSON.stringify({ [userdata.username]: results }));
 		} else if (event.locals.user) {

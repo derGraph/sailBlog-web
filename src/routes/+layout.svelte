@@ -50,10 +50,6 @@
 	let pathname = $derived($page.url.pathname);
 </script>
 
-<link
-	rel="stylesheet"
-	href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0"
-/>
 	<div class="h-dvh flex flex-col">
 		<div class="md:container md:mx-auto">
 			<AppBar class="rounded-b-3xl p-2">

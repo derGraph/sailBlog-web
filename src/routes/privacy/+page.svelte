@@ -120,15 +120,34 @@
 				<strong>EN:</strong> Hosting is provided by Hetzner in Germany. There is currently no external
 				email provider. Use of external map tiles/fonts may create connections to third-party providers.
 			</p>
+			<p>
+				<strong>DE:</strong> Die Kartenansicht ist fester Bestandteil des Dienstes. Kartenkacheln werden
+				regelmaessig von folgenden Endpunkten abgerufen:
+				<code>https://tile.openstreetmap.org/{`{z}`}/{`{x}`}/{`{y}`}.png</code> (OpenStreetMap) und
+				<code>https://t1.openseamap.org/seamark/{`{z}`}/{`{x}`}/{`{y}`}.png</code> (OpenSeaMap).
+				Dabei werden technisch notwendige Verbindungsdaten (z. B. IP-Adresse, User-Agent) an diese
+				Anbieter uebermittelt.
+			</p>
+			<p>
+				<strong>EN:</strong> Map view is an integral part of the service. Map tiles are regularly requested from:
+				<code>https://tile.openstreetmap.org/{`{z}`}/{`{x}`}/{`{y}`}.png</code> (OpenStreetMap) and
+				<code>https://t1.openseamap.org/seamark/{`{z}`}/{`{x}`}/{`{y}`}.png</code> (OpenSeaMap).
+				This transmits technically required connection data (e.g., IP address, user agent) to these
+				providers.
+			</p>
 		</section>
 
 		<section class="space-y-2">
 			<h2 class="h3">7. Speicherdauer / Retention</h2>
 			<p>
-				<strong>DE:</strong> Nutzer und alle zugeordneten Daten werden auf Anfrage geloescht.
+				<strong>DE:</strong> Nutzer und alle zugeordneten Daten werden auf Anfrage innerhalb von
+				30 Tagen geloescht. Backups werden rotierend aufbewahrt und spaetestens nach 30 weiteren
+				Tagen ueberschrieben; bis dahin kann eine technische Restverfuegbarkeit in Sicherungen bestehen.
 			</p>
 			<p>
-				<strong>EN:</strong> Users and all associated data are deleted upon request.
+				<strong>EN:</strong> Users and all associated data are deleted upon request within 30 days.
+				Backups are retained on a rolling basis and are overwritten no later than an additional
+				30 days; until then, residual technical availability in backups may remain.
 			</p>
 		</section>
 
@@ -168,6 +187,24 @@
 			<p>
 				<strong>EN:</strong> You can lodge a complaint with a data protection supervisory authority,
 				in particular in the EU Member State of your habitual residence, place of work, or alleged infringement.
+			</p>
+		</section>
+
+		<section class="space-y-2">
+			<h2 class="h3">11. Datenschutzvorfaelle / Data Breach Response</h2>
+			<p>
+				<strong>DE:</strong> Bei Verdacht auf einen Datenschutzvorfall erfolgt eine interne Pruefung
+				durch den Verantwortlichen. Falls eine Meldepflicht besteht, erfolgt
+				die Meldung an die zustaendige Aufsichtsbehoerde unverzueglich und moeglichst innerhalb von
+				72 Stunden nach Bekanntwerden (Art. 33 DSGVO). Betroffene Personen werden gemaess Art. 34 DSGVO
+				informiert, wenn ein hohes Risiko besteht.
+			</p>
+			<p>
+				<strong>EN:</strong> In case of a suspected personal data breach, an internal assessment is
+				handled by the Controller. Where notification is required, the breach is
+				reported to the competent supervisory authority without undue delay and, where feasible, within
+				72 hours of becoming aware (Art. 33 GDPR). Affected data subjects are informed under Art. 34 GDPR
+				where a high risk exists.
 			</p>
 		</section>
 	</div>

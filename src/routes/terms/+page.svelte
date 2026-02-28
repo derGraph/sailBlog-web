@@ -10,11 +10,11 @@
 		<section class="space-y-2">
 			<h2 class="h3">1. Vertragspartner / Contracting Parties</h2>
 			<p>
-				<strong>DE:</strong> Dieser Nutzungsvertrag wird geschlossen zwischen [Name], [Anschrift], [E-Mail]
+				<strong>DE:</strong> Dieser Nutzungsvertrag wird geschlossen zwischen Paul Graf, paulantongraf@gmail.com
 				("Anbieter") und dem registrierten Nutzer ("Nutzer").
 			</p>
 			<p>
-				<strong>EN:</strong> This Terms agreement is concluded between [Name], [Address], [Email]
+				<strong>EN:</strong> This Terms agreement is concluded between Paul Graf, paulantongraf@gmail.com
 				("Provider") and the registered user ("User").
 			</p>
 		</section>
@@ -119,11 +119,11 @@
 		<section class="space-y-2">
 			<h2 class="h3">10. Anwendbares Recht / Governing Law</h2>
 			<p>
-				<strong>DE:</strong> Es gilt deutsches Recht unter Ausschluss des UN-Kaufrechts. Gerichtsstand:
-				[Gerichtsstand], soweit gesetzlich zulaessig.
+				<strong>DE:</strong> Es gilt österreichisches Recht unter Ausschluss des UN-Kaufrechts. Gerichtsstand:
+				Zell am See, soweit gesetzlich zulaessig.
 			</p>
 			<p>
-				<strong>EN:</strong> German law applies, excluding the CISG. Place of jurisdiction: [Jurisdiction],
+				<strong>EN:</strong> Austrian law applies, excluding the CISG. Place of jurisdiction: Zell am See,
 				where legally permissible.
 			</p>
 		</section>
