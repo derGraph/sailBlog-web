@@ -27,6 +27,7 @@
 				response.json().then((response_data) => {
                     for(let image in response_data) {
                         let newMedia = response_data[image] as Media;
+                        newMedia.id = image;
                         images.push(newMedia)
                     }
 				});
