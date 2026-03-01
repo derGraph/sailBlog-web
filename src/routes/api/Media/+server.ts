@@ -1,6 +1,6 @@
 import { prisma } from '$lib/server/prisma';
 import { error, fail } from '@sveltejs/kit';
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, unlinkSync, writeFileSync } from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 import exif from 'exif-reader';
@@ -384,4 +384,151 @@ export async function GET(event) {
 			});
 		}
 	}
+}
+
+/** @type {import('./$types').RequestHandler} */
+export async function PUT(event) {
+	const mediaId = event.url.searchParams.get('mediaId');
+	const unparsedVisibility = event.url.searchParams.get('visibility');
+
+	if (!event.locals.user?.username) {
+		return error(401, { message: 'Log in first!' });
+	}
+	if (mediaId == null || mediaId === '') {
+		return error(400, { message: 'mediaId is required!' });
+	}
+	if (unparsedVisibility == null) {
+		return error(400, { message: 'visibility is required!' });
+	}
+
+	let visibility = Number.parseInt(unparsedVisibility, 10);
+	if (Number.isNaN(visibility) || visibility < 0 || visibility > 2) {
+		return error(400, { message: 'Invalid visibility value!' });
+	}
+
+	let media = await prisma.media.findFirst({
+		where: {
+			id: mediaId
+		},
+		include: {
+			trip: {
+				include: {
+					crew: {
+						select: {
+							username: true
+						}
+					}
+				}
+			}
+		}
+	});
+
+	if (!media) {
+		return error(404, { message: 'Media not found!' });
+	}
+
+	const canEditOwnMedia = media.username === event.locals.user.username;
+	const canEditAllMedia = !!event.locals.role?.canSeeAllMedia;
+	let canEditTripMedia = false;
+
+	if (media.trip) {
+		if (event.locals.role?.canEditAllTrips) {
+			canEditTripMedia = true;
+		} else if (event.locals.role?.canEditOwnTrips) {
+			canEditTripMedia =
+				media.trip.skipperName === event.locals.user.username ||
+				media.trip.crew.some((member) => member.username === event.locals.user?.username);
+		}
+	}
+
+	if (!canEditOwnMedia && !canEditAllMedia && !canEditTripMedia) {
+		return error(403, { message: 'Not allowed to edit this media item!' });
+	}
+
+	if (typeof media.trip?.visibility === 'number') {
+		visibility = Math.min(visibility, media.trip.visibility);
+	}
+
+	await prisma.media.update({
+		where: {
+			id: media.id
+		},
+		data: {
+			visibility
+		}
+	});
+
+	return new Response(JSON.stringify({ ok: true, id: media.id, visibility }), {
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	});
+}
+
+/** @type {import('./$types').RequestHandler} */
+export async function DELETE(event) {
+	const mediaId = event.url.searchParams.get('mediaId');
+
+	if (!event.locals.user?.username) {
+		return error(401, { message: 'Log in first!' });
+	}
+	if (mediaId == null || mediaId === '') {
+		return error(400, { message: 'mediaId is required!' });
+	}
+
+	let media = await prisma.media.findFirst({
+		where: {
+			id: mediaId
+		},
+		include: {
+			trip: {
+				include: {
+					crew: {
+						select: {
+							username: true
+						}
+					}
+				}
+			}
+		}
+	});
+
+	if (!media) {
+		return error(404, { message: 'Media not found!' });
+	}
+
+	const canEditOwnMedia = media.username === event.locals.user.username;
+	const canEditAllMedia = !!event.locals.role?.canSeeAllMedia;
+	let canEditTripMedia = false;
+
+	if (media.trip) {
+		if (event.locals.role?.canEditAllTrips) {
+			canEditTripMedia = true;
+		} else if (event.locals.role?.canEditOwnTrips) {
+			canEditTripMedia =
+				media.trip.skipperName === event.locals.user.username ||
+				media.trip.crew.some((member) => member.username === event.locals.user?.username);
+		}
+	}
+
+	if (!canEditOwnMedia && !canEditAllMedia && !canEditTripMedia) {
+		return error(403, { message: 'Not allowed to delete this media item!' });
+	}
+
+	await prisma.media.delete({
+		where: {
+			id: media.id
+		}
+	});
+
+	const filePath = path.join('store', media.username, media.id + '.avif');
+	if (existsSync(filePath)) {
+		unlinkSync(filePath);
+	}
+
+	return new Response(JSON.stringify({ ok: true, id: media.id }), {
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	});
 }
