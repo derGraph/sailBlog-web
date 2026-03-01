@@ -26,9 +26,11 @@ export async function POST(event) {
 	let longParam = event.url.searchParams.get('long');
 	let createdParam = event.url.searchParams.get('created');
 	let visibility = 1;
+	let hasExplicitVisibility = false;
 	let clientExifData: { lat?: number; long?: number; created?: Date } = {};
 
 	if (unparsedVisibility != null) {
+		hasExplicitVisibility = true;
 		switch (unparsedVisibility) {
 			case '0':
 				visibility = 0;
@@ -109,8 +111,8 @@ export async function POST(event) {
 			tripId = null;
 			error(400, {message: "Trip not found or not allowed!"});
 		} else if (typeof trip.visibility === 'number') {
-			// Inherit visibility from parent trip when attached to a trip.
-			visibility = trip.visibility;
+			// For trip media, explicit visibility can only be equal/more private than the trip visibility.
+			visibility = hasExplicitVisibility ? Math.min(visibility, trip.visibility) : trip.visibility;
 		}
 	} else {
 		tripId = null;
