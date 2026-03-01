@@ -7,6 +7,7 @@
 	import { getProfilePicture } from '$lib/functions';
 	import {dark} from '$lib/darkMode.svelte';
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 
 	let navHeight = 2;
 	let { data, children } = $props();
@@ -48,24 +49,30 @@
 	let role = $derived(data.role);
 	let session = $derived(data.session);
 	let pathname = $derived($page.url.pathname);
+	let mobileMenuOpen = $state(false);
+
+	$effect(() => {
+		pathname;
+		mobileMenuOpen = false;
+	});
 </script>
 
 	<div class="h-dvh flex flex-col">
 		<div class="md:container md:mx-auto">
 			<AppBar class="rounded-b-3xl p-2">
-				<AppBar.Toolbar class="grid-cols-[auto_1fr_auto]">
+				<AppBar.Toolbar class="flex items-center justify-between gap-2">
 					<AppBar.Lead class="flex items-end">
 						<a href="/" class="material-symbols-outlined" style="font-size: {navHeight}rem">map</a>
 						<a href="/" class="text-2xl">sailBlog</a>
 					</AppBar.Lead>
 
-					<AppBar.Headline>
+					<AppBar.Headline class="!hidden lg:!flex grow justify-start pl-2">
 						{#if user?.username}
 							<div class="inline-flex items-center">
 								<button
 									type="button"
 									class={`px-4 py-1.5 text-sm font-semibold rounded-md hover:bg-surface-200-800 ${pathname.startsWith('/trips') ? 'underline underline-offset-4' : ''}`}
-									onclick={() => {window.location.href = "/trips"}}
+									onclick={() => goto('/trips')}
 								>
 									Trips
 								</button>
@@ -74,7 +81,7 @@
 									<button
 										type="button"
 										class={`px-4 py-1.5 text-sm font-semibold rounded-md hover:bg-surface-200-800 ${pathname.startsWith('/createUser') ? 'underline underline-offset-4' : ''}`}
-										onclick={() => {window.location.href = "/createUser"}}
+										onclick={() => goto('/createUser')}
 									>
 										Create User
 									</button>
@@ -84,48 +91,88 @@
 					</AppBar.Headline>
 
 					<AppBar.Trail class="flex items-end">
-						{#if !user}
-							<div class="btn-md btn preset-tonal-secondary border border-secondary-500">
-								<a href="/sign_in"><button type="button" class="">Sign in!</button></a>
-								<span class="divider-vertical h-6"></span>
-								<a href="/sign_up"><button type="button" class="">Sign up!</button></a>
-							</div>
-						{:else}
-							<div
-								class="btn-sm btn preset-tonal-secondary border border-secondary-500 material-symbols-outlined grow flex flex-auto"
-								style="margin:0;"
-							>
-								<button onclick={changeDarkMode} style="s"
-									>{dark.mode ? 'dark_mode' : 'light_mode'}</button
-								>
-								<span
-									class="divider-vertical h-8"
-									style="border-color:rgb(var(--color-secondary-500)); margin:0; padding:0;"
-								></span>
-								<a href="/sign_out" style="margin:0;padding:0;"
-									><button type="button" style="">logout</button></a
-								>
-							</div>
-							{#if user.firstName && user.lastName}
-								<a href="/user" class="grow flex flex-auto space-x-2 h-auto ml-1 items-center justify-center"
-								aria-label="Get to the Users page!"
-									><Avatar class="!size-[32px]">
-										<Avatar.Image src={getProfilePicture(user)} class="!size-[32px]"/>
-										<Avatar.Fallback>{user.firstName.charAt(0)+user.lastName.charAt(0)}</Avatar.Fallback>
-										<!-- background="bg-primary-500"
-										fallbackClasses="btn px-2"
-										rounded="rounded-full" -->
-									</Avatar>
-								</a>
+						<div class="!hidden lg:!flex lg:items-end">
+							{#if !user}
+								<div class="btn-md btn preset-tonal-secondary border border-secondary-500">
+									<a href="/sign_in"><button type="button">Sign in!</button></a>
+									<span class="divider-vertical h-6"></span>
+									<a href="/sign_up"><button type="button">Sign up!</button></a>
+								</div>
 							{:else}
-								<a href="/user" aria-label="profile Picture" ><div class="placeholder-circle !size-[32px]" ></div></a>
+								<div
+									class="btn-sm btn preset-tonal-secondary border border-secondary-500 material-symbols-outlined grow flex flex-auto"
+									style="margin:0;"
+								>
+									<button onclick={changeDarkMode}>{dark.mode ? 'dark_mode' : 'light_mode'}</button>
+									<span
+										class="divider-vertical h-8"
+										style="border-color:rgb(var(--color-secondary-500)); margin:0; padding:0;"
+									></span>
+									<a href="/sign_out" style="margin:0;padding:0;"
+										><button type="button">logout</button></a
+									>
+								</div>
+								{#if user.firstName && user.lastName}
+									<a href="/user" class="grow flex flex-auto space-x-2 h-auto ml-1 items-center justify-center"
+									aria-label="Get to the Users page!"
+										><Avatar class="!size-[32px]">
+											<Avatar.Image src={getProfilePicture(user)} class="!size-[32px]"/>
+											<Avatar.Fallback>{user.firstName.charAt(0)+user.lastName.charAt(0)}</Avatar.Fallback>
+										</Avatar>
+									</a>
+								{:else}
+									<a href="/user" aria-label="profile Picture"><div class="placeholder-circle !size-[32px]"></div></a>
+								{/if}
 							{/if}
-						{/if}
+						</div>
+						<button
+							type="button"
+							class="lg:!hidden btn-icon preset-tonal-secondary border border-secondary-500 material-symbols-outlined flex items-center justify-center leading-none box-border !w-8 !h-8 !min-w-8 !min-h-8 !p-0 !m-0 text-xl"
+							aria-label="Open navigation menu"
+							aria-expanded={mobileMenuOpen}
+							onclick={() => {mobileMenuOpen = !mobileMenuOpen;}}
+						>
+							{mobileMenuOpen ? 'close' : 'menu'}
+						</button>
 					</AppBar.Trail>
 
 				</AppBar.Toolbar>
 					
 			</AppBar>
+			{#if mobileMenuOpen}
+				<div class="lg:!hidden mt-2 rounded-3xl bg-surface-100-900 border border-surface-300-700 p-3">
+					<div class="flex flex-col gap-2">
+						{#if user?.username}
+							<button
+								type="button"
+								class={`btn preset-tonal border border-surface-500 justify-start ${pathname.startsWith('/trips') ? 'preset-filled' : ''}`}
+								onclick={() => goto('/trips')}
+							>
+								Trips
+							</button>
+							{#if role?.canCreateUser}
+								<button
+									type="button"
+									class={`btn preset-tonal border border-surface-500 justify-start ${pathname.startsWith('/createUser') ? 'preset-filled' : ''}`}
+									onclick={() => goto('/createUser')}
+								>
+									Create User
+								</button>
+							{/if}
+							<a href="/user" class="btn preset-tonal border border-surface-500 justify-start">Profile</a>
+							<div class="flex gap-2">
+								<button type="button" class="btn preset-tonal-secondary border border-secondary-500 material-symbols-outlined flex items-center justify-center" onclick={changeDarkMode}>
+									{dark.mode ? 'dark_mode' : 'light_mode'}
+								</button>
+								<a href="/sign_out" class="btn preset-tonal-secondary border border-secondary-500 grow text-center">logout</a>
+							</div>
+						{:else}
+							<a href="/sign_in" class="btn preset-tonal-secondary border border-secondary-500 text-center">Sign in!</a>
+							<a href="/sign_up" class="btn preset-tonal-secondary border border-secondary-500 text-center">Sign up!</a>
+						{/if}
+					</div>
+				</div>
+			{/if}
 		</div>
 		{#if $errorStore.status >= 400}
 			<div class="md:container md:mx-auto px-3 pt-3">
