@@ -1,6 +1,7 @@
 <script lang="ts">
 	import errorStore from '$lib/errorStore.js';
 	import { getProfilePicture, parseDate } from '$lib/functions.js';
+	import { parseVisibility } from '$lib/visibility.js';
 	import SearchBar from '$lib/searchBar.svelte';
 	import Tiptap from '$lib/Tiptap/+Tiptap.svelte';
 	import type { User } from '@prisma/client';
@@ -18,6 +19,7 @@
 		skipper: any;
 		length_sail: any;
 		length_motor: any;
+		visibility: number;
 		crew: [User];
 		name: any;
 		description: any; 
@@ -43,6 +45,7 @@
 		name: undefined,
 		length_sail: undefined,
 		length_motor: undefined,
+		visibility: 1,
 		endPoint: undefined,
 		startPoint: undefined,
 		skipper: undefined
@@ -60,6 +63,7 @@
 	let showDeleteConfirm = $state(false);
 	let editName = $state(false);
 	let newName = $state("");
+	let selectedVisibility = $state("1");
 	let tracks: String[] = [];
 
 
@@ -73,6 +77,7 @@
 				response.json().then((response_data) => {
 					requestedTripData = response_data[0];
 					newName = requestedTripData.name;
+					selectedVisibility = String(requestedTripData.visibility ?? 1);
 				});
 			} else {
 				$errorStore = response;
@@ -169,6 +174,24 @@
 			}
 		});
 	}
+
+	function saveTripVisibility(visibility:number){
+		fetch('/api/Trip?tripId='+requestedTrip+'&visibility='+visibility, {method: 'PUT'}).then((response)=>{
+			if(!response.ok){
+				$errorStore = response;
+			}else{
+				getTripData();
+			}
+		});
+	}
+
+	function onVisibilityChanged(event: Event){
+		const visibility = Number((event.currentTarget as HTMLSelectElement).value);
+		if(Number.isNaN(visibility)){
+			return;
+		}
+		saveTripVisibility(visibility);
+	}
 	async function search(searchTerm:string) {
 		const normalizedSearchTerm = searchTerm.trim();
 		if (!user || (!role?.canEnumerateAllUsers && normalizedSearchTerm.length < minimumUserSearchLength)) {
@@ -240,6 +263,20 @@
 				{/if}
 			</h1>
 			{/if}
+		</div>
+		<div class="rounded-3xl bg-surface-100-900 p-1 content-center mb-2 flex flex-wrap justify-center items-center space-x-2">
+			<div class="flex flex-wrap items-center mr-2">
+				<h3 class="h5 align-middle mr-2">Visibility:</h3>
+				{#if canEditTrip(requestedTripData)}
+					<select class="select !w-auto px-2 py-1" bind:value={selectedVisibility} onchange={onVisibilityChanged}>
+						<option value="0">private</option>
+						<option value="1">logged in</option>
+						<option value="2">public</option>
+					</select>
+				{:else}
+					<div class="btn btn-sm preset-tonal border border-surface-500">{parseVisibility(requestedTripData.visibility) ?? "unknown"}</div>
+				{/if}
+			</div>
 		</div>
 		<div class="rounded-3xl bg-surface-100-900 p-1 content-center mb-2 flex flex-wrap justify-center items-center space-x-2">
 			<div class="flex flex-wrap items-center">
