@@ -51,11 +51,11 @@ export async function GET(event) {
 	}
 
 	const tripId = event.url.searchParams.get('tripId');
-	const albumId = event.url.searchParams.get('albumId')?.trim();
 	const requestedVisibility = Number.parseInt(event.url.searchParams.get('visibility') ?? '1', 10);
+	const requestedMaxItemCount = Number.parseInt(event.url.searchParams.get('maxItemCount') ?? '200', 10);
 
-	if (!tripId || !albumId) {
-		return error(400, { message: 'tripId and albumId are required.' });
+	if (!tripId) {
+		return error(400, { message: 'tripId is required.' });
 	}
 
 	const trip = await getEditableTrip(event, tripId);
@@ -66,16 +66,19 @@ export async function GET(event) {
 	let visibility = Number.isNaN(requestedVisibility) ? 1 : requestedVisibility;
 	if (visibility < 0 || visibility > 2) visibility = 1;
 	visibility = Math.min(visibility, trip.visibility);
+	let maxItemCount = Number.isNaN(requestedMaxItemCount) ? 200 : requestedMaxItemCount;
+	if (maxItemCount < 1) maxItemCount = 1;
+	if (maxItemCount > 2000) maxItemCount = 2000;
 
 	const state = crypto.randomUUID();
 	const ctx = {
 		tripId: trip.id,
-		albumId,
 		visibility,
+		maxItemCount,
 		username: event.locals.user.username,
 		state
 	};
-	event.cookies.set('google_photos_import_ctx', encodeURIComponent(JSON.stringify(ctx)), {
+	event.cookies.set('google_photos_picker_ctx', encodeURIComponent(JSON.stringify(ctx)), {
 		path: '/',
 		httpOnly: true,
 		secure: true,
@@ -87,7 +90,7 @@ export async function GET(event) {
 	authUrl.searchParams.set('client_id', clientId);
 	authUrl.searchParams.set('redirect_uri', getRedirectUri(event));
 	authUrl.searchParams.set('response_type', 'code');
-	authUrl.searchParams.set('scope', 'https://www.googleapis.com/auth/photoslibrary.readonly');
+	authUrl.searchParams.set('scope', 'https://www.googleapis.com/auth/photospicker.mediaitems.readonly');
 	authUrl.searchParams.set('include_granted_scopes', 'true');
 	authUrl.searchParams.set('access_type', 'online');
 	authUrl.searchParams.set('prompt', 'consent');
@@ -95,4 +98,3 @@ export async function GET(event) {
 
 	throw redirect(302, authUrl.toString());
 }
-
