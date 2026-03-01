@@ -252,7 +252,7 @@
 
 </script>
 
-<div class="h-full md:container md:mx-auto p-3 rounded table-container">
+<div class="h-full min-h-0 md:container md:mx-auto p-3 rounded table-container flex flex-col">
     <div class="rounded-3xl bg-surface-100-900 p-4 mb-3 border border-surface-300-700">
         <div class="flex flex-wrap items-start gap-3">
             <div class="grow">
@@ -326,7 +326,8 @@
         </div>
     {/if}
 
-    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 overflow-auto grow">
+    <div class="min-h-0 grow overflow-auto">
+    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
         {#each images as image, index}
             <div class="rounded-2xl overflow-hidden bg-surface-100-900 border border-surface-300-700 relative">
                 <img src={"/api/Media/"+image.username+"/"+image.id+".avif"} alt={parseAlt(image.alt)} class="aspect-square object-cover w-full" />
@@ -373,6 +374,7 @@
                 {/if}
             </div>
         {/each}
+    </div>
     </div>
 
     {#if images.length === 0}

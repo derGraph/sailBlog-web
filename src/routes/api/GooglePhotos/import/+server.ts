@@ -44,7 +44,7 @@ async function getEditableTrip(event: any, tripId: string) {
 }
 
 async function getPickerSession(accessToken: string, sessionId: string) {
-	const response = await fetch(`https://photospicker.googleapis.com/v1/${sessionId}`, {
+	const response = await fetch(`https://photospicker.googleapis.com/v1/sessions/${encodeURIComponent(sessionId)}`, {
 		headers: {
 			Authorization: `Bearer ${accessToken}`
 		}
@@ -81,7 +81,7 @@ async function listPickedItems(accessToken: string, sessionId: string) {
 }
 
 async function closeSession(accessToken: string, sessionId: string) {
-	await fetch(`https://photospicker.googleapis.com/v1/${sessionId}`, {
+	await fetch(`https://photospicker.googleapis.com/v1/sessions/${encodeURIComponent(sessionId)}`, {
 		method: 'DELETE',
 		headers: {
 			Authorization: `Bearer ${accessToken}`

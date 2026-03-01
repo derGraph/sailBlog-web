@@ -102,13 +102,14 @@ async function createPickerSession(accessToken: string, maxItemCount: number) {
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify({
-			pickerConfig: {
-				maxItemCount
+			pickingConfig: {
+				maxItemCount: String(maxItemCount)
 			}
 		})
 	});
 	if (!response.ok) {
-		throw new Error(`Failed to create picker session: ${response.status}`);
+		const details = await response.text();
+		throw new Error(`Failed to create picker session: ${response.status} ${details}`);
 	}
 	return await response.json();
 }
@@ -188,7 +189,9 @@ export async function GET(event) {
 			})
 		);
 	} catch (exception: any) {
+		if (exception?.status && exception?.location) {
+			throw exception;
+		}
 		throw redirect(302, pageRedirect(ctx.tripId, { importError: exception?.message ?? 'Picker setup failed.' }));
 	}
 }
-

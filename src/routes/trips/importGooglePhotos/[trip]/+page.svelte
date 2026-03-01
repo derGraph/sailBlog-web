@@ -1,6 +1,7 @@
 <script lang="ts">
 	import errorStore from '$lib/errorStore';
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 
 	let { data } = $props();
 	let requestedTrip = $derived(data.requestedTrip);
@@ -56,6 +57,17 @@
 			return;
 		}
 		importResult = payload;
+
+		const resultParams = new URLSearchParams();
+		resultParams.set('imported', String(payload.imported ?? 0));
+		resultParams.set('duplicates', String(payload.duplicates ?? 0));
+		resultParams.set('nonImages', String(payload.nonImages ?? 0));
+		resultParams.set('failed', String(payload.failed ?? 0));
+		resultParams.set('total', String(payload.total ?? 0));
+		await goto(`/trips/importGooglePhotos/${requestedTrip}?${resultParams.toString()}`, {
+			replaceState: true,
+			invalidateAll: false
+		});
 	}
 </script>
 
