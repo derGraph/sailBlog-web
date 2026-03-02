@@ -214,6 +214,8 @@
 		>
 			<a href="https://github.com/derGraph">© derGraph</a>
 			<span class="mx-2">|</span>
+			<a href="/about">About</a>
+			<span class="mx-2">|</span>
 			<a href="/privacy">Datenschutz / Privacy</a>
 			<span class="mx-2">|</span>
 			<a href="/terms">Nutzungsvertrag / Terms</a>
