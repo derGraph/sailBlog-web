@@ -264,6 +264,9 @@ export async function GET(event) {
 				let results = <Media[]>(<unknown>await prisma.media.findMany({
 					where: {
 						username: event.locals.user?.username
+					},
+					orderBy: {
+						created: "asc"
 					}
 				}));
 				return new Response(JSON.stringify(results));
@@ -271,6 +274,9 @@ export async function GET(event) {
 				let results = <Media[]>(<unknown>await prisma.media.findMany({
 					where: {
 						username: requestedUsername
+					},
+					orderBy: {
+						created: "asc"
 					}
 				}));
 				return new Response(JSON.stringify(results));
@@ -286,6 +292,9 @@ export async function GET(event) {
 								visibility: 2
 							}
 						]
+					},
+					orderBy: {
+						created: "asc"
 					}
 				});
 				var results: { [a: string]: any } = {};
@@ -305,6 +314,9 @@ export async function GET(event) {
 					where: {
 						username: requestedUsername,
 						visibility: 2
+					},
+					orderBy: {
+						created: "asc"
 					}
 				});
 				var results: { [a: string]: any } = {};
@@ -336,6 +348,9 @@ export async function GET(event) {
 								visibility: 2
 							}
 						]
+					},
+					orderBy: {
+						created: "asc"
 					}
 				});
 				var results: { [a: string]: any } = {};
@@ -355,6 +370,9 @@ export async function GET(event) {
 					where: {
 						tripId: requestedTrip,
 						visibility: 2
+					},
+					orderBy: {
+						created: "asc"
 					}
 				});
 				var results: { [a: string]: any } = {};
