@@ -263,7 +263,8 @@ export async function GET(event) {
 			if (event.locals.user?.username == requestedUsername) {
 				let results = <Media[]>(<unknown>await prisma.media.findMany({
 					where: {
-						username: event.locals.user?.username
+						username: event.locals.user?.username,
+						deleted: false,
 					},
 					orderBy: {
 						created: "asc"
@@ -273,7 +274,8 @@ export async function GET(event) {
 			} else if (event.locals.role?.canSeeAllMedia) {
 				let results = <Media[]>(<unknown>await prisma.media.findMany({
 					where: {
-						username: requestedUsername
+						username: requestedUsername,
+						deleted: false,
 					},
 					orderBy: {
 						created: "asc"
@@ -284,6 +286,7 @@ export async function GET(event) {
 				let returnMedia = await prisma.media.findMany({
 					where: {
 						username: requestedUsername,
+						deleted: false,
 						OR: [
 							{
 								visibility: 1
@@ -313,7 +316,8 @@ export async function GET(event) {
 				let returnMedia = await prisma.media.findMany({
 					where: {
 						username: requestedUsername,
-						visibility: 2
+						visibility: 2,
+						deleted: false
 					},
 					orderBy: {
 						created: "asc"
@@ -332,7 +336,8 @@ export async function GET(event) {
 			if (event.locals.role?.canSeeAllMedia) {
 				let results = <Media[]>(<unknown>await prisma.media.findMany({
 					where: {
-						tripId: requestedTrip
+						tripId: requestedTrip,
+						deleted: false
 					}
 				}));
 				return new Response(JSON.stringify(results));
@@ -340,6 +345,7 @@ export async function GET(event) {
 				let returnMedia = await prisma.media.findMany({
 					where: {
 						tripId: requestedTrip,
+						deleted: false,
 						OR: [
 							{
 								visibility: 1
@@ -369,7 +375,8 @@ export async function GET(event) {
 				let returnMedia = await prisma.media.findMany({
 					where: {
 						tripId: requestedTrip,
-						visibility: 2
+						visibility: 2,
+						deleted: false
 					},
 					orderBy: {
 						created: "asc"
@@ -426,7 +433,8 @@ export async function PUT(event) {
 
 	let media = await prisma.media.findFirst({
 		where: {
-			id: mediaId
+			id: mediaId,
+			deleted: false
 		},
 		include: {
 			trip: {
@@ -469,7 +477,8 @@ export async function PUT(event) {
 
 	await prisma.media.update({
 		where: {
-			id: media.id
+			id: media.id,
+			deleted: false
 		},
 		data: {
 			visibility
@@ -496,7 +505,8 @@ export async function DELETE(event) {
 
 	let media = await prisma.media.findFirst({
 		where: {
-			id: mediaId
+			id: mediaId,
+			deleted: false
 		},
 		include: {
 			trip: {
@@ -533,9 +543,12 @@ export async function DELETE(event) {
 		return error(403, { message: 'Not allowed to delete this media item!' });
 	}
 
-	await prisma.media.delete({
+	await prisma.media.update({
 		where: {
 			id: media.id
+		},
+		data: {
+			deleted: true
 		}
 	});
 
