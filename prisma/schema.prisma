@@ -16,6 +16,10 @@ model User {
   email             String?
   firstName         String?
   lastName          String?
+  ageConfirmedAt    DateTime?
+  legalAcceptedAt   DateTime?
+  termsVersionAccepted String?
+  privacyVersionAccepted String?
   description       String?   @db.Text
   profilePicture    Media?    @relation("profilePicture", fields: [profilePictureId], references: [id])
   profilePictureId  String?   @unique
@@ -74,6 +78,7 @@ model Role {
   canEditOwnUser    Boolean   @default(true)
   canEditAllUser    Boolean   @default(false)
   canViewAllUserdata  Boolean @default(false)
+  canEnumerateAllUsers Boolean @default(false)
   needsPassword     Boolean   @default(true)
   canUseMagicLink   Boolean   @default(false)
 

@@ -9,7 +9,13 @@ export const load = async ({ locals, cookies }) => {
 	await auth.invalidateSession(locals.session.id);
 	let { session, user, role} = await auth.validateSession(locals.session.id);
 
-	cookies.set("session_token", "", { path: '/' });
+	cookies.set("session_token", "", {
+		path: '/',
+		httpOnly: true,
+		secure: true,
+		sameSite: 'lax',
+		expires: new Date(0)
+	});
 
 	if (session == null && user == null && role == null) {
 		return { confirmed: true };

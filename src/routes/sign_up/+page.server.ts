@@ -2,6 +2,7 @@ import { auth } from '$lib/server/auth';
 import { fail, redirect } from '@sveltejs/kit';
 import { hash } from '@node-rs/argon2';
 import { prisma } from '$lib/server/prisma';
+import { PRIVACY_VERSION, TERMS_VERSION } from '$lib/legal';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
@@ -17,6 +18,8 @@ export const actions: Actions = {
 		const firstName = formData.get('firstName');
 		const lastName = formData.get('lastName');
 		const password = formData.get('password');
+		const ageConfirmed = formData.get('ageConfirmed');
+		const legalAccepted = formData.get('legalAccepted');
 		let email = formData.get('email');
 
 		const usernameRegex = /^[a-zA-Z0-9_-]+$/;
@@ -24,6 +27,15 @@ export const actions: Actions = {
 		const passwordRegex = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,255}$/;
 
 		try {
+			const ageConfirmedBool = ageConfirmed === 'true';
+			const legalAcceptedBool = legalAccepted === 'true';
+			if (!ageConfirmedBool) {
+				throw new Error('You must confirm that you are at least 16 years old.');
+			}
+			if (!legalAcceptedBool) {
+				throw new Error('You must accept the Terms and Privacy Notice.');
+			}
+
 			// username must be between 4 ~ 31 characters, and only consists of lowercase letters, 0-9, -, and _
 			// keep in mind some database (e.g. mysql) are case insensitive
 			if (
@@ -90,6 +102,10 @@ export const actions: Actions = {
 					email: email,
 					firstName: firstName,
 					lastName: lastName,
+					ageConfirmedAt: new Date(),
+					legalAcceptedAt: new Date(),
+					termsVersionAccepted: TERMS_VERSION,
+					privacyVersionAccepted: PRIVACY_VERSION,
 					key: {
 						createMany: {
 							data: [
@@ -139,6 +155,7 @@ export const actions: Actions = {
 			path: '/',
 			httpOnly: true,
 			secure: true,
+			sameSite: 'lax',
 			expires: new Date(Date.now() + 90*1000*60*60*24)
 		});
 		

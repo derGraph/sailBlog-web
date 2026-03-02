@@ -4,8 +4,10 @@ import { prisma } from "./prisma";
 class Authenticator {
 	
 	async validateSession(sessionId: string): Promise<{session:Session|null, user:User|null, role:Role|null}> {
-		const id = sessionId.split(".")[0];
-		const secret = sessionId.split(".")[1];
+		const [id, secret] = sessionId.split(".");
+		if (!id || !secret) {
+			return {session:null, user:null, role:null};
+		}
 
 		const session = await prisma.session.findFirst({
 			where: {
@@ -21,6 +23,15 @@ class Authenticator {
 		});
 
 		if(session == undefined){
+			return {session:null, user:null, role:null};
+		}
+
+		if (session.expiresAt.getTime() <= Date.now()) {
+			await prisma.session.deleteMany({
+				where: {
+					id: session.id
+				}
+			});
 			return {session:null, user:null, role:null};
 		}
 
