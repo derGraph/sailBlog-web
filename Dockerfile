@@ -5,21 +5,14 @@ COPY package.json .
 RUN npm i --force
 COPY . .
 RUN npx prisma generate
+RUN npx tsc -p workers/tsconfig.json
 RUN npm run build
 RUN npm prune --production --force
-
-WORKDIR /app/workers
-RUN npm i
-RUN npx tsc
-RUN npx tsc-alias
 
 FROM node:23-alpine3.20
 WORKDIR /app
 COPY --from=builder /app/build build/
 COPY --from=builder /app/node_modules node_modules/
-COPY --from=builder /app/workers/node_modules workers/node_modules/
-COPY --from=builder /app/node_modules/prisma workers/node_modules/prisma
-COPY --from=builder /app/node_modules/.prisma workers/node_modules/.prisma
 COPY --from=builder /app/workers/build workers/
 COPY prisma /app/prisma/
 COPY docker-entrypoint.sh /

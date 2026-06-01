@@ -1,0 +1,8 @@
+node_modules
+workers/node_modules
+build
+workers/build
+.svelte-kit
+.git
+.github
+npm-debug.log
