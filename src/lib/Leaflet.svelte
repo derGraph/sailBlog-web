@@ -50,6 +50,75 @@
 	});
 
 	let recenterButton = new recenterButtonStructure();
+	const IMAGE_GROUPING_DISTANCE_METERS = 100;
+
+	type TripImage = {
+		id: string;
+		username: string;
+		lat?: number | null;
+		long?: number | null;
+		alt?: string | null;
+	};
+
+	function getDistanceInMeters(
+		fromLat: number,
+		fromLong: number,
+		toLat: number,
+		toLong: number
+	): number {
+		const toRadians = (value: number) => (value * Math.PI) / 180;
+		const earthRadiusMeters = 6371000;
+		const deltaLat = toRadians(toLat - fromLat);
+		const deltaLong = toRadians(toLong - fromLong);
+		const startLat = toRadians(fromLat);
+		const endLat = toRadians(toLat);
+		const a =
+			Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+			Math.cos(startLat) *
+				Math.cos(endLat) *
+				Math.sin(deltaLong / 2) *
+				Math.sin(deltaLong / 2);
+
+		return 2 * earthRadiusMeters * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+	}
+
+	function normalizeNearbyImageLocations(images: TripImage[]): TripImage[] {
+		const clusters: { images: TripImage[]; lat: number; long: number }[] = [];
+
+		for (const image of images) {
+			if (image.lat == null || image.long == null) {
+				continue;
+			}
+
+			const cluster = clusters.find(({ lat, long }) => {
+				return (
+					getDistanceInMeters(image.lat!, image.long!, lat, long) <= IMAGE_GROUPING_DISTANCE_METERS
+				);
+			});
+
+			if (cluster) {
+				cluster.images.push(image);
+				const total = cluster.images.length;
+				cluster.lat = (cluster.lat * (total - 1) + image.lat) / total;
+				cluster.long = (cluster.long * (total - 1) + image.long) / total;
+				continue;
+			}
+
+			clusters.push({
+				images: [image],
+				lat: image.lat,
+				long: image.long
+			});
+		}
+
+		return clusters.flatMap((cluster) =>
+			cluster.images.map((image) => ({
+				...image,
+				lat: cluster.lat,
+				long: cluster.long
+			}))
+		);
+	}
 
 	function createTripImageClusterGroup() {
 		return (L as any).markerClusterGroup({
@@ -249,7 +318,7 @@
 			return;
 		}
 		let raw = await response.json();
-		let images: { id: string; username: string; lat?: number | null; long?: number | null; alt?: string | null }[] = [];
+		let images: TripImage[] = [];
 
 		if(Array.isArray(raw)){
 			images = raw.map((item: any) => ({
@@ -273,7 +342,7 @@
 		}
 
 		const layer = getTripImageLayer();
-		for (const image of images) {
+		for (const image of normalizeNearbyImageLocations(images)) {
 			if(image.lat == null || image.long == null){
 				continue;
 			}
