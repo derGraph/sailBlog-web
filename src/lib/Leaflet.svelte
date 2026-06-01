@@ -50,23 +50,62 @@
 	});
 
 	let recenterButton = new recenterButtonStructure();
-	const IMAGE_GROUPING_DISTANCE_METERS = 100;
+	const IMAGE_GROUPING_DISTANCE_METERS = 1000;
 
 	type TripImage = {
 		id: string;
 		username: string;
-		lat?: number | string | null;
-		long?: number | string | null;
+		lat?: unknown;
+		long?: unknown;
 		alt?: string | null;
 	};
 
-	function parseCoordinate(value: number | string | null | undefined): number | null {
+	function parseCoordinate(value: unknown): number | null {
 		if (value == null) {
 			return null;
 		}
 
-		const coordinate = Number(value);
-		return Number.isFinite(coordinate) ? coordinate : null;
+		if (typeof value === 'number') {
+			return Number.isFinite(value) ? value : null;
+		}
+
+		if (typeof value === 'string') {
+			const trimmedValue = value.trim();
+			if (trimmedValue === '') {
+				return null;
+			}
+
+			const coordinate = Number(trimmedValue);
+			return Number.isFinite(coordinate) ? coordinate : null;
+		}
+
+		if (typeof value === 'object') {
+			if ('toNumber' in value && typeof value.toNumber === 'function') {
+				const coordinate = value.toNumber();
+				return Number.isFinite(coordinate) ? coordinate : null;
+			}
+
+			if ('valueOf' in value && typeof value.valueOf === 'function') {
+				const primitiveValue = value.valueOf();
+				if (typeof primitiveValue === 'number' && Number.isFinite(primitiveValue)) {
+					return primitiveValue;
+				}
+				if (typeof primitiveValue === 'string') {
+					const coordinate = Number(primitiveValue);
+					return Number.isFinite(coordinate) ? coordinate : null;
+				}
+			}
+
+			if ('toString' in value && typeof value.toString === 'function') {
+				const stringValue = value.toString().trim();
+				if (stringValue !== '' && stringValue !== '[object Object]') {
+					const coordinate = Number(stringValue);
+					return Number.isFinite(coordinate) ? coordinate : null;
+				}
+			}
+		}
+
+		return null;
 	}
 
 	function getDistanceInMeters(
@@ -361,7 +400,12 @@
 			const altText = image.alt ?? 'Image';
 			const imageUrl = `/api/Media/${image.username}/${image.id}.avif`;
 			const thumbHtml = `<div class="trip-image-thumb-wrap" role="img" aria-label="${altText}" style="background-image:url('${imageUrl}')"></div>`;
-			const marker = L.marker([imageLat, imageLong], {
+			const latLng = L.latLng(imageLat, imageLong);
+			if (!Number.isFinite(latLng.lat) || !Number.isFinite(latLng.lng)) {
+				continue;
+			}
+
+			const marker = L.marker(latLng, {
 				icon: L.divIcon({
 					className: 'image-marker trip-image-marker',
 					html: thumbHtml,
