@@ -3,80 +3,83 @@ import { auth } from '$lib/server/auth';
 import { prisma } from '$lib/server/prisma';
 import { error, type Handle } from '@sveltejs/kit';
 
+const API_CACHE_CONTROL = 'private, no-store, max-age=0, must-revalidate';
+
 export const handle: Handle = async ({ event, resolve }) => {
-	const sessionId = event.cookies.get("session_token");
-	if (!sessionId) {
-		event.locals.user = null;
-		event.locals.session = null;
-		return resolve(event);
-	}
+	const sessionId = event.cookies.get('session_token');
 
-	const {session, user, role} = await auth.validateSession(sessionId);
-	if (session == null || user == null) {
-		event.cookies.set("session_token", "", {
-			path: '/',
-			httpOnly: true,
-			secure: true,
-			sameSite: 'lax',
-			expires: new Date(0)
-		});
-		event.locals.user = null;
-		event.locals.session = null;
-		event.locals.role = null;
-		return resolve(event);
-	}
+	event.locals.user = null;
+	event.locals.session = null;
+	event.locals.role = null;
 
-	if(session != null && user != null){
-		try{
-			const now = new Date();
-			// Throttle session writes to avoid update conflicts on concurrent requests.
-			const minSessionAgeMs = 30_000;
-			const sessionCutoff = new Date(now.getTime() - minSessionAgeMs);
-			await prisma.session.updateMany({
-				where:{
-					id: session.id,
-					OR: [
-						{ last_use: { lt: sessionCutoff } },
-						{ last_use: null }
-					]
-				},
-				data: {
-					last_use: now,
-					ip: event.getClientAddress()
-				}
+	if (sessionId) {
+		const { session, user, role } = await auth.validateSession(sessionId);
+
+		if (!session || !user) {
+			event.cookies.set('session_token', '', {
+				path: '/',
+				httpOnly: true,
+				secure: true,
+				sameSite: 'lax',
+				expires: new Date(0)
 			});
-			// Avoid hammering the user row on every request and reduce update conflicts.
-			const minPingAgeMs = 60_000;
-			const cutoff = new Date(now.getTime() - minPingAgeMs);
-			await prisma.user.updateMany({
-				where: {
-					username: user.username,
-					lastPing: { lt: cutoff }
-				},
-				data: {
-					lastPing: now,
-				}
-			});
-		}catch(error_message){
-			if (error_message instanceof Error) {
-				console.log(error_message)
-				if(error_message.name != "PrismaClientUnknownRequestError"){
+		} else {
+			try {
+				const now = new Date();
+				// Throttle session writes to avoid update conflicts on concurrent requests.
+				const minSessionAgeMs = 30_000;
+				const sessionCutoff = new Date(now.getTime() - minSessionAgeMs);
+				await prisma.session.updateMany({
+					where: {
+						id: session.id,
+						OR: [
+							{ last_use: { lt: sessionCutoff } },
+							{ last_use: null }
+						]
+					},
+					data: {
+						last_use: now,
+						ip: event.getClientAddress()
+					}
+				});
+				// Avoid hammering the user row on every request and reduce update conflicts.
+				const minPingAgeMs = 60_000;
+				const cutoff = new Date(now.getTime() - minPingAgeMs);
+				await prisma.user.updateMany({
+					where: {
+						username: user.username,
+						lastPing: { lt: cutoff }
+					},
+					data: {
+						lastPing: now
+					}
+				});
+			} catch (error_message) {
+				if (error_message instanceof Error) {
+					console.log(error_message);
+					if (error_message.name != 'PrismaClientUnknownRequestError') {
+						error(500, {
+							message: 'ERROR'
+						});
+					}
+				} else {
 					error(500, {
 						message: 'ERROR'
 					});
 				}
-			} else {
-				error(500, {
-					message: 'ERROR'
-				});
 			}
+
+			event.locals.user = user;
+			event.locals.session = session;
+			event.locals.role = role;
 		}
 	}
 
+	const response = await resolve(event);
 
+	if (event.url.pathname.startsWith('/api')) {
+		response.headers.set('cache-control', API_CACHE_CONTROL);
+	}
 
-	event.locals.user = user;
-	event.locals.session = session;
-	event.locals.role = role;
-	return resolve(event);
-}
+	return response;
+};
