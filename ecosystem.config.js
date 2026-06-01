@@ -11,7 +11,7 @@ module.exports = {
         },
         {
             name: "simplifier",
-            script: "/app/workers/workers/index.js",
+            script: "/app/workers/index.js",
             env_production: {
                 NODE_ENV: "production"
             }
