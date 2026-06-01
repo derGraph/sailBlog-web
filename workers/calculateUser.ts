@@ -1,4 +1,4 @@
-import { prisma } from '../src/lib/server/prisma';
+import { prisma } from "./prisma.js";
 
 export async function calculateUsers() {
     let calculatedUsers = await prisma.user.findMany({

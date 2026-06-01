@@ -1,4 +1,4 @@
-import { prisma } from '../src/lib/server/prisma';
+import { prisma } from "./prisma.js";
 import type { Decimal } from '@prisma/client/runtime/library';
 import { getDistance, getDistanceFromLine } from 'geolib';
 import {statSync, createReadStream} from 'fs';
