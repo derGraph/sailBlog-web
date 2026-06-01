@@ -55,10 +55,19 @@
 	type TripImage = {
 		id: string;
 		username: string;
-		lat?: number | null;
-		long?: number | null;
+		lat?: number | string | null;
+		long?: number | string | null;
 		alt?: string | null;
 	};
+
+	function parseCoordinate(value: number | string | null | undefined): number | null {
+		if (value == null) {
+			return null;
+		}
+
+		const coordinate = Number(value);
+		return Number.isFinite(coordinate) ? coordinate : null;
+	}
 
 	function getDistanceInMeters(
 		fromLat: number,
@@ -86,28 +95,29 @@
 		const clusters: { images: TripImage[]; lat: number; long: number }[] = [];
 
 		for (const image of images) {
-			if (image.lat == null || image.long == null) {
+			const imageLat = parseCoordinate(image.lat);
+			const imageLong = parseCoordinate(image.long);
+
+			if (imageLat == null || imageLong == null) {
 				continue;
 			}
 
 			const cluster = clusters.find(({ lat, long }) => {
-				return (
-					getDistanceInMeters(image.lat!, image.long!, lat, long) <= IMAGE_GROUPING_DISTANCE_METERS
-				);
+				return getDistanceInMeters(imageLat, imageLong, lat, long) <= IMAGE_GROUPING_DISTANCE_METERS;
 			});
 
 			if (cluster) {
 				cluster.images.push(image);
 				const total = cluster.images.length;
-				cluster.lat = (cluster.lat * (total - 1) + image.lat) / total;
-				cluster.long = (cluster.long * (total - 1) + image.long) / total;
+				cluster.lat = (cluster.lat * (total - 1) + imageLat) / total;
+				cluster.long = (cluster.long * (total - 1) + imageLong) / total;
 				continue;
 			}
 
 			clusters.push({
 				images: [image],
-				lat: image.lat,
-				long: image.long
+				lat: imageLat,
+				long: imageLong
 			});
 		}
 
@@ -343,13 +353,15 @@
 
 		const layer = getTripImageLayer();
 		for (const image of normalizeNearbyImageLocations(images)) {
-			if(image.lat == null || image.long == null){
+			const imageLat = parseCoordinate(image.lat);
+			const imageLong = parseCoordinate(image.long);
+			if(imageLat == null || imageLong == null){
 				continue;
 			}
 			const altText = image.alt ?? 'Image';
 			const imageUrl = `/api/Media/${image.username}/${image.id}.avif`;
 			const thumbHtml = `<div class="trip-image-thumb-wrap" role="img" aria-label="${altText}" style="background-image:url('${imageUrl}')"></div>`;
-			const marker = L.marker([image.lat, image.long], {
+			const marker = L.marker([imageLat, imageLong], {
 				icon: L.divIcon({
 					className: 'image-marker trip-image-marker',
 					html: thumbHtml,
