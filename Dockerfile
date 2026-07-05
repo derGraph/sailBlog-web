@@ -1,7 +1,5 @@
 FROM node:24-alpine AS builder
 WORKDIR /app
-ARG DATABASE_URL
-ENV DATABASE_URL=$DATABASE_URL
 COPY package.json .
 #TODO: remove legacy peer drops as soon as the adapter is updated!
 RUN npm i --force
@@ -13,8 +11,6 @@ RUN npm prune --production --force
 
 FROM node:24-alpine3.20
 WORKDIR /app
-ARG DATABASE_URL
-ENV DATABASE_URL=$DATABASE_URL
 COPY --from=builder /app/build build/
 COPY --from=builder /app/node_modules node_modules/
 COPY --from=builder /app/workers/build /app/workers/
