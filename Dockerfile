@@ -7,7 +7,7 @@ COPY package.json .
 RUN npm i --force
 COPY . .
 RUN npx prisma generate
-RUN npx tsc -p workers/tsconfig.json
+RUN npx run build-workers
 RUN npm run build
 RUN npm prune --production --force
 
