@@ -2,7 +2,7 @@
   import { run } from 'svelte/legacy';
 
   import { onMount, onDestroy } from 'svelte';
-  import { Editor, isActive, mergeAttributes, type JSONContent } from '@tiptap/core';
+  import { Editor, mergeAttributes } from '@tiptap/core';
   import Heading from '@tiptap/extension-heading';
   import Document from '@tiptap/extension-document';
   import Paragraph from '@tiptap/extension-paragraph';
