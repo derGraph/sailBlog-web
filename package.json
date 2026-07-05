@@ -10,7 +10,10 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check .",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"build-workers": "npm run --prefix workers build",
+		"run-workers": "node ./workers/build/workers/index.js",
+		"workers": "npm run --prefix workers build && node ./workers/build/workers/index.js"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^7.0.0",
@@ -25,7 +28,7 @@
 		"prettier": "^3.8.3",
 		"prettier-plugin-svelte": "^4.1.0",
 		"prettier-plugin-tailwindcss": "^0.8.0",
-		"prisma": "^6.19.0",
+		"prisma": "^7.8.0",
 		"svelte": "^5.43.10",
 		"svelte-check": "^4.3.4",
 		"tailwindcss": "^4.1.17",
@@ -37,7 +40,8 @@
 	"type": "module",
 	"dependencies": {
 		"@node-rs/argon2": "^2.0.2",
-		"@prisma/client": "^6.19.0",
+		"@prisma/adapter-mariadb": "^7.8.0",
+		"@prisma/client": "^7.8.0",
 		"@skeletonlabs/skeleton": "^4.4.0",
 		"@skeletonlabs/skeleton-svelte": "^4.4.0",
 		"@sveltejs/adapter-auto": "^7.0.0",
