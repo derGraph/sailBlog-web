@@ -6,7 +6,6 @@ COPY package.json .
 #TODO: remove legacy peer drops as soon as the adapter is updated!
 RUN npm i --force
 COPY . .
-RUN npx prisma generate
 RUN npx run build-workers
 RUN npm run build
 RUN npm prune --production --force
