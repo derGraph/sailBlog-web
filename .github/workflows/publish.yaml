@@ -47,6 +47,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           # Pass the secret into the build context as an argument
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
             DATABASE_URL=${{ secrets.DATABASE_URL }}
 
