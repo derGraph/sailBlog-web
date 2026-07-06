@@ -5,6 +5,8 @@
 	import MediaPicker from '$lib/mediaPicker.svelte';
 	import { getProfilePicture } from '$lib/functions.js';
 
+	import GpxImport from '$lib/gpxImport.svelte';
+
 	let { data } = $props();
 	let newFirstName = $state('');
 	let newLastName = $state('');
@@ -30,6 +32,7 @@
 	let editName = $state(false);
 	let editDescription = $state(false);
 	let mediaPickerOpen = $state(false);
+	let gpxPickerOpen = $state(false);
 
 	$effect(()=>{
 		requestedUserName;
@@ -97,6 +100,10 @@
 		}
 	}
 
+	function importGPX()  {
+
+	}
+
 	let user = $derived(data.user);
 	let session = $derived(data.session);
 	let role = $derived(data.role);
@@ -132,6 +139,7 @@
 		{#if canEditUser}
 			<MediaPicker bind:isOpen = {mediaPickerOpen} usernameToFetch = {requestedUserName} canUpload={role?.canAddMedia ?? false} onFinished={(owner:String, imageId:String)=>{changePicture(owner, imageId)}}/>
 		{/if}
+		<GpxImport bind:isOpen = {gpxPickerOpen}/>
 		<div class="flex flex-col mb-2 p-3 w-min bg-surface-100-900 rounded-3xl items-center">
 				{#if canEditUser}
 					<button onclick={()=>{mediaPickerOpen = true}}>
@@ -188,6 +196,9 @@
 				<h4 class="h4">@{requestedUser.username}</h4>
 			{/if}
 		</div>
+		{#if requestedUser.username==user?.username && user.role.canAddDatapoint}
+			<button type="button" onclick={()=>{gpxPickerOpen = true}} class="btn btn-md preset-tonal-success border border-success-500 mb-2"><span class="material-symbols-outlined">add</span>Import GPX to active trip</button>
+		{/if}		
 		{#if requestedUser}
 			<div class="rounded-3xl bg-surface-100-900 p-1 px-3 content-center mb-2">
 				<h3 class="h5 text-center group">Crewed:
