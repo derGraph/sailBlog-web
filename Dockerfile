@@ -12,7 +12,6 @@ RUN npm prune --production --force
 FROM node:26-alpine3.23
 WORKDIR /app
 
-# Ensure correct permissions for your entrypoint early on
 COPY docker-entrypoint.sh /
 RUN chmod +x /docker-entrypoint.sh
 
