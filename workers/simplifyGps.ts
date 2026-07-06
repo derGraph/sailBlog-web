@@ -1,10 +1,10 @@
 import { prisma } from "./prisma.js";
-import type { Decimal } from '@prisma/client/runtime/library';
 import { getDistance, getDistanceFromLine } from 'geolib';
 import {statSync, createReadStream} from 'fs';
 import {point, booleanPointInPolygon} from '@turf/turf';
 import * as readline from 'readline';
 import { Feature, FeatureCollection, GeoJsonProperties, Geometry, MultiPolygon, Polygon } from "geojson";
+import { Decimal } from "@prisma/client/runtime/client";
 
 let regionData: null|FeatureCollection = null;
 

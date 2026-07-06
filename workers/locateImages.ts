@@ -1,3 +1,4 @@
+import { Media } from "@prisma-custom/client";
 import { prisma } from "./prisma.js";
 
 export async function locateImages() {
@@ -65,7 +66,9 @@ export async function locateImages() {
         })
     );
 
-    const updatedMediaResults = await prisma.$transaction(updatePromises);
+    const updatedMediaResults:Media[] = await prisma.$transaction(updatePromises);
 
-    console.log(updatedMediaResults);
+    updatedMediaResults.forEach(image => {
+        console.log("Updated image: " + image.id);
+    });
 }

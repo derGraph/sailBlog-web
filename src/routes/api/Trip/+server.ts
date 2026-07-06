@@ -1,7 +1,6 @@
 import { removeSensitiveData } from '$lib/server/functions';
 import { prisma } from '$lib/server/prisma';
 import { checkVisibility } from '$lib/visibility.js';
-import { Decimal, PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { error, isHttpError, json } from '@sveltejs/kit';
 import DOMPurify from 'isomorphic-dompurify';
 
