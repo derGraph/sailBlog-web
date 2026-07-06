@@ -14,6 +14,7 @@ WORKDIR /app
 COPY --from=builder /app/build build/
 COPY --from=builder /app/node_modules node_modules/
 COPY --from=builder /app/workers/build /app/workers/
+COPY --from=builder /app/prisma.config.ts /app
 COPY prisma /app/prisma/
 COPY docker-entrypoint.sh /
 COPY package.json .
