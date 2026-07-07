@@ -86,7 +86,7 @@ model Role {
 }
 
 model Key {
-  id                String    @id @unique @default(cuid())
+  id                String    @id @unique @default(cuid(2))
   type              String
   passwordHash      String?
   userId            String
@@ -96,7 +96,7 @@ model Key {
 }
 
 model Trip {
-  id                String    @id @default(cuid())
+  id                String    @id @default(cuid(2))
   name              String
   description       String?   @db.Text
   startPoint        Datapoint?@relation("startPoint", fields: [startPointId], references: [id])
@@ -121,7 +121,7 @@ model Trip {
   }
 
 model Datapoint {
-  id                String    @id @default(cuid())
+  id                String    @id @default(cuid(2))
   tripStart         Trip?     @relation("startPoint")
   tripEnd           Trip?     @relation("endPoint")
   trip              Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
@@ -148,7 +148,7 @@ model Location {
 }
 
 model Media {
-  id                String    @id @default(cuid())
+  id                String    @id @default(cuid(2))
   visibility        Int       @default(1) // 0: private
                                           // 1: logged in
                                           // 2: public 
