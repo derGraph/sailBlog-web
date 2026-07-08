@@ -31,8 +31,10 @@ model User {
   activeTripId      String?
   crewedLengthSail      Int       @default(0)
   crewedLengthMotor     Int       @default(0)
+  crewedLengthUnknown   Int       @default(0)
   skipperedLengthSail   Int       @default(0)
   skipperedLengthMotor  Int       @default(0)
+  skipperedLengthUnknown  Int       @default(0)
   recalculate       Boolean   @default(true)
   uploadedMedia     Media[]   @relation("uploader")                
   sessions          Session[]
@@ -103,6 +105,7 @@ model Trip {
   activeUser        User[]
   length_sail       Decimal?
   length_motor      Decimal?
+  length_unknown    Decimal?
   skipper           User?     @relation("skipper", fields: [skipperName], references: [username])
   skipperName       String?
   crew              User[]    @relation("crew")
@@ -130,6 +133,7 @@ model Datapoint {
   propulsion        Int? // 0: anchor
                             // 1: motor
                             // 2: sailing
+                            // 3: unknown
   optimized         Int     @default(0) // 0: to optimize
                                         // 1: deleted
                                         // 2: needed

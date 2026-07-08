@@ -118,7 +118,7 @@
           lat: point.lat,
           long: point.lon,
           time: point.time,
-          propulsion: 1,
+          propulsion: 3,
           speed: Number(point.extensions?.['navionics_speed']),
           h_accuracy: Number(point.extensions?.['navionics_haccuracy']),
           v_accuracy: Number(point.extensions?.['navionics_vaccuracy'])

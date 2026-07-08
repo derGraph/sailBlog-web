@@ -308,7 +308,7 @@
               window.location.href = '/trips/' + row.id;
             }}
             class="align-middle!"
-            >{((Number(row.length_sail) + Number(row.length_motor)) / 1853).toFixed(0)} NM
+            >{((Number(row.length_sail) + Number(row.length_motor) + Number(row.length_unknown)) / 1853).toFixed(0)} NM
             <div class="hidden group-hover:block">
               <span class="text-xs! material-symbols-outlined">sailing</span>{(
                 Number(row.length_sail) / 1853

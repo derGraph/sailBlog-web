@@ -229,6 +229,11 @@ function checkDatapoint(rawData: {
         propulsion = 2;
         break;
 
+      case 'unknown':
+      case 3:
+        propulsion = 3;
+        break;
+
       default:
         throw new Error('Invalid propulsion type!');
         break;

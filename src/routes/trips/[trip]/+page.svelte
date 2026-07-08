@@ -17,6 +17,7 @@
     skipper: any;
     length_sail: any;
     length_motor: any;
+    length_unknown: any;
     crew: [User];
     name: any;
     description: any;
@@ -36,14 +37,17 @@
         lastPing: new Date(),
         skipperedLengthMotor: 0,
         skipperedLengthSail: 0,
+        skipperedLengthUnknown: 0,
         crewedLengthMotor: 0,
         crewedLengthSail: 0,
+        crewedLengthUnknown: 0,
         recalculate: false
       }
     ],
     name: undefined,
     length_sail: undefined,
     length_motor: undefined,
+    length_unknown: undefined,
     endPoint: undefined,
     startPoint: undefined,
     skipper: undefined
@@ -115,15 +119,19 @@
         <h3 class="h5 text-center">
           Distance:
           {(
-            (Number(requestedTripData?.length_sail) + Number(requestedTripData?.length_motor)) /
+            (Number(requestedTripData?.length_sail) + Number(requestedTripData?.length_motor) + Number(requestedTripData?.length_unknown)) /
             1853
           ).toFixed(2)} NM
+          {#if requestedTripData && requestedTripData?.length_sail > 0}
           <span class="text-base! material-symbols-outlined">sailing</span>{(
             Number(requestedTripData?.length_sail) / 1853
           ).toFixed(2)} NM
+          {/if}
+          {#if requestedTripData && requestedTripData?.length_motor > 0}
           <span class="text-base! material-symbols-outlined">mode_heat</span>{(
             Number(requestedTripData?.length_motor) / 1853
           ).toFixed(2)} NM
+          {/if}
         </h3>
       </div>
       <div

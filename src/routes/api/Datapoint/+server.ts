@@ -123,6 +123,9 @@ export async function POST(event) {
           propulsion = 2;
           break;
 
+        case 'unknown':
+          propulsion = 3;
+
         default:
           error(400, { message: 'Invalid propulsion type!' });
           break;

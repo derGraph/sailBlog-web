@@ -39,8 +39,10 @@
         lastPing: new Date(),
         crewedLengthMotor: 0,
         crewedLengthSail: 0,
+        crewedLengthUnknown: 0,
         skipperedLengthMotor: 0,
         skipperedLengthSail: 0,
+        skipperedLengthUnknown: 0,
         recalculate: false
       }
     ],

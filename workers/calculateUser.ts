@@ -37,22 +37,27 @@ export async function calculateUser(user: string) {
       id: true,
       skipperName: true,
       length_motor: true,
-      length_sail: true
+      length_sail: true,
+      length_unknown: true
     }
   });
 
   let crewedLengthSail: number = 0;
   let crewedLengthMotor: number = 0;
+  let crewedLengthUnknown: number = 0;
   let skipperedLengthSail: number = 0;
   let skipperedLengthMotor: number = 0;
+  let skipperedLengthUnknown: number = 0;
   console.log('calculating ' + user + ' total length!');
   for (let trip of userTrips) {
     if (trip.skipperName == user) {
       skipperedLengthMotor += Number(trip.length_motor);
       skipperedLengthSail += Number(trip.length_sail);
+      skipperedLengthUnknown += Number(trip.length_unknown);
     }
     crewedLengthSail += Number(trip.length_sail);
     crewedLengthMotor += Number(trip.length_motor);
+    crewedLengthUnknown += Number(trip.length_unknown);
   }
 
   await prisma.user.update({
@@ -62,9 +67,11 @@ export async function calculateUser(user: string) {
     data: {
       crewedLengthSail: crewedLengthSail,
       crewedLengthMotor: crewedLengthMotor,
+      crewedLengthUnknown: crewedLengthUnknown,
       skipperedLengthSail: skipperedLengthSail,
       skipperedLengthMotor: skipperedLengthMotor,
-      recalculate: false
+      skipperedLengthUnknown: skipperedLengthUnknown,
+      recalculate: false,
     }
   });
 }

@@ -78,8 +78,10 @@ export async function GET(event) {
           profilePictureId: true,
           crewedLengthMotor: true,
           crewedLengthSail: true,
+          crewedLengthUnknown: true,
           skipperedLengthMotor: true,
           skipperedLengthSail: true,
+          skipperedLengthUnknown: true,
           skipperedTrips: {
             where: {
               OR: [{ visibility: 1 }, { visibility: 2 }]

@@ -277,6 +277,9 @@
       case 2:
         // sailing
         return '#2E8B57';
+      case 3:
+        // unknown #1e252b and #f1f5f9 also possible
+        return '#1f8d99';
       default:
         return 'red'; // Fallback color
     }

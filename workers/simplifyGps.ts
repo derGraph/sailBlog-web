@@ -136,6 +136,7 @@ export async function simplifyGps(trip: string, amount: number) {
 export async function calculateDistance(trip: string) {
   let newDistanceSail: number = 0;
   let newDistanceMotor: number = 0;
+  let newDistanceUnknown: number = 0;
 
   let inputTrips = await prisma.datapoint.findMany({
     where: {
@@ -159,6 +160,9 @@ export async function calculateDistance(trip: string) {
     } else if (inputTrips[i + 1].propulsion == 2) {
       // length under sail
       newDistanceSail += distance;
+    } else if (inputTrips[i + 1].propulsion == 3) {
+      // length unknown
+      newDistanceUnknown += distance;
     }
   }
 
@@ -168,7 +172,8 @@ export async function calculateDistance(trip: string) {
     },
     data: {
       length_sail: newDistanceSail,
-      length_motor: newDistanceMotor
+      length_motor: newDistanceMotor,
+      length_unknown: newDistanceUnknown,
     }
   });
 }
