@@ -165,19 +165,6 @@ export async function calculateDistance(trip: string) {
       length_motor: newDistanceMotor
     }
   });
-  await prisma.trip.update({
-    where: {
-      id: trip
-    },
-    data: {
-      endPointId: (
-        await prisma.datapoint.findFirst({ where: { tripId: trip }, orderBy: { time: 'desc' } })
-      )?.id,
-      startPointId: (
-        await prisma.datapoint.findFirst({ where: { tripId: trip }, orderBy: { time: 'asc' } })
-      )?.id
-    }
-  });
 }
 
 export async function simplify() {
