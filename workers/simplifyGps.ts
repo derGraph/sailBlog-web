@@ -30,7 +30,10 @@ export async function simplifyGps(trip: string, amount: number) {
         tripId: trip,
         optimized: 0
       },
-      take: take
+      take: take,
+      orderBy: {
+        time: 'asc'
+      }
     });
     if (inputData.length <= 2) {
       return;
@@ -138,7 +141,8 @@ export async function calculateDistance(trip: string) {
     where: {
       tripId: trip,
       OR: [{ optimized: 0 }, { optimized: 2 }]
-    }
+    },
+    
   });
 
   for (let i = 0; i < inputTrips.length - 2; i++) {
