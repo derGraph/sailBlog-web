@@ -53,7 +53,7 @@ export async function GET(event) {
     if (event.locals.user?.username == requestedUsername || event.locals.role?.canViewAllUserdata) {
       let userdata = await prisma.user.findFirstOrThrow({
         where: {
-          username: event.locals.user?.username
+          username: requestedUsername
         },
         include: {
           uploadedMedia: true,

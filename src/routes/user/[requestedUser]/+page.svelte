@@ -40,11 +40,12 @@
   });
 
   async function getUserData() {
-    await fetch('/api/User?username=' + requestedUserName).then((response) => {
+    fetch('/api/User?username=' + requestedUserName).then((response) => {
       if (response.ok) {
         response.json().then((response_data) => {
           requestedUser = response_data[Object.keys(response_data)[0]];
           requestedUser!.username = Object.keys(response_data)[0];
+          console.log(requestedUser);
         });
       } else {
         $errorStore = response;
