@@ -142,7 +142,9 @@ export async function calculateDistance(trip: string) {
       tripId: trip,
       OR: [{ optimized: 0 }, { optimized: 2 }]
     },
-    
+    orderBy: {
+      time: 'asc'
+    }
   });
 
   for (let i = 0; i < inputTrips.length - 2; i++) {
