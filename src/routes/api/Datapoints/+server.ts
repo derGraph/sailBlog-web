@@ -1,5 +1,6 @@
 import { prisma } from '$lib/server/prisma'
 import { error, json } from '@sveltejs/kit';
+import { isCuid } from "@paralleldrive/cuid2";
 
 interface Datapoint {
 	id?: string;
@@ -169,9 +170,8 @@ function checkDatapoint(rawData: {
 		}
 	}
 
-	const cuidRegex = /^c[a-z0-9]{24}$/;
 	if (id != null) {
-		if (!cuidRegex.test(id)) {
+		if (!isCuid(id)) {
 			id = null;
 		}
 	}
@@ -313,9 +313,8 @@ export async function GET(event) {
 			message: 'No tripId requested!'
 		});
 	} else {
-		const cuidRegex = /^c[a-z0-9]{24}$/;
 		if (requestedTrip != null) {
-			if (!cuidRegex.test(requestedTrip)) {
+			if (!isCuid(requestedTrip)) {
 				error(400, 'Invalid Id!');
 			}
 		}

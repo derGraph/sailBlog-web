@@ -3,15 +3,30 @@
     import { Progress } from '@skeletonlabs/skeleton-svelte';
     
     // Import the parser function directly as a standard utility module
-    import { parseFullGPXStream, type GPXResult } from './gpxParser';
+    import { parseGPXLazy, type GPXPoint, type GPXStreamedResult } from './gpxParser';
+    import { createId } from "@paralleldrive/cuid2";
 
     let { isOpen = $bindable(false) } = $props();
 
     let files: FileList | undefined = $state();
-    let importedResults: GPXResult | undefined = $state();
+    let importedResults: GPXStreamedResult | undefined = $state();
 
     let progress = $state(0);
     let loading = $state(false);
+    let loadingIndex = $state(-1);
+
+    interface rawDatapoint {
+        id: string;
+        lat: number;
+        long: number;
+        time: number;
+        speed?: number;
+        heading?: number;
+        depth?: number;
+        h_accuracy?: number;
+        v_accuracy?: number;
+        propulsion: number;
+    };
 
     async function readFile() {
         if (!files || files.length === 0) return;
@@ -20,14 +35,10 @@
         loading = true;
         progress = 0;
 
-        try {
-            console.log(`Starting main-thread stream parsing for: ${gpxFile.name} (${(gpxFile.size / 1024 / 1024).toFixed(1)} MB)`);
-            
-            importedResults = await parseFullGPXStream(gpxFile, 50, (pct) => {
+        try {            
+            importedResults = await parseGPXLazy(gpxFile, 1, (pct) => {
                 progress = pct;
             });
-
-            console.log(importedResults)
 
         } catch (err: any) {
             console.error("Direct parser encountered a failure:", err);
@@ -36,6 +47,84 @@
             loading = false;
         }
     }
+
+    async function uploadDatapoints(datapoints: rawDatapoint[]) {
+        // UPLOAD AND CLEAR DATAPOINTS
+        // Assuming 'dataset' is your array of rawDatapoint
+        const formattedData = datapoints.reduce((acc, point) => {
+            // Extract ID and keep the rest of the properties
+            const { id, ...rest } = point; 
+            
+            // Assign the rest of the data to the ID key
+            acc[id] = rest; 
+            
+            return acc;
+        }, {} as Record<string, any>);
+
+
+        try {
+            const response = await fetch('/api/Datapoints', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formattedData)
+            });
+
+            if (!response.ok) {
+                $errorStore = response;
+                isOpen = false;
+                files = undefined;
+                importedResults = undefined;
+                loadingIndex = -1;
+                return;
+            }
+        } catch (error) {
+            console.error('Error sending POST request:', error);
+        }
+    }
+
+    async function uploadRoute(trackId: number) {
+    let newDatapoints: rawDatapoint[] = [];
+    loadingIndex = trackId;
+
+    // 1. Get total points first from your header to calculate accurate progress
+    const totalPoints = importedResults!.trackHeaders[trackId]?.pointCount || 1;
+    let uploadedPointsCount = 0;
+
+    for await (const segment of importedResults!.getTrackSegments(trackId)) {
+        // Use a standard for-loop to avoid the slow .indexOf() performance penalty
+        for (let i = 0; i < segment.length; i++) {
+            let point = segment[i];
+
+            if (!point.time) { /* ... your error handling ... */ return; }
+
+            newDatapoints.push({
+                id: createId(),
+                lat: point.lat,
+                long: point.lon,
+                time: point.time,
+                propulsion: 1,
+                speed: Number(point.extensions?.["navionics_speed"]),
+                h_accuracy: Number(point.extensions?.["navionics_haccuracy"]),
+                v_accuracy: Number(point.extensions?.["navionics_vaccuracy"])
+            });
+
+
+            // Trigger upload when batch is full OR we hit the absolute end of the segment
+            if (newDatapoints.length >= 500 || i === segment.length - 1) {
+                await uploadDatapoints(newDatapoints);
+                
+                // Track total overall points uploaded against the total file points
+                uploadedPointsCount += newDatapoints.length;
+                progress = Math.min((uploadedPointsCount / totalPoints) * 100, 100);
+                
+                newDatapoints = [];
+            }
+        }
+    }
+    loadingIndex = -1;
+}
 </script>
 
 {#if isOpen}
@@ -50,7 +139,7 @@
                 </button>
             </div>
             
-            {#if !(importedResults && importedResults.tracks.length > 0)}
+            {#if !(importedResults && importedResults.trackHeaders.length > 0)}
             <!-- File Input Section -->
             <div class="flex items-center justify-center p-4 min-h-[80px] border-2 border-dashed border-surface-outline-vibrant rounded-2xl bg-surface-hover/10">
             
@@ -84,26 +173,37 @@
             <div class="flex-1 flex flex-col min-h-0">
                 <div class="text-sm font-medium mb-2 flex justify-between items-center">
                     <span>Imported Results</span>
-                    <span class="text-xs bg-primary-hover/20 px-2 py-0.5 rounded-full font-mono">{importedResults?.tracks.length ?? 0} items</span>
+                    <span class="text-xs bg-primary-hover/20 px-2 py-0.5 rounded-full font-mono">{importedResults?.trackHeaders.length ?? 0} items</span>
                 </div>
                 
                 <!-- Scrollable container for results -->
                 <div class="flex-1 overflow-y-auto pr-1 space-y-2 max-h-[40vh] scrollbar-thin">
-                    {#if importedResults && importedResults.tracks.length > 0}
-                        {#each importedResults.tracks as track:GPXTrack}
+                    {#if importedResults && importedResults.trackHeaders.length > 0}
+                        {#each importedResults.trackHeaders as track:GPXTrackHeader}
                             <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-low border border-surface-divider hover:bg-surface-container-medium transition-colors">
                                 <div class="flex items-center gap-3 min-w-0">
                                     <span class="material-symbols-outlined text-primary">description</span>
                                     <div class="truncate">
                                         <p class="text-sm font-medium truncate">{track.name}</p>
-                                        <p class="text-xs text-surface-dimmed">{track.segments[0].length || 'Unknown'} Datapoints</p>
+                                        <p class="text-xs text-surface-dimmed">{track.pointCount || 'Unknown'} Datapoints</p>
                                     </div>
                                 </div>
-                                <button class="btn btn-md preset-tonal-success border border-success-500"
-                                    onclick={()=>{console.log("aaa")}}
-                                    >
-                                    Add to active Trip!
-                                </button>
+                                {#if loadingIndex == importedResults!.trackHeaders.indexOf(track)}
+                                    <div class="flex items-center justify-center mr-4 shrink-0">
+                                        <Progress class="flex" value={progress}>
+                                            <Progress.Circle class="[--size:--spacing(8)]"> <!-- Shrunk size slightly so it matches text height -->
+                                                <Progress.CircleTrack />
+                                                <Progress.CircleRange />
+                                            </Progress.Circle>
+                                        </Progress>
+                                    </div>
+                                {:else}
+                                    <button class="btn btn-md preset-tonal-success border border-success-500"
+                                        onclick={()=>{uploadRoute(importedResults!.trackHeaders.indexOf(track))}}
+                                        >
+                                        Add to active Trip!
+                                    </button>
+                                {/if}
                             </div>
                         {/each}
                     {:else}

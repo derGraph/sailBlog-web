@@ -1,4 +1,5 @@
 import { prisma } from '$lib/server/prisma';
+import { isCuid } from '@paralleldrive/cuid2';
 import { error, fail } from '@sveltejs/kit';
 
 /** @type {import('./$types').RequestHandler} */
@@ -51,9 +52,8 @@ export async function POST(event) {
 			}
 		}
 
-		const cuidRegex = /^c[a-z0-9]{24}$/;
 		if (id != null) {
-			if (!cuidRegex.test(id)) {
+			if (!isCuid(id)) {
 				error(400, 'Invalid Id!');
 			}
 		}
