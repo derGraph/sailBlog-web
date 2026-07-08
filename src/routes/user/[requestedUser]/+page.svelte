@@ -143,23 +143,21 @@
 		<div class="flex flex-col mb-2 p-3 w-min bg-surface-100-900 rounded-3xl items-center">
 				{#if canEditUser}
 					<button onclick={()=>{mediaPickerOpen = true}}>
-					<Avatar
-						name={requestedUser.firstName + " " + requestedUser.lastName}
-						src={getProfilePicture(requestedUser)}
-						size="mt-3 shrink-0 size-60 group hover:opacity-50"
-						background="bg-primary-500"
-						rounded="rounded-full"
-					/>
+					<Avatar class="mt-3 shrink-0 group hover:opacity-50 size-60">
+						<Avatar.Image src={getProfilePicture(requestedUser)} class="!size-60"/>
+						{#if requestedUser.firstName && requestedUser.lastName}
+							<Avatar.Fallback>{requestedUser.firstName.charAt(0)+requestedUser.lastName.charAt(0)}</Avatar.Fallback>
+						{/if}
+					</Avatar>
 					</button>
 
 				{:else}
-					<Avatar
-						name={requestedUser.firstName + " " + requestedUser.lastName}
-						src={getProfilePicture(requestedUser)}
-						size="mt-3 shrink-0 size-60"
-						background="bg-primary-500"
-						rounded="rounded-full"
-					/>
+					<Avatar class="mt-3 shrink-0 size-60">
+						<Avatar.Image src={getProfilePicture(requestedUser)} class="!size-60"/>
+						{#if requestedUser.firstName && requestedUser.lastName}
+							<Avatar.Fallback>{requestedUser.firstName.charAt(0)+requestedUser.lastName.charAt(0)}</Avatar.Fallback>
+						{/if}
+					</Avatar>
 				{/if}
 			{#if requestedUser.firstName && requestedUser.lastName}
 			<div class="flex flex-row mt-3">
