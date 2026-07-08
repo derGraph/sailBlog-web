@@ -6,560 +6,584 @@ import sharp from 'sharp';
 import exif from 'exif-reader';
 
 interface Media {
-	id: string;
-	visibility: number;
-	username: string;
+  id: string;
+  visibility: number;
+  username: string;
 }
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST(event) {
-	const contentType = event.request.headers.get('content-type') ?? '';
-	if (!contentType.includes('image/')) {
-		error(400, {
-			message: 'Set Header to image/filetype!'
-		});
-	}
-	let unparsedVisibility = event.url.searchParams.get('visibility');
-	let alt = event.url.searchParams.get('alt');
-	let tripId = event.url.searchParams.get('tripId');
-	let latParam = event.url.searchParams.get('lat');
-	let longParam = event.url.searchParams.get('long');
-	let createdParam = event.url.searchParams.get('created');
-	let visibility = 1;
-	let hasExplicitVisibility = false;
-	let clientExifData: { lat?: number; long?: number; created?: Date } = {};
+  const contentType = event.request.headers.get('content-type') ?? '';
+  if (!contentType.includes('image/')) {
+    error(400, {
+      message: 'Set Header to image/filetype!'
+    });
+  }
+  let unparsedVisibility = event.url.searchParams.get('visibility');
+  let alt = event.url.searchParams.get('alt');
+  let tripId = event.url.searchParams.get('tripId');
+  let latParam = event.url.searchParams.get('lat');
+  let longParam = event.url.searchParams.get('long');
+  let createdParam = event.url.searchParams.get('created');
+  let visibility = 1;
+  let hasExplicitVisibility = false;
+  let clientExifData: { lat?: number; long?: number; created?: Date } = {};
 
-	if (unparsedVisibility != null) {
-		hasExplicitVisibility = true;
-		switch (unparsedVisibility) {
-			case '0':
-				visibility = 0;
-				break;
+  if (unparsedVisibility != null) {
+    hasExplicitVisibility = true;
+    switch (unparsedVisibility) {
+      case '0':
+        visibility = 0;
+        break;
 
-			case '1':
-				visibility = 1;
-				break;
+      case '1':
+        visibility = 1;
+        break;
 
-			case '2':
-				visibility = 2;
-				break;
+      case '2':
+        visibility = 2;
+        break;
 
-			default:
-				visibility = 1;
-				break;
-		}
-	}
-	if (latParam != null && longParam != null) {
-		const latNum = Number(latParam);
-		const longNum = Number(longParam);
-		if (Number.isFinite(latNum) && Number.isFinite(longNum) && Math.abs(latNum) <= 90 && Math.abs(longNum) <= 180) {
-			clientExifData.lat = latNum;
-			clientExifData.long = longNum;
-		}
-	}
-	if (createdParam != null && createdParam !== '') {
-		const createdDate = new Date(createdParam);
-		if (!Number.isNaN(createdDate.getTime())) {
-			clientExifData.created = createdDate;
-		}
-	}
+      default:
+        visibility = 1;
+        break;
+    }
+  }
+  if (latParam != null && longParam != null) {
+    const latNum = Number(latParam);
+    const longNum = Number(longParam);
+    if (
+      Number.isFinite(latNum) &&
+      Number.isFinite(longNum) &&
+      Math.abs(latNum) <= 90 &&
+      Math.abs(longNum) <= 180
+    ) {
+      clientExifData.lat = latNum;
+      clientExifData.long = longNum;
+    }
+  }
+  if (createdParam != null && createdParam !== '') {
+    const createdDate = new Date(createdParam);
+    if (!Number.isNaN(createdDate.getTime())) {
+      clientExifData.created = createdDate;
+    }
+  }
 
-	if (!event.locals.user?.username) {
-		console.log('NOT LOGGED IN!');
-		return error(401, {
-			message: 'Log in first!'
-		});
-	}
+  if (!event.locals.user?.username) {
+    console.log('NOT LOGGED IN!');
+    return error(401, {
+      message: 'Log in first!'
+    });
+  }
 
-	if (!event.locals.role?.canAddMedia) {
-		return error(401, {
-			message: 'You are not allowed to upload Media!'
-		});
-	}
+  if (!event.locals.role?.canAddMedia) {
+    return error(401, {
+      message: 'You are not allowed to upload Media!'
+    });
+  }
 
-	if (tripId != null && tripId != '') {
-		let trip = null;
-		try {
-			if (event.locals.role?.canEditAllTrips) {
-				trip = await prisma.trip.findFirst({
-					where: {
-						id: tripId
-					}
-				});
-			} else if (event.locals.role?.canEditOwnTrips) {
-				trip = await prisma.trip.findFirst({
-					where: {
-						id: tripId,
-						OR: [{
-							crew: {
-								some: {
-									username: event.locals.user.username
-								}
-							}
-						},{
-							skipperName: event.locals.user.username
-						}]
-					}
-				});
-			} else {
-				return error(401, { message: 'You are not allowed to attach media to trips!' });
-			}
-		} catch (exception: any) {
-			error(500, {message: exception.toString()})
-		}
-		if (trip == undefined) {
-			tripId = null;
-			error(400, {message: "Trip not found or not allowed!"});
-		} else if (typeof trip.visibility === 'number') {
-			// For trip media, explicit visibility can only be equal/more private than the trip visibility.
-			visibility = hasExplicitVisibility ? Math.min(visibility, trip.visibility) : trip.visibility;
-		}
-	} else {
-		tripId = null;
-	}
+  if (tripId != null && tripId != '') {
+    let trip = null;
+    try {
+      if (event.locals.role?.canEditAllTrips) {
+        trip = await prisma.trip.findFirst({
+          where: {
+            id: tripId
+          }
+        });
+      } else if (event.locals.role?.canEditOwnTrips) {
+        trip = await prisma.trip.findFirst({
+          where: {
+            id: tripId,
+            OR: [
+              {
+                crew: {
+                  some: {
+                    username: event.locals.user.username
+                  }
+                }
+              },
+              {
+                skipperName: event.locals.user.username
+              }
+            ]
+          }
+        });
+      } else {
+        return error(401, { message: 'You are not allowed to attach media to trips!' });
+      }
+    } catch (exception: any) {
+      error(500, { message: exception.toString() });
+    }
+    if (trip == undefined) {
+      tripId = null;
+      error(400, { message: 'Trip not found or not allowed!' });
+    } else if (typeof trip.visibility === 'number') {
+      // For trip media, explicit visibility can only be equal/more private than the trip visibility.
+      visibility = hasExplicitVisibility ? Math.min(visibility, trip.visibility) : trip.visibility;
+    }
+  } else {
+    tripId = null;
+  }
 
-	let media:Media = {
-		id: '',
-		visibility: 0,
-		username: ''
-	};
+  let media: Media = {
+    id: '',
+    visibility: 0,
+    username: ''
+  };
 
-	try {
-		const arrayBuffer = await event.request.arrayBuffer();
-		const buffer = Buffer.from(arrayBuffer);
-		const isAvif = contentType.includes('image/avif');
+  try {
+    const arrayBuffer = await event.request.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const isAvif = contentType.includes('image/avif');
 
-		let exifData: null|Object = null;
-		let inputImage: sharp.Sharp | null = null;
-		let metadata: sharp.Metadata | null = null;
+    let exifData: null | Object = null;
+    let inputImage: sharp.Sharp | null = null;
+    let metadata: sharp.Metadata | null = null;
 
-		const shouldCheckMetadata = buffer.length > 500 * 1024;
-		if (shouldCheckMetadata || !isAvif) {
-			inputImage = await sharp(buffer);
-			metadata = await inputImage.metadata();
+    const shouldCheckMetadata = buffer.length > 500 * 1024;
+    if (shouldCheckMetadata || !isAvif) {
+      inputImage = await sharp(buffer);
+      metadata = await inputImage.metadata();
 
-			if (metadata.exif) {
-				let exifReader = exif(metadata.exif);
-				let lat = null;
-				let long = null;
-				let timestamp = null;
+      if (metadata.exif) {
+        let exifReader = exif(metadata.exif);
+        let lat = null;
+        let long = null;
+        let timestamp = null;
 
-				if (exifReader.GPSInfo) {
-					lat = exifReader.GPSInfo.GPSLatitude![0] + exifReader.GPSInfo.GPSLatitude![1]/60 + exifReader.GPSInfo.GPSLatitude![2]/3600;
-					if(exifReader.GPSInfo.GPSLatitudeRef === "S") {
-						lat = -lat;
-					}
+        if (exifReader.GPSInfo) {
+          lat =
+            exifReader.GPSInfo.GPSLatitude![0] +
+            exifReader.GPSInfo.GPSLatitude![1] / 60 +
+            exifReader.GPSInfo.GPSLatitude![2] / 3600;
+          if (exifReader.GPSInfo.GPSLatitudeRef === 'S') {
+            lat = -lat;
+          }
 
-					long = exifReader.GPSInfo.GPSLongitude![0] + exifReader.GPSInfo.GPSLongitude![1]/60 + exifReader.GPSInfo.GPSLongitude![2]/3600;
-					if(exifReader.GPSInfo.GPSLongitudeRef === "W") {
-						long = -long;
-					}
+          long =
+            exifReader.GPSInfo.GPSLongitude![0] +
+            exifReader.GPSInfo.GPSLongitude![1] / 60 +
+            exifReader.GPSInfo.GPSLongitude![2] / 3600;
+          if (exifReader.GPSInfo.GPSLongitudeRef === 'W') {
+            long = -long;
+          }
 
-					if(exifReader.GPSInfo.GPSDateStamp) {
-						timestamp = new Date(Date.parse(exifReader.GPSInfo.GPSDateStamp.replaceAll(":", "-") + "T" +
-												String(exifReader.GPSInfo.GPSTimeStamp![0]).padStart(2, '0') + ":" +
-												String(exifReader.GPSInfo.GPSTimeStamp![1]).padStart(2, '0') + ":" +
-												String(exifReader.GPSInfo.GPSTimeStamp![2]).padStart(2, '0') + "Z"));
-					}
-				}
+          if (exifReader.GPSInfo.GPSDateStamp) {
+            timestamp = new Date(
+              Date.parse(
+                exifReader.GPSInfo.GPSDateStamp.replaceAll(':', '-') +
+                  'T' +
+                  String(exifReader.GPSInfo.GPSTimeStamp![0]).padStart(2, '0') +
+                  ':' +
+                  String(exifReader.GPSInfo.GPSTimeStamp![1]).padStart(2, '0') +
+                  ':' +
+                  String(exifReader.GPSInfo.GPSTimeStamp![2]).padStart(2, '0') +
+                  'Z'
+              )
+            );
+          }
+        }
 
-				exifData = {
-					...(exifReader.GPSInfo && {
-						lat: lat,
-						long: long,
-						...(exifReader.GPSInfo.GPSTimeStamp && {
-							created: timestamp
-						})
-					}),
-					...(exifReader.Photo?.DateTimeOriginal && {
-						created: exifReader.Photo.DateTimeOriginal
-					})
-				};
-			}
+        exifData = {
+          ...(exifReader.GPSInfo && {
+            lat: lat,
+            long: long,
+            ...(exifReader.GPSInfo.GPSTimeStamp && {
+              created: timestamp
+            })
+          }),
+          ...(exifReader.Photo?.DateTimeOriginal && {
+            created: exifReader.Photo.DateTimeOriginal
+          })
+        };
+      }
 
-			if (metadata.format == 'svg') {
-				if (metadata.width == undefined) metadata.width = 0;
-				if (metadata.width <= 2000) {
-					inputImage = await inputImage.resize(2000);
-				}
-			}
-		}
+      if (metadata.format == 'svg') {
+        if (metadata.width == undefined) metadata.width = 0;
+        if (metadata.width <= 2000) {
+          inputImage = await inputImage.resize(2000);
+        }
+      }
+    }
 
-		const mergedExifData = {
-			...clientExifData,
-			...(exifData ?? {})
-		};
-		media = await prisma.media.create({
-			data: {
-				username: event.locals.user?.username,
-				visibility: visibility,
-				...(alt && {alt}),
-				...(Object.keys(mergedExifData).length > 0 && mergedExifData),
-				...(tripId && {tripId: tripId})
-			}
-		});
+    const mergedExifData = {
+      ...clientExifData,
+      ...(exifData ?? {})
+    };
+    media = await prisma.media.create({
+      data: {
+        username: event.locals.user?.username,
+        visibility: visibility,
+        ...(alt && { alt }),
+        ...(Object.keys(mergedExifData).length > 0 && mergedExifData),
+        ...(tripId && { tripId: tripId })
+      }
+    });
 
-		let filePath = path.join('store', media.username);
-		if (!existsSync(filePath)) {
-			mkdirSync(filePath, {recursive: true});
-		}
+    let filePath = path.join('store', media.username);
+    if (!existsSync(filePath)) {
+      mkdirSync(filePath, { recursive: true });
+    }
 
-		filePath = path.join(filePath, media.id + '.avif');
-		if (isAvif && (!metadata || metadata.format === 'avif')) {
-			// Already AVIF: avoid recompression. If metadata wasn't checked (small file), trust content-type.
-			writeFileSync(filePath, buffer);
-		} else {
-			if (!inputImage) {
-				inputImage = await sharp(buffer);
-			}
-			// Resize before AVIF encode to reduce CPU cost for large uploads.
-			inputImage = inputImage.resize({
-				width: 2000,
-				height: 2000,
-				fit: 'inside',
-				withoutEnlargement: true
-			});
-			await inputImage.avif({ lossless: false, quality: 50, effort: 2 }).toFile(filePath);
-		}
-	} catch (imageError) {
-		if(media.id != ''){
-			await prisma.media.delete({
-				where: {
-					id: media.id
-				}
-			});
-		}
-		if (imageError == 'Error: Input buffer contains unsupported image format') {
-			error(415, {
-				message: 'Only JPEG, PNG, WebP, GIF, AVIF, TIFF and SVG allowed!'
-			});
-		} else {
-			if (imageError instanceof Object) {
-				error(400, {
-					message: imageError.toString()
-				});
-			} else {
-				console.log(imageError);
-			}
-		}
-	}
+    filePath = path.join(filePath, media.id + '.avif');
+    if (isAvif && (!metadata || metadata.format === 'avif')) {
+      // Already AVIF: avoid recompression. If metadata wasn't checked (small file), trust content-type.
+      writeFileSync(filePath, buffer);
+    } else {
+      if (!inputImage) {
+        inputImage = await sharp(buffer);
+      }
+      // Resize before AVIF encode to reduce CPU cost for large uploads.
+      inputImage = inputImage.resize({
+        width: 2000,
+        height: 2000,
+        fit: 'inside',
+        withoutEnlargement: true
+      });
+      await inputImage.avif({ lossless: false, quality: 50, effort: 2 }).toFile(filePath);
+    }
+  } catch (imageError) {
+    if (media.id != '') {
+      await prisma.media.delete({
+        where: {
+          id: media.id
+        }
+      });
+    }
+    if (imageError == 'Error: Input buffer contains unsupported image format') {
+      error(415, {
+        message: 'Only JPEG, PNG, WebP, GIF, AVIF, TIFF and SVG allowed!'
+      });
+    } else {
+      if (imageError instanceof Object) {
+        error(400, {
+          message: imageError.toString()
+        });
+      } else {
+        console.log(imageError);
+      }
+    }
+  }
 
-	return new Response('OK');
+  return new Response('OK');
 }
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET(event) {
-	let requestedUsername = event.url.searchParams.get('username');
-	let requestedTrip = event.url.searchParams.get('tripId');
+  let requestedUsername = event.url.searchParams.get('username');
+  let requestedTrip = event.url.searchParams.get('tripId');
 
-	if ((requestedUsername == null || requestedUsername == '') && (requestedTrip == null || requestedTrip == null)) {
-		error(400, {
-			message: 'No username/trip requested!'
-		});
-	}
+  if (
+    (requestedUsername == null || requestedUsername == '') &&
+    (requestedTrip == null || requestedTrip == null)
+  ) {
+    error(400, {
+      message: 'No username/trip requested!'
+    });
+  }
 
-	try {
-		if (requestedUsername != null && requestedUsername != "") {
-			if (event.locals.user?.username == requestedUsername) {
-				let results = <Media[]>(<unknown>await prisma.media.findMany({
-					where: {
-						username: event.locals.user?.username,
-						deleted: false,
-					},
-					orderBy: {
-						created: "asc"
-					}
-				}));
-				return new Response(JSON.stringify(results));
-			} else if (event.locals.role?.canSeeAllMedia) {
-				let results = <Media[]>(<unknown>await prisma.media.findMany({
-					where: {
-						username: requestedUsername,
-						deleted: false,
-					},
-					orderBy: {
-						created: "asc"
-					}
-				}));
-				return new Response(JSON.stringify(results));
-			} else if (event.locals.user) {
-				let returnMedia = await prisma.media.findMany({
-					where: {
-						username: requestedUsername,
-						deleted: false,
-						OR: [
-							{
-								visibility: 1
-							},
-							{
-								visibility: 2
-							}
-						]
-					},
-					orderBy: {
-						created: "asc"
-					}
-				});
-				var results: { [a: string]: any } = {};
-				for (let media of returnMedia) {
-					results[media.id] = {
-						visibility: media.visibility,
-						username: media.username,
-						lat: media.lat,
-						long: media.long,
-						time: media.created,
-						tripId: media.tripId
-					};
-				}
-				return new Response(JSON.stringify(results));
-			} else {
-				let returnMedia = await prisma.media.findMany({
-					where: {
-						username: requestedUsername,
-						visibility: 2,
-						deleted: false
-					},
-					orderBy: {
-						created: "asc"
-					}
-				});
-				var results: { [a: string]: any } = {};
-				for (let media of returnMedia) {
-					results[media.id] = {
-						visibility: media.visibility,
-						username: media.username
-					};
-				}
-				return new Response(JSON.stringify(results));
-			}
-		} else if (requestedTrip != null && requestedTrip != "") {
-			if (event.locals.role?.canSeeAllMedia) {
-				let results = <Media[]>(<unknown>await prisma.media.findMany({
-					where: {
-						tripId: requestedTrip,
-						deleted: false
-					}
-				}));
-				return new Response(JSON.stringify(results));
-			} else if (event.locals.user) {
-				let returnMedia = await prisma.media.findMany({
-					where: {
-						tripId: requestedTrip,
-						deleted: false,
-						OR: [
-							{
-								visibility: 1
-							},
-							{
-								visibility: 2
-							}
-						]
-					},
-					orderBy: {
-						created: "asc"
-					}
-				});
-				var results: { [a: string]: any } = {};
-				for (let media of returnMedia) {
-					results[media.id] = {
-						visibility: media.visibility,
-						username: media.username,
-						lat: media.lat,
-						long: media.long,
-						time: media.created,
-						tripId: media.tripId
-					};
-				}
-				return new Response(JSON.stringify(results));
-			} else {
-				let returnMedia = await prisma.media.findMany({
-					where: {
-						tripId: requestedTrip,
-						visibility: 2,
-						deleted: false
-					},
-					orderBy: {
-						created: "asc"
-					}
-				});
-				var results: { [a: string]: any } = {};
-				for (let media of returnMedia) {
-					results[media.id] = {
-						visibility: media.visibility,
-						username: media.username,
-						lat: media.lat,
-						long: media.long,
-						time: media.created,
-						tripId: media.tripId
-					};
-				}
-				return new Response(JSON.stringify(results));
-			}
-		}
-		
-	} catch (error_message) {
-		if (error_message instanceof Error) {
-			console.log(error_message);
-			error(404, {
-				message: error_message.message
-			});
-		} else {
-			error(500, {
-				message: 'ERROR'
-			});
-		}
-	}
+  try {
+    if (requestedUsername != null && requestedUsername != '') {
+      if (event.locals.user?.username == requestedUsername) {
+        let results = <Media[]>(<unknown>await prisma.media.findMany({
+          where: {
+            username: event.locals.user?.username,
+            deleted: false
+          },
+          orderBy: {
+            created: 'asc'
+          }
+        }));
+        return new Response(JSON.stringify(results));
+      } else if (event.locals.role?.canSeeAllMedia) {
+        let results = <Media[]>(<unknown>await prisma.media.findMany({
+          where: {
+            username: requestedUsername,
+            deleted: false
+          },
+          orderBy: {
+            created: 'asc'
+          }
+        }));
+        return new Response(JSON.stringify(results));
+      } else if (event.locals.user) {
+        let returnMedia = await prisma.media.findMany({
+          where: {
+            username: requestedUsername,
+            deleted: false,
+            OR: [
+              {
+                visibility: 1
+              },
+              {
+                visibility: 2
+              }
+            ]
+          },
+          orderBy: {
+            created: 'asc'
+          }
+        });
+        var results: { [a: string]: any } = {};
+        for (let media of returnMedia) {
+          results[media.id] = {
+            visibility: media.visibility,
+            username: media.username,
+            lat: media.lat,
+            long: media.long,
+            time: media.created,
+            tripId: media.tripId
+          };
+        }
+        return new Response(JSON.stringify(results));
+      } else {
+        let returnMedia = await prisma.media.findMany({
+          where: {
+            username: requestedUsername,
+            visibility: 2,
+            deleted: false
+          },
+          orderBy: {
+            created: 'asc'
+          }
+        });
+        var results: { [a: string]: any } = {};
+        for (let media of returnMedia) {
+          results[media.id] = {
+            visibility: media.visibility,
+            username: media.username
+          };
+        }
+        return new Response(JSON.stringify(results));
+      }
+    } else if (requestedTrip != null && requestedTrip != '') {
+      if (event.locals.role?.canSeeAllMedia) {
+        let results = <Media[]>(<unknown>await prisma.media.findMany({
+          where: {
+            tripId: requestedTrip,
+            deleted: false
+          }
+        }));
+        return new Response(JSON.stringify(results));
+      } else if (event.locals.user) {
+        let returnMedia = await prisma.media.findMany({
+          where: {
+            tripId: requestedTrip,
+            deleted: false,
+            OR: [
+              {
+                visibility: 1
+              },
+              {
+                visibility: 2
+              }
+            ]
+          },
+          orderBy: {
+            created: 'asc'
+          }
+        });
+        var results: { [a: string]: any } = {};
+        for (let media of returnMedia) {
+          results[media.id] = {
+            visibility: media.visibility,
+            username: media.username,
+            lat: media.lat,
+            long: media.long,
+            time: media.created,
+            tripId: media.tripId
+          };
+        }
+        return new Response(JSON.stringify(results));
+      } else {
+        let returnMedia = await prisma.media.findMany({
+          where: {
+            tripId: requestedTrip,
+            visibility: 2,
+            deleted: false
+          },
+          orderBy: {
+            created: 'asc'
+          }
+        });
+        var results: { [a: string]: any } = {};
+        for (let media of returnMedia) {
+          results[media.id] = {
+            visibility: media.visibility,
+            username: media.username,
+            lat: media.lat,
+            long: media.long,
+            time: media.created,
+            tripId: media.tripId
+          };
+        }
+        return new Response(JSON.stringify(results));
+      }
+    }
+  } catch (error_message) {
+    if (error_message instanceof Error) {
+      console.log(error_message);
+      error(404, {
+        message: error_message.message
+      });
+    } else {
+      error(500, {
+        message: 'ERROR'
+      });
+    }
+  }
 }
 
 /** @type {import('./$types').RequestHandler} */
 export async function PUT(event) {
-	const mediaId = event.url.searchParams.get('mediaId');
-	const unparsedVisibility = event.url.searchParams.get('visibility');
+  const mediaId = event.url.searchParams.get('mediaId');
+  const unparsedVisibility = event.url.searchParams.get('visibility');
 
-	if (!event.locals.user?.username) {
-		return error(401, { message: 'Log in first!' });
-	}
-	if (mediaId == null || mediaId === '') {
-		return error(400, { message: 'mediaId is required!' });
-	}
-	if (unparsedVisibility == null) {
-		return error(400, { message: 'visibility is required!' });
-	}
+  if (!event.locals.user?.username) {
+    return error(401, { message: 'Log in first!' });
+  }
+  if (mediaId == null || mediaId === '') {
+    return error(400, { message: 'mediaId is required!' });
+  }
+  if (unparsedVisibility == null) {
+    return error(400, { message: 'visibility is required!' });
+  }
 
-	let visibility = Number.parseInt(unparsedVisibility, 10);
-	if (Number.isNaN(visibility) || visibility < 0 || visibility > 2) {
-		return error(400, { message: 'Invalid visibility value!' });
-	}
+  let visibility = Number.parseInt(unparsedVisibility, 10);
+  if (Number.isNaN(visibility) || visibility < 0 || visibility > 2) {
+    return error(400, { message: 'Invalid visibility value!' });
+  }
 
-	let media = await prisma.media.findFirst({
-		where: {
-			id: mediaId,
-			deleted: false
-		},
-		include: {
-			trip: {
-				include: {
-					crew: {
-						select: {
-							username: true
-						}
-					}
-				}
-			}
-		}
-	});
+  let media = await prisma.media.findFirst({
+    where: {
+      id: mediaId,
+      deleted: false
+    },
+    include: {
+      trip: {
+        include: {
+          crew: {
+            select: {
+              username: true
+            }
+          }
+        }
+      }
+    }
+  });
 
-	if (!media) {
-		return error(404, { message: 'Media not found!' });
-	}
+  if (!media) {
+    return error(404, { message: 'Media not found!' });
+  }
 
-	const canEditOwnMedia = media.username === event.locals.user.username;
-	const canEditAllMedia = !!event.locals.role?.canSeeAllMedia;
-	let canEditTripMedia = false;
+  const canEditOwnMedia = media.username === event.locals.user.username;
+  const canEditAllMedia = !!event.locals.role?.canSeeAllMedia;
+  let canEditTripMedia = false;
 
-	if (media.trip) {
-		if (event.locals.role?.canEditAllTrips) {
-			canEditTripMedia = true;
-		} else if (event.locals.role?.canEditOwnTrips) {
-			canEditTripMedia =
-				media.trip.skipperName === event.locals.user.username ||
-				media.trip.crew.some((member) => member.username === event.locals.user?.username);
-		}
-	}
+  if (media.trip) {
+    if (event.locals.role?.canEditAllTrips) {
+      canEditTripMedia = true;
+    } else if (event.locals.role?.canEditOwnTrips) {
+      canEditTripMedia =
+        media.trip.skipperName === event.locals.user.username ||
+        media.trip.crew.some((member) => member.username === event.locals.user?.username);
+    }
+  }
 
-	if (!canEditOwnMedia && !canEditAllMedia && !canEditTripMedia) {
-		return error(403, { message: 'Not allowed to edit this media item!' });
-	}
+  if (!canEditOwnMedia && !canEditAllMedia && !canEditTripMedia) {
+    return error(403, { message: 'Not allowed to edit this media item!' });
+  }
 
-	if (typeof media.trip?.visibility === 'number') {
-		visibility = Math.min(visibility, media.trip.visibility);
-	}
+  if (typeof media.trip?.visibility === 'number') {
+    visibility = Math.min(visibility, media.trip.visibility);
+  }
 
-	await prisma.media.update({
-		where: {
-			id: media.id,
-			deleted: false
-		},
-		data: {
-			visibility
-		}
-	});
+  await prisma.media.update({
+    where: {
+      id: media.id,
+      deleted: false
+    },
+    data: {
+      visibility
+    }
+  });
 
-	return new Response(JSON.stringify({ ok: true, id: media.id, visibility }), {
-		headers: {
-			'Content-Type': 'application/json'
-		}
-	});
+  return new Response(JSON.stringify({ ok: true, id: media.id, visibility }), {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
 }
 
 /** @type {import('./$types').RequestHandler} */
 export async function DELETE(event) {
-	const mediaId = event.url.searchParams.get('mediaId');
+  const mediaId = event.url.searchParams.get('mediaId');
 
-	if (!event.locals.user?.username) {
-		return error(401, { message: 'Log in first!' });
-	}
-	if (mediaId == null || mediaId === '') {
-		return error(400, { message: 'mediaId is required!' });
-	}
+  if (!event.locals.user?.username) {
+    return error(401, { message: 'Log in first!' });
+  }
+  if (mediaId == null || mediaId === '') {
+    return error(400, { message: 'mediaId is required!' });
+  }
 
-	let media = await prisma.media.findFirst({
-		where: {
-			id: mediaId,
-			deleted: false
-		},
-		include: {
-			trip: {
-				include: {
-					crew: {
-						select: {
-							username: true
-						}
-					}
-				}
-			}
-		}
-	});
+  let media = await prisma.media.findFirst({
+    where: {
+      id: mediaId,
+      deleted: false
+    },
+    include: {
+      trip: {
+        include: {
+          crew: {
+            select: {
+              username: true
+            }
+          }
+        }
+      }
+    }
+  });
 
-	if (!media) {
-		return error(404, { message: 'Media not found!' });
-	}
+  if (!media) {
+    return error(404, { message: 'Media not found!' });
+  }
 
-	const canEditOwnMedia = media.username === event.locals.user.username;
-	const canEditAllMedia = !!event.locals.role?.canSeeAllMedia;
-	let canEditTripMedia = false;
+  const canEditOwnMedia = media.username === event.locals.user.username;
+  const canEditAllMedia = !!event.locals.role?.canSeeAllMedia;
+  let canEditTripMedia = false;
 
-	if (media.trip) {
-		if (event.locals.role?.canEditAllTrips) {
-			canEditTripMedia = true;
-		} else if (event.locals.role?.canEditOwnTrips) {
-			canEditTripMedia =
-				media.trip.skipperName === event.locals.user.username ||
-				media.trip.crew.some((member) => member.username === event.locals.user?.username);
-		}
-	}
+  if (media.trip) {
+    if (event.locals.role?.canEditAllTrips) {
+      canEditTripMedia = true;
+    } else if (event.locals.role?.canEditOwnTrips) {
+      canEditTripMedia =
+        media.trip.skipperName === event.locals.user.username ||
+        media.trip.crew.some((member) => member.username === event.locals.user?.username);
+    }
+  }
 
-	if (!canEditOwnMedia && !canEditAllMedia && !canEditTripMedia) {
-		return error(403, { message: 'Not allowed to delete this media item!' });
-	}
+  if (!canEditOwnMedia && !canEditAllMedia && !canEditTripMedia) {
+    return error(403, { message: 'Not allowed to delete this media item!' });
+  }
 
-	await prisma.media.update({
-		where: {
-			id: media.id
-		},
-		data: {
-			deleted: true
-		}
-	});
+  await prisma.media.update({
+    where: {
+      id: media.id
+    },
+    data: {
+      deleted: true
+    }
+  });
 
-	const filePath = path.join('store', media.username, media.id + '.avif');
-	if (existsSync(filePath)) {
-		unlinkSync(filePath);
-	}
+  const filePath = path.join('store', media.username, media.id + '.avif');
+  if (existsSync(filePath)) {
+    unlinkSync(filePath);
+  }
 
-	return new Response(JSON.stringify({ ok: true, id: media.id }), {
-		headers: {
-			'Content-Type': 'application/json'
-		}
-	});
+  return new Response(JSON.stringify({ ok: true, id: media.id }), {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
 }

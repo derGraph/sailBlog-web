@@ -1,6 +1,6 @@
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 // Change this line:
-import { PrismaClient } from '@prisma-custom/client'; 
+import { PrismaClient } from '@prisma-custom/client';
 
 const adapter = new PrismaMariaDb({
   host: process.env.DATABASE_HOST || 'localhost',
@@ -8,7 +8,7 @@ const adapter = new PrismaMariaDb({
   password: process.env.DATABASE_PASSWORD || 'sailBlog',
   database: process.env.DATABASE_NAME || 'db',
   port: Number(process.env.DATABASE_PORT) || 3306,
-  connectionLimit: 5,
+  connectionLimit: 5
 });
 
 const prisma = new PrismaClient({ adapter });

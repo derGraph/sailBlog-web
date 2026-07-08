@@ -99,13 +99,8 @@ model Trip {
   id                String    @id @default(cuid(2))
   name              String
   description       String?   @db.Text
-  startPoint        Datapoint?@relation("startPoint", fields: [startPointId], references: [id])
-  startPointId      String?   @unique
-  endPoint          Datapoint?@relation("endPoint", fields: [endPointId], references: [id])
-  endPointId        String?   @unique
   datapoints        Datapoint[]
   activeUser        User[]
-  last_update       DateTime  @updatedAt
   length_sail       Decimal?
   length_motor      Decimal?
   skipper           User?     @relation("skipper", fields: [skipperName], references: [username])
@@ -122,8 +117,6 @@ model Trip {
 
 model Datapoint {
   id                String    @id @default(cuid(2))
-  tripStart         Trip?     @relation("startPoint")
-  tripEnd           Trip?     @relation("endPoint")
   trip              Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
   tripId            String
   time              DateTime  @default(now())
