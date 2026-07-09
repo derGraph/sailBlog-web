@@ -70,7 +70,7 @@
       return ({ node, theme, getPos, editor }) => {
         // Main structural block container
         const container = document.createElement('div');
-        container.className = 'tiptap-resizable-image-wrapper'; 
+        container.className = 'tiptap-resizable-image-wrapper';
         container.style.position = 'relative';
         container.style.maxWidth = '100%';
 
@@ -130,7 +130,7 @@
           handle.style.boxShadow = '0 1px 3px rgba(0,0,0,0.3)';
           handle.style.cursor = corner.cursor;
           handle.style.zIndex = '50';
-          handle.style.borderRadius = '50%'; 
+          handle.style.borderRadius = '50%';
 
           container.appendChild(handle);
 

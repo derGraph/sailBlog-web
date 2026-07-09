@@ -31,8 +31,10 @@ model User {
   activeTripId      String?
   crewedLengthSail      Int       @default(0)
   crewedLengthMotor     Int       @default(0)
+  crewedLengthUnknown   Int       @default(0)
   skipperedLengthSail   Int       @default(0)
   skipperedLengthMotor  Int       @default(0)
+  skipperedLengthUnknown  Int       @default(0)
   recalculate       Boolean   @default(true)
   uploadedMedia     Media[]   @relation("uploader")                
   sessions          Session[]
@@ -86,7 +88,7 @@ model Role {
 }
 
 model Key {
-  id                String    @id @unique @default(cuid())
+  id                String    @id @unique @default(cuid(2))
   type              String
   passwordHash      String?
   userId            String
@@ -96,18 +98,14 @@ model Key {
 }
 
 model Trip {
-  id                String    @id @default(cuid())
+  id                String    @id @default(cuid(2))
   name              String
   description       String?   @db.Text
-  startPoint        Datapoint?@relation("startPoint", fields: [startPointId], references: [id])
-  startPointId      String?   @unique
-  endPoint          Datapoint?@relation("endPoint", fields: [endPointId], references: [id])
-  endPointId        String?   @unique
   datapoints        Datapoint[]
   activeUser        User[]
-  last_update       DateTime  @updatedAt
   length_sail       Decimal?
   length_motor      Decimal?
+  length_unknown    Decimal?
   skipper           User?     @relation("skipper", fields: [skipperName], references: [username])
   skipperName       String?
   crew              User[]    @relation("crew")
@@ -121,9 +119,7 @@ model Trip {
   }
 
 model Datapoint {
-  id                String    @id @default(cuid())
-  tripStart         Trip?     @relation("startPoint")
-  tripEnd           Trip?     @relation("endPoint")
+  id                String    @id @default(cuid(2))
   trip              Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
   tripId            String
   time              DateTime  @default(now())
@@ -137,6 +133,7 @@ model Datapoint {
   propulsion        Int? // 0: anchor
                             // 1: motor
                             // 2: sailing
+                            // 3: unknown
   optimized         Int     @default(0) // 0: to optimize
                                         // 1: deleted
                                         // 2: needed
@@ -148,7 +145,7 @@ model Location {
 }
 
 model Media {
-  id                String    @id @default(cuid())
+  id                String    @id @default(cuid(2))
   visibility        Int       @default(1) // 0: private
                                           // 1: logged in
                                           // 2: public 

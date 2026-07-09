@@ -1,3 +1,3 @@
 export let dark = $state({
-    mode: false
+  mode: false
 });
