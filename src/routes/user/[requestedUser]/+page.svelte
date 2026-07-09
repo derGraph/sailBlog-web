@@ -263,8 +263,8 @@
           <span class="text-base! material-symbols-outlined">sailing</span>{(
             Number(
               requestedUser?.skipperedLengthSail +
-                (requestedUser?.crewedLengthSail * requestedUser?.crewedLengthUnknown) /
-                  (requestedUser?.crewedLengthSail + requestedUser?.crewedLengthMotor)
+                (requestedUser?.skipperedLengthSail * requestedUser?.skipperedLengthUnknown) /
+                  (requestedUser?.skipperedLengthSail + requestedUser?.skipperedLengthMotor)
             ) / 1853
           ).toFixed(2)} NM
           <span class="text-base! material-symbols-outlined">mode_heat</span>{(
