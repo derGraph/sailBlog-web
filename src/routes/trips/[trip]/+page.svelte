@@ -119,18 +119,20 @@
         <h3 class="h5 text-center">
           Distance:
           {(
-            (Number(requestedTripData?.length_sail) + Number(requestedTripData?.length_motor) + Number(requestedTripData?.length_unknown)) /
+            (Number(requestedTripData?.length_sail) +
+              Number(requestedTripData?.length_motor) +
+              Number(requestedTripData?.length_unknown)) /
             1853
           ).toFixed(2)} NM
           {#if requestedTripData && requestedTripData?.length_sail > 0}
-          <span class="text-base! material-symbols-outlined">sailing</span>{(
-            Number(requestedTripData?.length_sail) / 1853
-          ).toFixed(2)} NM
+            <span class="text-base! material-symbols-outlined">sailing</span>{(
+              Number(requestedTripData?.length_sail) / 1853
+            ).toFixed(2)} NM
           {/if}
           {#if requestedTripData && requestedTripData?.length_motor > 0}
-          <span class="text-base! material-symbols-outlined">mode_heat</span>{(
-            Number(requestedTripData?.length_motor) / 1853
-          ).toFixed(2)} NM
+            <span class="text-base! material-symbols-outlined">mode_heat</span>{(
+              Number(requestedTripData?.length_motor) / 1853
+            ).toFixed(2)} NM
           {/if}
         </h3>
       </div>

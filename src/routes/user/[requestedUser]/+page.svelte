@@ -232,39 +232,47 @@
         <h3 class="h5 text-center group">
           Crewed:
           {(
-            (Number(requestedUser?.crewedLengthSail) 
-            + Number(requestedUser?.crewedLengthMotor) 
-            + Number(requestedUser?.crewedLengthUnknown)) /
+            (Number(requestedUser?.crewedLengthSail) +
+              Number(requestedUser?.crewedLengthMotor) +
+              Number(requestedUser?.crewedLengthUnknown)) /
             1853
           ).toFixed(2)} NM 
           <span class="text-base! material-symbols-outlined">sailing</span>{(
-            Number(requestedUser?.crewedLengthSail + 
-              requestedUser?.crewedLengthSail*requestedUser?.crewedLengthUnknown/
-              (requestedUser?.crewedLengthSail+requestedUser?.crewedLengthMotor)) / 1853
+            Number(
+              requestedUser?.crewedLengthSail +
+                (requestedUser?.crewedLengthSail * requestedUser?.crewedLengthUnknown) /
+                  (requestedUser?.crewedLengthSail + requestedUser?.crewedLengthMotor)
+            ) / 1853
           ).toFixed(2)} NM
           <span class="text-base! material-symbols-outlined">mode_heat</span>{(
-            Number(requestedUser?.crewedLengthMotor + 
-              requestedUser?.crewedLengthMotor*requestedUser?.crewedLengthUnknown/
-              (requestedUser?.crewedLengthSail+requestedUser?.crewedLengthMotor)) / 1853
+            Number(
+              requestedUser?.crewedLengthMotor +
+                (requestedUser?.crewedLengthMotor * requestedUser?.crewedLengthUnknown) /
+                  (requestedUser?.crewedLengthSail + requestedUser?.crewedLengthMotor)
+            ) / 1853
           ).toFixed(2)} NM
         </h3>
         <h3 class="h5 text-center group">
           Skippered:
           {(
-            (Number(requestedUser?.skipperedLengthSail)
-            + Number(requestedUser?.skipperedLengthMotor)
-            + Number(requestedUser?.skipperedLengthUnknown)) /
+            (Number(requestedUser?.skipperedLengthSail) +
+              Number(requestedUser?.skipperedLengthMotor) +
+              Number(requestedUser?.skipperedLengthUnknown)) /
             1853
           ).toFixed(2)} NM 
           <span class="text-base! material-symbols-outlined">sailing</span>{(
-            Number(requestedUser?.skipperedLengthSail+ 
-              requestedUser?.crewedLengthSail*requestedUser?.crewedLengthUnknown/
-              (requestedUser?.crewedLengthSail+requestedUser?.crewedLengthMotor)) / 1853
+            Number(
+              requestedUser?.skipperedLengthSail +
+                (requestedUser?.crewedLengthSail * requestedUser?.crewedLengthUnknown) /
+                  (requestedUser?.crewedLengthSail + requestedUser?.crewedLengthMotor)
+            ) / 1853
           ).toFixed(2)} NM
           <span class="text-base! material-symbols-outlined">mode_heat</span>{(
-            Number(requestedUser?.skipperedLengthMotor+ 
-              requestedUser?.skipperedLengthMotor*requestedUser?.skipperedLengthUnknown/
-              (requestedUser?.skipperedLengthSail+requestedUser?.skipperedLengthMotor)) / 1853
+            Number(
+              requestedUser?.skipperedLengthMotor +
+                (requestedUser?.skipperedLengthMotor * requestedUser?.skipperedLengthUnknown) /
+                  (requestedUser?.skipperedLengthSail + requestedUser?.skipperedLengthMotor)
+            ) / 1853
           ).toFixed(2)} NM
         </h3>
       </div>

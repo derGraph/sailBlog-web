@@ -173,7 +173,7 @@ export async function calculateDistance(trip: string) {
     data: {
       length_sail: newDistanceSail,
       length_motor: newDistanceMotor,
-      length_unknown: newDistanceUnknown,
+      length_unknown: newDistanceUnknown
     }
   });
 }

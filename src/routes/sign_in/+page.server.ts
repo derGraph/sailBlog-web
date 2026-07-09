@@ -95,10 +95,25 @@ async function loginUser(event: any, user: string) {
   });
 }
 
+/**
+ * Helper function to cleanly extract parameters whether they come from a Form or JSON request.
+ */
+async function getRequestData(request: Request): Promise<Record<string, any>> {
+  const contentType = request.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    return await request.json();
+  } else {
+    const formData = await request.formData();
+    return Object.fromEntries(formData.entries());
+  }
+}
+
 export const actions: Actions = {
   magicLink: async (event) => {
-    const formData = await event.request.formData();
-    const magicLink = formData.get('magicLink');
+    // Dynamically parses either JSON or FormData
+    const data = await getRequestData(event.request);
+    const magicLink = data.magicLink;
+
     if (typeof magicLink !== 'string' || !magicLink.includes('.')) {
       return fail(422, {
         error: 'Wrong magic link!'
@@ -138,10 +153,12 @@ export const actions: Actions = {
     await loginUser(event, key.userId);
     redirect(302, '/');
   },
+
   login: async (event) => {
-    const formData = await event.request.formData();
-    const identifier = formData.get('identifier');
-    const password = formData.get('password');
+    // Dynamically parses either JSON or FormData
+    const data = await getRequestData(event.request);
+    const identifier = data.identifier;
+    const password = data.password;
 
     const usernameRegex = /^[a-zA-Z0-9_-]+$/;
     const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
@@ -149,8 +166,6 @@ export const actions: Actions = {
 
     let user;
     try {
-      // username must be between 4 ~ 31 characters, and only consists of lowercase letters, 0-9, -, and _
-      // keep in mind some database (e.g. mysql) are case insensitive
       if (
         typeof identifier !== 'string' ||
         identifier.length < 3 ||

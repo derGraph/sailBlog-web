@@ -20,21 +20,20 @@
           $errorStore = response;
           return;
         }
-        let allTrips:any[] = await response.json();
+        let allTrips: any[] = await response.json();
         allTrips = allTrips.filter((trip) => {
-            // If showMyTrips is false, include all trips; otherwise, filter by the user's trips
-            const isMyTrip =
-              trip.crew.some(
-                (crewMember: { username: string | undefined }) =>
-                  crewMember.username === data.user?.username
-              ) ||
-              trip.skipperName === data.user?.username;
+          // If showMyTrips is false, include all trips; otherwise, filter by the user's trips
+          const isMyTrip =
+            trip.crew.some(
+              (crewMember: { username: string | undefined }) =>
+                crewMember.username === data.user?.username
+            ) || trip.skipperName === data.user?.username;
 
           // Combine all conditions
           return isMyTrip;
         });
-        tracks = allTrips.map(trip => String(trip.id));
-    });
+        tracks = allTrips.map((trip) => String(trip.id));
+      });
     } else {
       tracks = null;
     }

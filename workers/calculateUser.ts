@@ -71,7 +71,7 @@ export async function calculateUser(user: string) {
       skipperedLengthSail: skipperedLengthSail,
       skipperedLengthMotor: skipperedLengthMotor,
       skipperedLengthUnknown: skipperedLengthUnknown,
-      recalculate: false,
+      recalculate: false
     }
   });
 }

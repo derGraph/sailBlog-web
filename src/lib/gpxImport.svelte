@@ -47,8 +47,8 @@
     }
   }
 
-  // Adjusted to return the Promise so uploadRoute can track its resolution
-  function uploadDatapoints(datapoints: rawDatapoint[], onComplete: () => void) {
+  // Returns a Promise that resolves when the network request completes
+  function uploadDatapoints(datapoints: rawDatapoint[]): Promise<void> {
     const formattedData = datapoints.reduce(
       (acc, point) => {
         const { id, ...rest } = point;
@@ -58,8 +58,7 @@
       {} as Record<string, any>
     );
 
-    // Keep it completely async, but execute the callback once the server responds
-    fetch('/api/Datapoints', {
+    return fetch('/api/Datapoints', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -73,47 +72,24 @@
           files = undefined;
           importedResults = undefined;
           loadingIndex = -1;
-          return;
         }
       })
       .catch((error) => {
         console.error('Error sending POST request:', error);
-      })
-      .finally(() => {
-        // Trigger the resolution counter hook
-        onComplete();
       });
   }
 
   async function uploadRoute(trackId: number) {
-    let newDatapoints: rawDatapoint[] = [];
+    let allDatapoints: rawDatapoint[] = [];
     loadingIndex = trackId;
     progress = 0;
 
-    const totalPoints = importedResults!.trackHeaders[trackId]?.pointCount || 1;
-    const expectedBatches = Math.ceil(totalPoints / 500);
-
-    let batchesSent = 0;
-    let batchesReceived = 0;
-
-    function updateProgress() {
-      const sentProgress = (batchesSent / expectedBatches) * 50;
-      const receivedProgress = (batchesReceived / expectedBatches) * 50;
-
-      progress = Math.min(sentProgress + receivedProgress, 100);
-
-      if (batchesReceived === expectedBatches) {
-        loadingIndex = -1;
-      }
-    }
-
+    // 1. Gather all valid datapoints safely across segments
     for await (const segment of importedResults!.getTrackSegments(trackId)) {
-      for (let i = 0; i < segment.length; i++) {
-        let point = segment[i];
+      for (let point of segment) {
+        if (!point.time) continue; // Skip bad points gracefully, do not return early
 
-        if (!point.time) return;
-
-        newDatapoints.push({
+        allDatapoints.push({
           id: createId(),
           lat: point.lat,
           long: point.lon,
@@ -123,22 +99,36 @@
           h_accuracy: Number(point.extensions?.['navionics_haccuracy']),
           v_accuracy: Number(point.extensions?.['navionics_vaccuracy'])
         });
-
-        if (newDatapoints.length >= 500 || i === segment.length - 1) {
-          batchesSent++;
-          updateProgress();
-
-          // Fire off the network call asynchronously
-          uploadDatapoints(newDatapoints, () => {
-            batchesReceived++;
-            updateProgress();
-          });
-
-          newDatapoints = [];
-          await new Promise((resolve) => setTimeout(resolve, 0));
-        }
       }
     }
+
+    const totalValidPoints = allDatapoints.length;
+    if (totalValidPoints === 0) {
+      loadingIndex = -1;
+      return;
+    }
+
+    // 2. Break valid points into precise chunks of 500
+    const batches: rawDatapoint[][] = [];
+    for (let i = 0; i < totalValidPoints; i += 500) {
+      batches.push(allDatapoints.slice(i, i + 500));
+    }
+
+    const totalBatches = batches.length;
+    let batchesProcessed = 0;
+
+    // 3. Upload batches sequentially
+    for (const batch of batches) {
+      // Await the fetch response before running the next loop iteration
+      await uploadDatapoints(batch);
+
+      batchesProcessed++;
+      // Progress calculation directly maps to actual server resolution
+      progress = Math.round((batchesProcessed / totalBatches) * 100);
+    }
+
+    // 4. Cleanup UI state once complete
+    loadingIndex = -1;
   }
 </script>
 
