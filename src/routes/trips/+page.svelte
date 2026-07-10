@@ -40,7 +40,7 @@
         filterUsers.length === 0 ||
         trip.crew.some((loc: { username: String }) => filterUsers.includes(loc.username)) ||
         filterUsers.includes(trip.skipperName);
-        
+
       const deletionMatch = !trip.deleted;
 
       const isMyTrip =
@@ -60,12 +60,12 @@
     filteredTrips.sort((a, b) => {
       const timeA = a.endPoint?.time ? Date.parse(a.endPoint.time) : 0;
       const timeB = b.endPoint?.time ? Date.parse(b.endPoint.time) : 0;
-      
+
       return timeB - timeA; // Ascending order (2018 appears before 2025)
     });
 
     maxTrips = filteredTrips.length;
-    
+
     // 3. Apply pagination on the sorted array
     tableArr = filteredTrips.slice(page * 10, (page + 1) * 10);
   }
