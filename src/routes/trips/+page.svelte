@@ -26,26 +26,23 @@
   });
 
   function applyTripFilter() {
-    tableArr = allTrips.filter((trip) => {
-      // If showDeletedTrips is true, show only deleted trips
+    // 1. Filter the trips based on existing rules
+    let filteredTrips = allTrips.filter((trip) => {
       if (showDeletedTrips) {
         return trip.deleted;
       }
 
-      // If locations array is empty, consider all locations
       const locationMatch =
         filterLocations.length === 0 ||
         trip.location.some((loc: { name: String }) => filterLocations.includes(loc.name));
 
-      // If user array is empty, consider all users
       const userMatch =
         filterUsers.length === 0 ||
         trip.crew.some((loc: { username: String }) => filterUsers.includes(loc.username)) ||
         filterUsers.includes(trip.skipperName);
-      // If showDeletedTrips is false, only include trips that are not deleted
+        
       const deletionMatch = !trip.deleted;
 
-      // If showMyTrips is false, include all trips; otherwise, filter by the user's trips
       const isMyTrip =
         !showMyTrips ||
         trip.crew.some(
@@ -54,11 +51,23 @@
         ) ||
         trip.skipperName === data.user?.username;
 
-      // Combine all conditions
       return locationMatch && deletionMatch && isMyTrip && userMatch;
     });
-    maxTrips = tableArr.length;
-    tableArr = tableArr.slice(page * 10, (page + 1) * 10);
+
+    console.log(filteredTrips);
+    // 2. Sort the filtered trips by .endDate.time (Ascending order)
+    // Note: If some entries might miss .endDate or .time, we use optional chaining (?.) and fallback to 0
+    filteredTrips.sort((a, b) => {
+      const timeA = a.endPoint?.time ? Date.parse(a.endPoint.time) : 0;
+      const timeB = b.endPoint?.time ? Date.parse(b.endPoint.time) : 0;
+      
+      return timeB - timeA; // Ascending order (2018 appears before 2025)
+    });
+
+    maxTrips = filteredTrips.length;
+    
+    // 3. Apply pagination on the sorted array
+    tableArr = filteredTrips.slice(page * 10, (page + 1) * 10);
   }
 
   function reloadTable() {
