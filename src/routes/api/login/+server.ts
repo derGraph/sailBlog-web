@@ -5,7 +5,7 @@ import { prisma } from '$lib/server/prisma';
 
 export const POST: RequestHandler = async (event) => {
   let body;
-  
+
   // 1. Safely extract JSON payload from Flutter
   try {
     body = await event.request.json();
@@ -20,7 +20,7 @@ export const POST: RequestHandler = async (event) => {
   const passwordRegex = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,255}$/;
 
   let user;
-  
+
   // 2. Validate Credentials Structure
   try {
     if (
@@ -101,11 +101,10 @@ export const POST: RequestHandler = async (event) => {
     });
 
     // 7. Success fallback. Return the session cookie explicitly for mobile clients manually parsing tracking tokens
-    return json({ 
-      success: true, 
-      sessionToken: id + '.' + secret 
+    return json({
+      success: true,
+      sessionToken: id + '.' + secret
     });
-
   } catch (error) {
     return json({ error: 'Session assignment execution failure' }, { status: 500 });
   }

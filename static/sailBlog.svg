@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<svg width="360" height="360" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+ <defs>
+  <!-- Define a clipping path to cleanly cut off the bottom of the background dashed circle -->
+  <clipPath id="circle-clip">
+   <rect height="330" id="svg_1" width="512" x="0" y="0"/>
+  </clipPath>
+ </defs>
+ <!-- Background -->
+ <!-- Outer Dashed Circle -->
+ <!-- Left Sail -->
+ <!-- Right Sail -->
+ <!-- Hull 
+  <path d="M 165 295 L 347 295 C 347 295 335 336 256 336 C 177 336 165 295 165 295 Z" fill="#ffffff" stroke="#224E6B" stroke-width="15" stroke-linejoin="round" stroke-linecap="round" />
+  -->
+ <!-- Water & Accent Dashes (Bottom) -->
+ <g class="layer">
+  <title>Layer 1</title>
+  <g id="svg_15" transform="translate(0, 1) translate(0, 1) translate(0, 1) translate(0, 1) translate(0, 1) translate(0, 1) translate(0, 1) translate(0, 1) translate(0, 1) translate(1) translate(0, 1) translate(0, 1) translate(-1) translate(-1) translate(-1) translate(-1) translate(-1) translate(-1) translate(-1) translate(-1) translate(-1) translate(0, -1) translate(0, -1) translate(0, -1) translate(0, -1) translate(0, -1) translate(0, -1) translate(0, -1) translate(0, -1) translate(0, -1) translate(0, -1) translate(0, -1) translate(1) translate(1) translate(1) translate(1) translate(1) translate(1) translate(1) translate(1) translate(-1) translate(-1) translate(-1) translate(0, 1) translate(0, 1) translate(0, 1) translate(0, 1) translate(0, 1) matrix(1, 0, 0, 1, -1.75, 2)">
+   <g clip-path="url(#circle-clip)" id="svg_2" transform="matrix(1, 0, 0, 1, -72, -62)">
+    <circle cx="256" cy="235" fill="none" id="svg_3" r="165" stroke="#42B3E0" stroke-dasharray="40 40" stroke-linecap="round" stroke-width="15" transform="rotate(41, 256, 235)"/>
+   </g>
+   <path d="m250,98l-87,180l87,0l0,-180z" fill="#42B3E0" id="svg_4" stroke="#224E6B" stroke-linecap="round" stroke-linejoin="round" stroke-width="15" transform="matrix(1, 0, 0, 1, -72, -62)"/>
+   <path d="m272,135l0,143l71,0l-71,-143z" fill="#42B3E0" id="svg_5" stroke="#224E6B" stroke-linecap="round" stroke-linejoin="round" stroke-width="15" transform="matrix(1, 0, 0, 1, -72, -62)"/>
+   <path d="m165,300c0,36 25,42 50,42l90,0c0,0 35,0 38,-42l-178,0z" fill="#ffffff" id="svg_6" stroke="#224E6B" stroke-linecap="round" stroke-linejoin="round" stroke-width="15" transform="matrix(1, 0, 0, 1, -72, -62)"/>
+   <g fill="none" id="svg_7" stroke-linecap="round" stroke-width="14" transform="translate(4.5) matrix(1, 0, 0, 1, -72, -62)">
+    <!-- Row 1: Track & 1. Waves -->
+    <path d="m80,342l10,0" id="svg_8" stroke="#224E6B"/>
+    <path d="m110,342l10,0" id="svg_9" stroke="#224E6B"/>
+    <path d="m140,342l10,0" id="svg_10" stroke="#224E6B"/>
+    <path d="m360,342l22,0" id="svg_11" stroke="#42B3E0"/>
+    <!-- Row 2: Light Blue Waves -->
+    <path d="m145,372l92,0" id="svg_12" stroke="#42B3E0"/>
+    <path d="m270,372l85,0" id="svg_13" stroke="#42B3E0"/>
+    <!-- Row 3: Light Blue Waves (Bottom-most) -->
+    <path d="m195,402l105,0" id="svg_14" stroke="#42B3E0"/>
+   </g>
+  </g>
+ </g>
+</svg>

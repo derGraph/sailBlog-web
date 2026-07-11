@@ -25,10 +25,6 @@
     dark.mode = !dark.mode;
   }
 
-  function getPictureUrl() {
-    return 'https://uapload.wikimedia.org/wikipedia/en/9/9a/Trollface_non-free.png';
-  }
-
   function resetError() {
     $errorStore = new Response();
   }
@@ -61,9 +57,9 @@
   <div class="md:container md:mx-auto">
     <AppBar class="rounded-b-3xl p-2">
       <AppBar.Toolbar class="flex items-center justify-between gap-2">
-        <AppBar.Lead class="flex items-end">
-          <a href="/" class="material-symbols-outlined" style="font-size: {navHeight}rem">map</a>
-          <a href="/" class="text-2xl">sailBlog</a>
+        <AppBar.Lead class="flex items-center">
+          <img src="/sailBlog.svg" alt="Sailblog Logo" class="!size-[32px] mr-1" />
+          <a href="/" class="text-2xl leading-none">sailBlog</a>
         </AppBar.Lead>
 
         <AppBar.Headline class="!hidden lg:!flex grow justify-start pl-2">
