@@ -1,8 +1,9 @@
-import { removeSensitiveData } from '$lib/server/functions';
-import { prisma } from '$lib/server/prisma';
-import { checkVisibility } from '$lib/visibility.js';
+import { removeSensitiveData } from '#lib/server/functions.ts';
+import { prisma } from '#lib/server/prisma.ts';
+import { checkVisibility } from '#lib/visibility.js';
 import { error, isHttpError, json } from '@sveltejs/kit';
 import DOMPurify from 'isomorphic-dompurify';
+import { Prisma } from '../../../../prisma/generated/client';
 
 // Reusable utility function to fetch bounding edge data points efficiently
 async function appendEdgePoints(trip: any) {
@@ -35,7 +36,7 @@ export async function GET(event) {
   }
   try {
     if (tripId == null) {
-      error(400, { message: 'tripId missing!' });
+      error(400, 'tripId missing!');
     } else {
       let responseData;
       const tripIncludes = {
@@ -77,7 +78,7 @@ export async function GET(event) {
         });
       }
       if (responseData.length == 0) {
-        return error(404, { message: 'Not Found!' });
+        return error(404, 'Not Found!');
       }
 
       // Map over the results array to append edge details in parallel
@@ -89,9 +90,9 @@ export async function GET(event) {
     if (isHttpError(error_message)) {
       error(error_message.status, error_message.body);
     } else if (error_message instanceof Error) {
-      error(404, { message: error_message.message });
+      error(404, error_message.message);
     } else {
-      error(500, { message: 'ERROR' });
+      error(500, 'ERROR');
     }
   }
 }
@@ -150,8 +151,8 @@ export async function POST(event) {
         }
         parsedCrew = parsedCrew.flat();
       } catch (error_message) {
-        if (error_message?.constructor.name == 'PrismaClientKnownRequestError') {
-          return error(400, 'Crew: ' + error_message?.meta.cause);
+        if (error_message instanceof Prisma.PrismaClientKnownRequestError) {
+          return error(400, 'Crew: ' + error_message.meta?.cause);
         } else {
           return error(500, 'ERROR');
         }
@@ -237,7 +238,7 @@ export async function PUT(event) {
   let tripId = null;
   let unparsedVisibility = null;
   let restore = false;
-  let oldData: any = null;
+  let oldData: Prisma.TripGetPayload<{ include: { crew: true } }>;
 
   if (event.locals.user?.username) {
     let username = event.locals.user?.username;
@@ -316,8 +317,8 @@ export async function PUT(event) {
         }
         parsedCrew = parsedCrew.flat();
       } catch (error_message) {
-        if (error_message?.constructor.name == 'PrismaClientKnownRequestError') {
-          return error(400, 'Crew: ' + error_message?.meta.cause);
+        if (error_message instanceof Prisma.PrismaClientKnownRequestError) {
+          return error(400, 'Crew: ' + error_message.meta?.cause);
         } else {
           return error(500, 'ERROR');
         }
@@ -454,7 +455,7 @@ export async function DELETE(event) {
             }
           });
           return new Response('200');
-        } else if (event.locals.role?.canDeleteOwnedTrips) {
+        } else if (event.locals.role?.canDeleteOwnTrips) {
           await prisma.trip.update({
             where: {
               id: tripId,
@@ -491,8 +492,8 @@ export async function DELETE(event) {
           return new Response('200');
         }
       } catch (error_message) {
-        if (error_message?.constructor.name == 'PrismaClientKnownRequestError') {
-          return error(400, 'Update: ' + error_message?.meta.cause);
+        if (error_message instanceof Prisma.PrismaClientKnownRequestError) {
+          return error(400, 'Update: ' + error_message.meta?.cause);
         } else {
           return error(500, 'ERROR');
         }

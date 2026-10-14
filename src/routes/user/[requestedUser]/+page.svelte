@@ -1,11 +1,11 @@
 <script lang="ts">
   import { Avatar } from '@skeletonlabs/skeleton-svelte';
-  import errorStore from '$lib/errorStore.js';
-  import Tiptap from '$lib/Tiptap/+Tiptap.svelte';
-  import MediaPicker from '$lib/mediaPicker.svelte';
-  import { getProfilePicture } from '$lib/functions.js';
+  import errorStore from '#lib/errorStore.js';
+  import Tiptap from '#lib/Tiptap/+Tiptap.svelte';
+  import MediaPicker from '#lib/mediaPicker.svelte';
+  import { getProfilePicture } from '#lib/functions.js';
 
-  import GpxImport from '$lib/gpxImport.svelte';
+  import GpxImport from '#lib/gpxImport.svelte';
 
   let { data } = $props();
   let newFirstName = $state('');

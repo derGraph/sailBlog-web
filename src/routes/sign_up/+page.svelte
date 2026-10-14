@@ -1,6 +1,6 @@
 <script lang="ts">
   import { run } from 'svelte/legacy';
-  import errorStore from '$lib/errorStore.js';
+  import errorStore from '#lib/errorStore.js';
 
   let { form } = $props();
 

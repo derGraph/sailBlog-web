@@ -1,8 +1,8 @@
 <script lang="ts">
-  import errorStore from '$lib/errorStore.js';
-  import Leaflet from '$lib/Leaflet.svelte';
-  import { getProfilePicture, parseDate } from '$lib/functions.js';
-  import type { User } from '@prisma/client';
+  import errorStore from '#lib/errorStore.js';
+  import Leaflet from '#lib/Leaflet.svelte';
+  import { getProfilePicture, parseDate } from '#lib/functions.js';
+  import type { User } from '#prisma';
   import { Avatar } from '@skeletonlabs/skeleton-svelte';
   import type { LatLngExpression } from 'leaflet';
   import { onMount } from 'svelte';
@@ -18,32 +18,12 @@
     length_sail: any;
     length_motor: any;
     length_unknown: any;
-    crew: [User];
+    crew: User[];
     name: any;
     description: any;
   } = $state({
     description: '',
-    crew: [
-      {
-        username: 'no',
-        email: 'no',
-        firstName: null,
-        lastName: null,
-        description: null,
-        profilePictureId: '',
-        dateOfBirth: null,
-        roleId: 'user',
-        activeTripId: '',
-        lastPing: new Date(),
-        skipperedLengthMotor: 0,
-        skipperedLengthSail: 0,
-        skipperedLengthUnknown: 0,
-        crewedLengthMotor: 0,
-        crewedLengthSail: 0,
-        crewedLengthUnknown: 0,
-        recalculate: false
-      }
-    ],
+    crew: [],
     name: undefined,
     length_sail: undefined,
     length_motor: undefined,

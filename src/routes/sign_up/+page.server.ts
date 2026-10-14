@@ -1,8 +1,8 @@
-import { auth } from '$lib/server/auth';
+import { auth } from '#lib/server/auth.ts';
 import { fail, redirect } from '@sveltejs/kit';
 import { hash } from '@node-rs/argon2';
-import { prisma } from '$lib/server/prisma';
-import { PRIVACY_VERSION, TERMS_VERSION } from '$lib/legal';
+import { prisma } from '#lib/server/prisma.ts';
+import { PRIVACY_VERSION, TERMS_VERSION } from '#lib/legal.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {

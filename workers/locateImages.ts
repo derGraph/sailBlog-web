@@ -1,4 +1,4 @@
-import { Media } from '@prisma-custom/client';
+import type { Media } from '../prisma/generated/client.js';
 import { prisma } from './prisma.js';
 
 export async function locateImages() {

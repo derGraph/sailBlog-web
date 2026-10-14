@@ -1,8 +1,8 @@
-import { prisma } from '$lib/server/prisma';
+import { prisma } from '#lib/server/prisma.ts';
 import { error, fail } from '@sveltejs/kit';
 import { existsSync, mkdirSync, unlinkSync, writeFileSync } from 'fs';
 import path from 'path';
-import sharp from 'sharp';
+import sharp, { type Sharp, type Metadata } from 'sharp';
 import exif from 'exif-reader';
 
 interface Media {
@@ -15,9 +15,7 @@ interface Media {
 export async function POST(event) {
   const contentType = event.request.headers.get('content-type') ?? '';
   if (!contentType.includes('image/')) {
-    error(400, {
-      message: 'Set Header to image/filetype!'
-    });
+    error(400, 'Set Header to image/filetype!');
   }
   let unparsedVisibility = event.url.searchParams.get('visibility');
   let alt = event.url.searchParams.get('alt');
@@ -71,15 +69,11 @@ export async function POST(event) {
 
   if (!event.locals.user?.username) {
     console.log('NOT LOGGED IN!');
-    return error(401, {
-      message: 'Log in first!'
-    });
+    return error(401, 'Log in first!');
   }
 
   if (!event.locals.role?.canAddMedia) {
-    return error(401, {
-      message: 'You are not allowed to upload Media!'
-    });
+    return error(401, 'You are not allowed to upload Media!');
   }
 
   if (tripId != null && tripId != '') {
@@ -110,14 +104,14 @@ export async function POST(event) {
           }
         });
       } else {
-        return error(401, { message: 'You are not allowed to attach media to trips!' });
+        return error(401, 'You are not allowed to attach media to trips!');
       }
     } catch (exception: any) {
-      error(500, { message: exception.toString() });
+      error(500, exception.toString());
     }
     if (trip == undefined) {
       tripId = null;
-      error(400, { message: 'Trip not found or not allowed!' });
+      error(400, 'Trip not found or not allowed!');
     } else if (typeof trip.visibility === 'number') {
       // For trip media, explicit visibility can only be equal/more private than the trip visibility.
       visibility = hasExplicitVisibility ? Math.min(visibility, trip.visibility) : trip.visibility;
@@ -138,8 +132,8 @@ export async function POST(event) {
     const isAvif = contentType.includes('image/avif');
 
     let exifData: null | Object = null;
-    let inputImage: sharp.Sharp | null = null;
-    let metadata: sharp.Metadata | null = null;
+    let inputImage: Sharp | null = null;
+    let metadata: Metadata | null = null;
 
     const shouldCheckMetadata = buffer.length > 500 * 1024;
     if (shouldCheckMetadata || !isAvif) {
@@ -227,7 +221,7 @@ export async function POST(event) {
     }
 
     filePath = path.join(filePath, media.id + '.avif');
-    if (isAvif && (!metadata || metadata.format === 'avif')) {
+    if (isAvif && (!metadata || (metadata.format === 'heif' && metadata.compression === 'av1'))) {
       // Already AVIF: avoid recompression. If metadata wasn't checked (small file), trust content-type.
       writeFileSync(filePath, buffer);
     } else {
@@ -252,14 +246,10 @@ export async function POST(event) {
       });
     }
     if (imageError == 'Error: Input buffer contains unsupported image format') {
-      error(415, {
-        message: 'Only JPEG, PNG, WebP, GIF, AVIF, TIFF and SVG allowed!'
-      });
+      error(415, 'Only JPEG, PNG, WebP, GIF, AVIF, TIFF and SVG allowed!');
     } else {
       if (imageError instanceof Object) {
-        error(400, {
-          message: imageError.toString()
-        });
+        error(400, imageError.toString());
       } else {
         console.log(imageError);
       }
@@ -278,9 +268,7 @@ export async function GET(event) {
     (requestedUsername == null || requestedUsername == '') &&
     (requestedTrip == null || requestedTrip == null)
   ) {
-    error(400, {
-      message: 'No username/trip requested!'
-    });
+    error(400, 'No username/trip requested!');
   }
 
   try {
@@ -424,13 +412,9 @@ export async function GET(event) {
   } catch (error_message) {
     if (error_message instanceof Error) {
       console.log(error_message);
-      error(404, {
-        message: error_message.message
-      });
+      error(404, error_message.message);
     } else {
-      error(500, {
-        message: 'ERROR'
-      });
+      error(500, 'ERROR');
     }
   }
 }
@@ -441,18 +425,18 @@ export async function PUT(event) {
   const unparsedVisibility = event.url.searchParams.get('visibility');
 
   if (!event.locals.user?.username) {
-    return error(401, { message: 'Log in first!' });
+    return error(401, 'Log in first!');
   }
   if (mediaId == null || mediaId === '') {
-    return error(400, { message: 'mediaId is required!' });
+    return error(400, 'mediaId is required!');
   }
   if (unparsedVisibility == null) {
-    return error(400, { message: 'visibility is required!' });
+    return error(400, 'visibility is required!');
   }
 
   let visibility = Number.parseInt(unparsedVisibility, 10);
   if (Number.isNaN(visibility) || visibility < 0 || visibility > 2) {
-    return error(400, { message: 'Invalid visibility value!' });
+    return error(400, 'Invalid visibility value!');
   }
 
   let media = await prisma.media.findFirst({
@@ -474,7 +458,7 @@ export async function PUT(event) {
   });
 
   if (!media) {
-    return error(404, { message: 'Media not found!' });
+    return error(404, 'Media not found!');
   }
 
   const canEditOwnMedia = media.username === event.locals.user.username;
@@ -492,7 +476,7 @@ export async function PUT(event) {
   }
 
   if (!canEditOwnMedia && !canEditAllMedia && !canEditTripMedia) {
-    return error(403, { message: 'Not allowed to edit this media item!' });
+    return error(403, 'Not allowed to edit this media item!');
   }
 
   if (typeof media.trip?.visibility === 'number') {
@@ -521,10 +505,10 @@ export async function DELETE(event) {
   const mediaId = event.url.searchParams.get('mediaId');
 
   if (!event.locals.user?.username) {
-    return error(401, { message: 'Log in first!' });
+    return error(401, 'Log in first!');
   }
   if (mediaId == null || mediaId === '') {
-    return error(400, { message: 'mediaId is required!' });
+    return error(400, 'mediaId is required!');
   }
 
   let media = await prisma.media.findFirst({
@@ -546,7 +530,7 @@ export async function DELETE(event) {
   });
 
   if (!media) {
-    return error(404, { message: 'Media not found!' });
+    return error(404, 'Media not found!');
   }
 
   const canEditOwnMedia = media.username === event.locals.user.username;
@@ -564,7 +548,7 @@ export async function DELETE(event) {
   }
 
   if (!canEditOwnMedia && !canEditAllMedia && !canEditTripMedia) {
-    return error(403, { message: 'Not allowed to delete this media item!' });
+    return error(403, 'Not allowed to delete this media item!');
   }
 
   await prisma.media.update({

@@ -1,4 +1,4 @@
-import { prisma } from '$lib/server/prisma';
+import { prisma } from '#lib/server/prisma.ts';
 import { error } from '@sveltejs/kit';
 import { existsSync, mkdirSync } from 'fs';
 import { readFile } from 'fs/promises';
@@ -11,15 +11,11 @@ export async function GET(event) {
   let requestedMedia = event.params.requestedMedia;
 
   if (requestedUsername == null || requestedUsername == '') {
-    error(400, {
-      message: 'No username requested!'
-    });
+    error(400, 'No username requested!');
   }
 
   if (requestedMedia == null || requestedMedia == '') {
-    error(400, {
-      message: 'No Media requested!'
-    });
+    error(400, 'No Media requested!');
   }
   let requestedName = requestedMedia.split('.')[0];
   let requestedFiletype = requestedMedia.split('.')[1];
@@ -64,21 +60,15 @@ export async function GET(event) {
     }
   } catch (error_message) {
     if (error_message instanceof Error) {
-      error(404, {
-        message: 'Not Found!'
-      });
+      error(404, 'Not Found!');
     } else {
-      error(500, {
-        message: 'ERROR'
-      });
+      error(500, 'ERROR');
     }
   }
 
   let filePath = path.join('store', requestedUsername, requestedName + '.avif');
   if (!existsSync(filePath)) {
-    error(404, {
-      message: 'File not found in server filesystem!'
-    });
+    error(404, 'File not found in server filesystem!');
   }
   try {
     let buffer = null;
@@ -89,7 +79,7 @@ export async function GET(event) {
       buffer = await readFile(filePath);
     }
     if (buffer == null) {
-      error(503);
+      error(503, 'Media is not ready yet.');
     }
     return new Response(buffer, {
       headers: {
@@ -101,14 +91,10 @@ export async function GET(event) {
       error(503, 'Wait a little!');
     }
     if (imageError == 'Error: Input buffer contains unsupported image format') {
-      error(415, {
-        message: 'Only JPEG, PNG, WebP, GIF, AVIF, TIFF and SVG allowed!'
-      });
+      error(415, 'Only JPEG, PNG, WebP, GIF, AVIF, TIFF and SVG allowed!');
     } else {
       if (imageError instanceof Object) {
-        error(400, {
-          message: imageError.toString()
-        });
+        error(400, imageError.toString());
       } else {
         console.log(imageError);
       }
@@ -121,7 +107,7 @@ function convertFormatVariable(input: string) {
 
   switch (input) {
     case 'avif':
-      output = sharp.format.avif;
+      output = sharp.format.heif;
       break;
     case 'dz':
       output = sharp.format.dz;
@@ -136,7 +122,7 @@ function convertFormatVariable(input: string) {
       output = sharp.format.heif;
       break;
     case 'input':
-      output = sharp.format.input;
+      output = sharp.format.png;
       break;
     case 'jpeg':
     case 'jpg':
@@ -174,7 +160,7 @@ function convertFormatVariable(input: string) {
       output = sharp.format.tiff;
       break;
     case 'v':
-      output = sharp.format.v;
+      output = sharp.format.vips;
       break;
     case 'webp':
       output = sharp.format.webp;

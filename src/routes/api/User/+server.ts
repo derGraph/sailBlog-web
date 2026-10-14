@@ -1,4 +1,4 @@
-import { prisma } from '$lib/server/prisma';
+import { prisma } from '#lib/server/prisma.ts';
 import { error, fail } from '@sveltejs/kit';
 import { hash } from '@node-rs/argon2';
 import DOMPurify from 'isomorphic-dompurify';
@@ -11,16 +11,12 @@ export async function GET(event) {
 
   if (requestedSearch != null) {
     if (!event.locals.user) {
-      throw error(401, {
-        message: 'Authentication required.'
-      });
+      throw error(401, 'Authentication required.');
     }
 
     requestedSearch = requestedSearch.trim();
     if (!event.locals.role?.canEnumerateAllUsers && requestedSearch.length < minimumSearchLength) {
-      throw error(400, {
-        message: `Search query must be at least ${minimumSearchLength} characters.`
-      });
+      throw error(400, `Search query must be at least ${minimumSearchLength} characters.`);
     }
 
     let userlist = await prisma.user.findMany({
@@ -44,9 +40,7 @@ export async function GET(event) {
   }
 
   if (requestedUsername == null || requestedUsername == '') {
-    error(400, {
-      message: 'No username requested!'
-    });
+    error(400, 'No username requested!');
   }
 
   try {
@@ -127,13 +121,9 @@ export async function GET(event) {
     }
   } catch (error_message) {
     if (error_message instanceof Error) {
-      error(404, {
-        message: error_message.message
-      });
+      error(404, error_message.message);
     } else {
-      error(500, {
-        message: 'ERROR'
-      });
+      error(500, 'ERROR');
     }
   }
 }
@@ -231,7 +221,7 @@ export async function PUT(event) {
         dateOfBirth = null;
       }
     } catch (error_message) {
-      error(400, { message: 'Invalid Date of Birth!' });
+      error(400, 'Invalid Date of Birth!');
     }
 
     try {
@@ -245,7 +235,7 @@ export async function PUT(event) {
       }
     } catch (error_message) {
       profilePictureId = null;
-      error(400, { message: 'Invalid Picture: ' + error_message });
+      error(400, 'Invalid Picture: ' + error_message);
     }
 
     try {
@@ -258,7 +248,7 @@ export async function PUT(event) {
         });
       }
     } catch (error_message) {
-      error(400, { message: 'Invalid activeTrip! Only the skipper can choose a trip as active!' });
+      error(400, 'Invalid activeTrip! Only the skipper can choose a trip as active!');
     }
 
     await prisma.user.update({
@@ -413,7 +403,7 @@ export async function POST(event) {
         dateOfBirth = null;
       }
     } catch (error_message) {
-      error(400, { message: 'Invalid Date of Birth!' });
+      error(400, 'Invalid Date of Birth!');
     }
 
     let secretString = null;
@@ -433,7 +423,7 @@ export async function POST(event) {
     }
 
     if (!(passwordHash != null || magicLink != null)) {
-      error(400, { message: 'User has to use magic Link or Password!' });
+      error(400, 'User has to use magic Link or Password!');
     }
 
     try {

@@ -1,4 +1,4 @@
-import { prisma } from '$lib/server/prisma';
+import { prisma } from '#lib/server/prisma.ts';
 import { error, json } from '@sveltejs/kit';
 import { existsSync, mkdirSync } from 'fs';
 import path from 'path';
@@ -96,37 +96,37 @@ export async function POST(event) {
   const pickerSessionId = event.url.searchParams.get('pickerSessionId');
 
   if (!event.locals.user?.username) {
-    return error(401, { message: 'Log in first!' });
+    return error(401, 'Log in first!');
   }
   if (!event.locals.role?.canAddMedia) {
-    return error(403, { message: 'You are not allowed to import media!' });
+    return error(403, 'You are not allowed to import media!');
   }
   if (!pickerSessionId) {
-    return error(400, { message: 'pickerSessionId is required.' });
+    return error(400, 'pickerSessionId is required.');
   }
 
   const runtimeRaw = event.cookies.get('google_photos_picker_runtime');
   if (!runtimeRaw) {
-    return error(400, { message: 'Missing picker runtime context. Start import again.' });
+    return error(400, 'Missing picker runtime context. Start import again.');
   }
 
   let runtime: PickerRuntimeCtx;
   try {
     runtime = JSON.parse(decodeURIComponent(runtimeRaw)) as PickerRuntimeCtx;
   } catch {
-    return error(400, { message: 'Invalid picker runtime context.' });
+    return error(400, 'Invalid picker runtime context.');
   }
 
   if (runtime.sessionId !== pickerSessionId) {
-    return error(400, { message: 'Session mismatch. Start import again.' });
+    return error(400, 'Session mismatch. Start import again.');
   }
   if (runtime.username !== event.locals.user.username) {
-    return error(401, { message: 'Session changed. Start import again.' });
+    return error(401, 'Session changed. Start import again.');
   }
 
   const trip = await getEditableTrip(event, runtime.tripId);
   if (!trip) {
-    return error(403, { message: 'Trip not found or not editable.' });
+    return error(403, 'Trip not found or not editable.');
   }
 
   const visibility = Math.min(runtime.visibility, trip.visibility);
@@ -136,7 +136,7 @@ export async function POST(event) {
   try {
     session = await getPickerSession(accessToken, runtime.sessionId);
   } catch (exception: any) {
-    return error(502, { message: exception?.message ?? 'Unable to read picker session.' });
+    return error(502, exception?.message ?? 'Unable to read picker session.');
   }
 
   if (!session?.mediaItemsSet) {
@@ -265,6 +265,6 @@ export async function POST(event) {
       total
     });
   } catch (exception: any) {
-    return error(500, { message: exception?.message ?? 'Import failed.' });
+    return error(500, exception?.message ?? 'Import failed.');
   }
 }

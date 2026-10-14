@@ -1,15 +1,15 @@
 <script lang="ts">
-  import errorStore from '$lib/errorStore';
-  import { page } from '$app/stores';
+  import errorStore from '#lib/errorStore.js';
+  import { page } from '$app/state';
   import { goto } from '$app/navigation';
 
   let { data } = $props();
   let requestedTrip = $derived(data.requestedTrip);
   let googlePhotosConfigured = $derived(data.googlePhotosConfigured);
 
-  let pickerSessionId = $derived($page.url.searchParams.get('pickerSessionId') ?? '');
-  let pickerUri = $derived($page.url.searchParams.get('pickerUri') ?? '');
-  let importError = $derived($page.url.searchParams.get('importError') ?? '');
+  let pickerSessionId = $derived(page.url.searchParams.get('pickerSessionId') ?? '');
+  let pickerUri = $derived(page.url.searchParams.get('pickerUri') ?? '');
+  let importError = $derived(page.url.searchParams.get('importError') ?? '');
 
   let isImporting = $state(false);
   let importResult: null | {

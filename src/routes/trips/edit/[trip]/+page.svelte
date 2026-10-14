@@ -1,10 +1,10 @@
 <script lang="ts">
-  import errorStore from '$lib/errorStore.js';
-  import { getProfilePicture, parseDate } from '$lib/functions.js';
-  import { parseVisibility } from '$lib/visibility.js';
-  import SearchBar from '$lib/searchBar.svelte';
-  import Tiptap from '$lib/Tiptap/+Tiptap.svelte';
-  import type { User } from '@prisma/client';
+  import errorStore from '#lib/errorStore.js';
+  import { getProfilePicture, parseDate } from '#lib/functions.js';
+  import { parseVisibility } from '#lib/visibility.js';
+  import SearchBar from '#lib/searchBar.svelte';
+  import Tiptap from '#lib/Tiptap/+Tiptap.svelte';
+  import type { User } from '#prisma';
   import { Avatar } from '@skeletonlabs/skeleton-svelte';
   import type { LatLngExpression } from 'leaflet';
   import { onMount } from 'svelte';
@@ -20,32 +20,12 @@
     length_sail: any;
     length_motor: any;
     visibility: number;
-    crew: [User];
+    crew: User[];
     name: any;
     description: any;
   } = $state({
     description: '',
-    crew: [
-      {
-        username: 'no',
-        email: 'no',
-        firstName: null,
-        lastName: null,
-        description: null,
-        profilePictureId: '',
-        dateOfBirth: null,
-        roleId: 'user',
-        activeTripId: '',
-        lastPing: new Date(),
-        crewedLengthMotor: 0,
-        crewedLengthSail: 0,
-        crewedLengthUnknown: 0,
-        skipperedLengthMotor: 0,
-        skipperedLengthSail: 0,
-        skipperedLengthUnknown: 0,
-        recalculate: false
-      }
-    ],
+    crew: [],
     name: undefined,
     length_sail: undefined,
     length_motor: undefined,

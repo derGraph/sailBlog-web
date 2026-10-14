@@ -1,21 +1,17 @@
 {
   "compilerOptions": {
     "outDir": "build",
+    "rootDir": "..",
+    "noEmitOnError": true,
     "target": "esnext",
     "moduleResolution": "nodenext",
     "module": "nodenext",
-    "baseUrl": ".",
-    "paths": {
-      "@prisma-custom/client": ["../prisma/generated/client.js"]
-    },
+    "types": ["node"],
+    "rewriteRelativeImportExtensions": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["./*", "../prisma/generated/**/*"],
-  "tsc-alias": {
-    "resolveFullPaths": true,
-    "verbose": false
-  }
+  "include": ["./*.ts", "../prisma/generated/**/*.ts"]
 }

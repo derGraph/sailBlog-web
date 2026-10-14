@@ -1,5 +1,5 @@
-import { removeSensitiveData } from '$lib/server/functions.js';
-import { prisma } from '$lib/server/prisma';
+import { removeSensitiveData } from '#lib/server/functions.js';
+import { prisma } from '#lib/server/prisma.ts';
 import { error, isHttpError, json, redirect } from '@sveltejs/kit';
 
 interface Datapoint {
@@ -148,9 +148,9 @@ export async function GET(event: {
       return error_message;
     } else if (error_message instanceof Error) {
       console.log(error_message);
-      error(404, { message: error_message.message });
+      error(404, error_message.message);
     } else {
-      error(500, { message: 'ERROR' });
+      error(500, 'ERROR');
     }
   }
 }

@@ -1,9 +1,9 @@
 <script lang="ts">
   // @ts-ignore
   import type { LatLngExpression } from 'leaflet';
-  import Leaflet from '$lib/Leaflet.svelte';
+  import Leaflet from '#lib/Leaflet.svelte';
   import { onMount } from 'svelte';
-  import errorStore from '$lib/errorStore.js';
+  import errorStore from '#lib/errorStore.js';
 
   let { data } = $props();
   let tracks: String[] | null = $state(null);

@@ -1,4 +1,4 @@
-import { prisma } from '$lib/server/prisma';
+import { prisma } from '#lib/server/prisma.ts';
 
 export async function load({ locals }) {
   if (locals.user != null) {

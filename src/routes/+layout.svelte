@@ -3,10 +3,10 @@
   import { AppBar } from '@skeletonlabs/skeleton-svelte';
   import { Avatar } from '@skeletonlabs/skeleton-svelte';
   import { onMount } from 'svelte';
-  import errorStore from '$lib/errorStore';
-  import { getProfilePicture } from '$lib/functions';
-  import { dark } from '$lib/darkMode.svelte';
-  import { page } from '$app/stores';
+  import errorStore from '#lib/errorStore.js';
+  import { getProfilePicture } from '#lib/functions.ts';
+  import { dark } from '#lib/darkMode.svelte.ts';
+  import { page } from '$app/state';
   import { goto } from '$app/navigation';
 
   let navHeight = 2;
@@ -44,7 +44,7 @@
   let user = $derived(data.user);
   let role = $derived(data.role);
   let session = $derived(data.session);
-  let pathname = $derived($page.url.pathname);
+  let pathname = $derived(page.url.pathname);
   let mobileMenuOpen = $state(false);
 
   $effect(() => {

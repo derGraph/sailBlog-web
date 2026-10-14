@@ -1,4 +1,4 @@
-import sax from 'sax/lib/sax.js';
+import sax from 'sax';
 
 // === Core Type Definitions ===
 export interface GPXMetadata {

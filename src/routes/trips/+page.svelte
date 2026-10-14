@@ -1,9 +1,9 @@
 <script lang="ts">
-  import errorStore from '$lib/errorStore';
+  import errorStore from '#lib/errorStore.js';
   import { onMount } from 'svelte';
-  import type { User, Location, Trip } from '@prisma/client';
-  import { parseDate, parseRadioButton } from '$lib/functions.js';
-  import SearchBar from '$lib/searchBar.svelte';
+  import type { User, Location, Trip } from '#prisma';
+  import { parseDate, parseRadioButton } from '#lib/functions.js';
+  import SearchBar from '#lib/searchBar.svelte';
 
   let tableArr: any[] = $state([]);
   let allTrips: any[] = $state([]);

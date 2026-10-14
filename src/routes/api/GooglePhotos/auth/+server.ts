@@ -1,4 +1,4 @@
-import { prisma } from '$lib/server/prisma';
+import { prisma } from '#lib/server/prisma.ts';
 import { error, redirect } from '@sveltejs/kit';
 
 function getRedirectUri(event: any) {
@@ -40,14 +40,14 @@ export async function GET(event) {
   const clientId = process.env.GOOGLE_PHOTOS_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_PHOTOS_CLIENT_SECRET;
   if (!clientId || !clientSecret) {
-    return error(500, { message: 'Google Photos OAuth is not configured.' });
+    return error(500, 'Google Photos OAuth is not configured.');
   }
 
   if (!event.locals.user?.username) {
-    return error(401, { message: 'Log in first!' });
+    return error(401, 'Log in first!');
   }
   if (!event.locals.role?.canAddMedia) {
-    return error(403, { message: 'You are not allowed to import media!' });
+    return error(403, 'You are not allowed to import media!');
   }
 
   const tripId = event.url.searchParams.get('tripId');
@@ -58,12 +58,12 @@ export async function GET(event) {
   );
 
   if (!tripId) {
-    return error(400, { message: 'tripId is required.' });
+    return error(400, 'tripId is required.');
   }
 
   const trip = await getEditableTrip(event, tripId);
   if (!trip) {
-    return error(403, { message: 'Trip not found or not editable.' });
+    return error(403, 'Trip not found or not editable.');
   }
 
   let visibility = Number.isNaN(requestedVisibility) ? 1 : requestedVisibility;

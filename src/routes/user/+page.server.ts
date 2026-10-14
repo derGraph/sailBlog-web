@@ -1,4 +1,4 @@
-import { redirect, type Handle } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 
 export async function load({ locals }) {
   if (locals.user?.username) {

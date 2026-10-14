@@ -1,4 +1,4 @@
-import type { User } from '@prisma/client';
+import type { User } from '#prisma';
 
 export function parseRadioButton(tripId: string, user: User) {
   if (tripId == user?.activeTripId) {

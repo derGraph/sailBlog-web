@@ -3,7 +3,7 @@
   import { onMount } from 'svelte';
   import { tick } from 'svelte';
 
-  import errorStore from '$lib/errorStore.js';
+  import errorStore from '#lib/errorStore.js';
   let { form } = $props();
   let magicLink = $state('');
   let magicLinkForm: HTMLFormElement | null = null;

@@ -1,7 +1,8 @@
 // src/hooks.server.ts
-import { auth } from '$lib/server/auth';
-import { prisma } from '$lib/server/prisma';
-import { error, type Handle } from '@sveltejs/kit';
+import { auth } from '#lib/server/auth.ts';
+import { prisma } from '#lib/server/prisma.ts';
+import { error } from '@sveltejs/kit';
+import type { Handle } from '@sveltejs/kit/hooks';
 
 const API_CACHE_CONTROL = 'private, no-store, max-age=0, must-revalidate';
 
@@ -64,7 +65,7 @@ export const handle: Handle = async ({ event, resolve }) => {
         } else {
           // It's a genuine database failure (e.g. database connection lost), throw a 500
           console.error('Critical Database Error in hooks:', error_message);
-          error(500, { message: 'Internal Server Error' });
+          error(500, 'Internal Server Error');
         }
       }
 

@@ -1,4 +1,4 @@
-import { prisma } from '$lib/server/prisma';
+import { prisma } from '#lib/server/prisma.ts';
 import { error, json } from '@sveltejs/kit';
 import { isCuid } from '@paralleldrive/cuid2';
 
@@ -56,7 +56,7 @@ export async function POST(event: {
         }
         let datapoint = checkDatapoint(input[k]);
         if (activeUser.activeTripId == null) {
-          error(400, { message: 'User has no active trip, select one or create trip!' });
+          error(400, 'User has no active trip, select one or create trip!');
         }
         datapoint.tripId = activeUser.activeTripId;
         let existingPoint = null;
@@ -84,11 +84,11 @@ export async function POST(event: {
 
     try {
       if (activeUser.activeTripId == null) {
-        error(400, { message: 'User has no active trip, select one or create trip!' });
+        error(400, 'User has no active trip, select one or create trip!');
       }
 
       if (!activeUser.role.canAddDatapoint) {
-        error(401, { message: 'User not allowed to add Datapoint!' });
+        error(401, 'User not allowed to add Datapoint!');
       }
 
       await prisma.datapoint.createMany({ data: datapoints });
@@ -301,9 +301,7 @@ export async function GET(event) {
   let maxAmount;
 
   if (requestedTrip == null || requestedTrip == '') {
-    error(400, {
-      message: 'No tripId requested!'
-    });
+    error(400, 'No tripId requested!');
   } else {
     if (requestedTrip != null) {
       if (!isCuid(requestedTrip)) {
@@ -319,7 +317,7 @@ export async function GET(event) {
       start = new Date(0);
     }
   } catch (error_message) {
-    error(400, { message: 'Invalid start Timestamp!' });
+    error(400, 'Invalid start Timestamp!');
   }
 
   try {
@@ -329,13 +327,13 @@ export async function GET(event) {
       end = new Date(Date.now());
     }
   } catch (error_message) {
-    error(400, { message: 'Invalid end Timestamp!' });
+    error(400, 'Invalid end Timestamp!');
   }
 
   try {
     if (unparsedAmount != null) {
       if (parseInt(unparsedAmount) > 10000) {
-        error(400, { message: 'Invalid max Amount, only 10000 are allowed!' });
+        error(400, 'Invalid max Amount, only 10000 are allowed!');
       } else {
         maxAmount = parseInt(unparsedAmount);
       }
@@ -343,12 +341,12 @@ export async function GET(event) {
       maxAmount = 10000;
     }
   } catch (error_message) {
-    error(400, { message: 'Invalid max Amount, only 10000 are allowed!' });
+    error(400, 'Invalid max Amount, only 10000 are allowed!');
   }
 
   try {
     if (event.locals.user?.username) {
-      if (event.locals.role.canViewAllTrips) {
+      if (event.locals.role?.canViewAllTrips) {
         let tripData = await prisma.trip.findFirstOrThrow({
           where: {
             id: requestedTrip
@@ -414,13 +412,9 @@ export async function GET(event) {
     return new Response(JSON.stringify(responseData));
   } catch (error_message) {
     if (error_message instanceof Error) {
-      error(404, {
-        message: error_message.message
-      });
+      error(404, error_message.message);
     } else {
-      error(500, {
-        message: 'ERROR'
-      });
+      error(500, 'ERROR');
     }
   }
 }

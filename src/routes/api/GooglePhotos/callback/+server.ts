@@ -1,4 +1,4 @@
-import { prisma } from '$lib/server/prisma';
+import { prisma } from '#lib/server/prisma.ts';
 import { error, redirect } from '@sveltejs/kit';
 
 type PickerCtx = {
@@ -129,14 +129,14 @@ export async function GET(event) {
   });
 
   if (!rawCtx) {
-    return error(400, { message: 'Missing import context.' });
+    return error(400, 'Missing import context.');
   }
 
   let ctx: PickerCtx;
   try {
     ctx = JSON.parse(decodeURIComponent(rawCtx)) as PickerCtx;
   } catch {
-    return error(400, { message: 'Invalid import context.' });
+    return error(400, 'Invalid import context.');
   }
 
   if (googleError) {
@@ -146,13 +146,13 @@ export async function GET(event) {
     );
   }
   if (!event.locals.user?.username || event.locals.user.username !== ctx.username) {
-    return error(401, { message: 'Session changed. Please try again.' });
+    return error(401, 'Session changed. Please try again.');
   }
   if (!code || !state || state !== ctx.state) {
     throw redirect(302, pageRedirect(ctx.tripId, { importError: 'Invalid OAuth callback state.' }));
   }
   if (!event.locals.role?.canAddMedia) {
-    return error(403, { message: 'You are not allowed to import media!' });
+    return error(403, 'You are not allowed to import media!');
   }
 
   const trip = await getEditableTrip(event, ctx.tripId);

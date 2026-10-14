@@ -1,31 +1,34 @@
-export function removeSensitiveData(inputData: object[] | object) {
+export function removeSensitiveData<T extends object | null>(inputData: T): T {
+  if (inputData === null) return inputData;
+  const record = inputData as Record<string, unknown>;
   if (Array.isArray(inputData)) {
     for (let element in inputData) {
       inputData[element] = removeSensitiveData(inputData[element]);
     }
   } else {
     for (let key in inputData) {
-      if (inputData[key] == null) {
-        inputData[key] = null;
+      if (record[key] == null) {
+        record[key] = null;
       } else {
-        if (typeof inputData[key] == 'object') {
+        if (typeof record[key] == 'object') {
           if (key == 'lastPing') {
-            inputData[key] = null;
+            record[key] = null;
           }
-          inputData[key] = removeSensitiveData(inputData[key]);
+          const value = record[key];
+          if (typeof value === 'object') record[key] = removeSensitiveData(value);
           continue;
         }
         if (key == 'email') {
-          inputData[key] = null;
+          record[key] = null;
         }
         if (key == 'dateOfBirth') {
-          inputData[key] = null;
+          record[key] = null;
         }
         if (key == 'roleId') {
-          inputData[key] = null;
+          record[key] = null;
         }
         if (key == 'activeTripId') {
-          inputData[key] = null;
+          record[key] = null;
         }
       }
     }

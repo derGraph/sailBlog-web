@@ -3,6 +3,7 @@
 
   import { onMount, onDestroy } from 'svelte';
   import { Editor, mergeAttributes } from '@tiptap/core';
+  import { NodeSelection } from '@tiptap/pm/state';
   import Heading from '@tiptap/extension-heading';
   import Document from '@tiptap/extension-document';
   import Paragraph from '@tiptap/extension-paragraph';
@@ -15,7 +16,7 @@
   import OrderedList from '@tiptap/extension-ordered-list';
   import TextAlign from '@tiptap/extension-text-align';
   import Text from '@tiptap/extension-text';
-  import MediaPicker from '$lib/mediaPicker.svelte';
+  import MediaPicker from '#lib/mediaPicker.svelte';
 
   // Helper function to map our alignment keywords to standard CSS blocks
   function getAlignmentStyles(alignment: string) {
@@ -67,7 +68,7 @@
       };
     },
     addNodeView() {
-      return ({ node, theme, getPos, editor }) => {
+      return ({ node, getPos, editor }) => {
         // Main structural block container
         const container = document.createElement('div');
         container.className = 'tiptap-resizable-image-wrapper';
@@ -172,7 +173,9 @@
 
               if (typeof getPos === 'function') {
                 editor.commands.command(({ tr }) => {
-                  tr.setNodeMarkup(getPos(), undefined, {
+                  const position = getPos();
+                  if (position === undefined) return false;
+                  tr.setNodeMarkup(position, undefined, {
                     ...node.attrs,
                     width: img.style.width,
                     height: 'auto'
@@ -235,7 +238,7 @@
 
   function setContent(description: string | null) {
     if (editor) {
-      editor.commands.setContent(description);
+      editor.commands.setContent(description ?? '');
     }
   }
 
@@ -253,7 +256,6 @@
           }
         }),
         Heading.configure({ levels: [2, 3] }).extend({
-          levels: [2, 3],
           renderHTML({ node, HTMLAttributes }) {
             const level = this.options.levels.includes(node.attrs.level)
               ? node.attrs.level
@@ -302,7 +304,7 @@
           class: 'outline-none max-h-full min-h-96 overflow-auto text-wrap'
         }
       },
-      content: description,
+      content: description ?? '',
       onTransaction: () => {
         editor = editor;
       }
@@ -329,7 +331,7 @@
     if (editor.isActive('image')) {
       editor.commands.command(({ tr, state }) => {
         const { selection } = state;
-        if (selection.node && selection.node.type.name === 'image') {
+        if (selection instanceof NodeSelection && selection.node.type.name === 'image') {
           tr.setNodeMarkup(selection.from, undefined, {
             ...selection.node.attrs,
             alignment

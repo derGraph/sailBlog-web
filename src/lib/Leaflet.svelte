@@ -12,14 +12,14 @@
   let mode = $state(localStorage.getItem('mode') || 'light');
 
   let map: L.Map | undefined = $state();
-  let mapElement: HTMLDivElement = $state();
+  let mapElement: HTMLDivElement | undefined = $state();
   let lines: L.Polyline[][] = $state([]);
   let tripImageLayer: L.LayerGroup | undefined = $state();
   let fullscreenImageSrc: string | null = $state(null);
   let fullscreenImageAlt: string = $state('Image');
   let mapMoved: Boolean = false;
   let myEvent: number = 0;
-  let maxBounds: LatLngBounds;
+  let maxBounds: L.LatLngBounds;
 
   let recenterButtonStructure = L.Control.extend({
     options: {
@@ -172,7 +172,7 @@
     );
   }
 
-  function createTripImageClusterGroup() {
+  function createTripImageClusterGroup(): L.LayerGroup {
     return (L as any).markerClusterGroup({
       chunkedLoading: true,
       showCoverageOnHover: false,
@@ -192,6 +192,7 @@
   }
 
   onMount(() => {
+    if (!mapElement) return;
     const mode = localStorage.getItem('mode') || 'light';
     document.documentElement.setAttribute('class', mode);
     map = L.map(mapElement);

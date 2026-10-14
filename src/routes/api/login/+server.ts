@@ -1,7 +1,7 @@
-import { auth } from '$lib/server/auth';
+import { auth } from '#lib/server/auth.ts';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { verify } from '@node-rs/argon2';
-import { prisma } from '$lib/server/prisma';
+import { prisma } from '#lib/server/prisma.ts';
 
 export const POST: RequestHandler = async (event) => {
   let body;

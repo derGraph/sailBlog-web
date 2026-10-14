@@ -1,4 +1,4 @@
-import { prisma } from '$lib/server/prisma';
+import { prisma } from '#lib/server/prisma.ts';
 import { isCuid } from '@paralleldrive/cuid2';
 import { error, fail } from '@sveltejs/kit';
 
@@ -65,7 +65,7 @@ export async function POST(event) {
         time = null;
       }
     } catch (error_message) {
-      error(400, { message: 'Invalid Timestamp!' });
+      error(400, 'Invalid Timestamp!');
     }
 
     const decimalRegex = /^\d*\.?\d*$/;
@@ -73,7 +73,7 @@ export async function POST(event) {
       if (decimalRegex.test(speed)) {
         speed = parseFloat(speed);
       } else {
-        error(400, { message: 'Invalid speed!' });
+        error(400, 'Invalid speed!');
       }
     }
 
@@ -81,7 +81,7 @@ export async function POST(event) {
       if (decimalRegex.test(heading)) {
         heading = parseFloat(heading);
       } else {
-        error(400, { message: 'Invalid heading!' });
+        error(400, 'Invalid heading!');
       }
     }
 
@@ -89,7 +89,7 @@ export async function POST(event) {
       if (decimalRegex.test(depth)) {
         depth = parseFloat(depth);
       } else {
-        error(400, { message: 'Invalid depth!' });
+        error(400, 'Invalid depth!');
       }
     }
 
@@ -97,7 +97,7 @@ export async function POST(event) {
       if (decimalRegex.test(h_accuracy)) {
         h_accuracy = parseFloat(h_accuracy);
       } else {
-        error(400, { message: 'Invalid h_accuracy!' });
+        error(400, 'Invalid h_accuracy!');
       }
     }
 
@@ -105,7 +105,7 @@ export async function POST(event) {
       if (decimalRegex.test(v_accuracy)) {
         v_accuracy = parseFloat(v_accuracy);
       } else {
-        error(400, { message: 'Invalid v_accuracy!' });
+        error(400, 'Invalid v_accuracy!');
       }
     }
 
@@ -127,7 +127,7 @@ export async function POST(event) {
           propulsion = 3;
 
         default:
-          error(400, { message: 'Invalid propulsion type!' });
+          error(400, 'Invalid propulsion type!');
           break;
       }
     }
@@ -142,11 +142,11 @@ export async function POST(event) {
     });
 
     if (activeUser.activeTripId == null) {
-      error(400, { message: 'User has no active trip, select one or create trip!' });
+      error(400, 'User has no active trip, select one or create trip!');
     }
 
     if (!activeUser.role.canAddDatapoint) {
-      error(401, { message: 'User not allowed to add Datapoint!' });
+      error(401, 'User not allowed to add Datapoint!');
     }
 
     await prisma.datapoint.create({

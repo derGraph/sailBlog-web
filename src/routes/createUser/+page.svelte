@@ -1,6 +1,6 @@
 <script lang="ts">
-  import errorStore from '$lib/errorStore.js';
-  import type { Role } from '@prisma/client';
+  import errorStore from '#lib/errorStore.js';
+  import type { Role } from '#prisma';
   import { onMount } from 'svelte';
 
   let roles: Role[] = $state([]);

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import errorStore from '$lib/errorStore.js';
-  import { parseVisibility } from '$lib/visibility.js';
-  import type { Media } from '@prisma/client';
+  import errorStore from '#lib/errorStore.js';
+  import { parseVisibility } from '#lib/visibility.js';
+  import type { Media } from '#prisma';
   import { onMount } from 'svelte';
 
   let { data } = $props();

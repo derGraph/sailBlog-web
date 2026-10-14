@@ -7,12 +7,12 @@
  *
  * 🟢 You can import this file directly.
  */
-export type * from './models/User';
-export type * from './models/Session';
-export type * from './models/Role';
-export type * from './models/Key';
-export type * from './models/Trip';
-export type * from './models/Datapoint';
-export type * from './models/Location';
-export type * from './models/Media';
-export type * from './commonInputTypes';
+export type * from './models/User.ts';
+export type * from './models/Session.ts';
+export type * from './models/Role.ts';
+export type * from './models/Key.ts';
+export type * from './models/Trip.ts';
+export type * from './models/Datapoint.ts';
+export type * from './models/Location.ts';
+export type * from './models/Media.ts';
+export type * from './commonInputTypes.ts';

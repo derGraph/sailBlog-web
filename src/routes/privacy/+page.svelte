@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PRIVACY_VERSION } from '$lib/legal';
+  import { PRIVACY_VERSION } from '#lib/legal.ts';
 </script>
 
 <div class="md:container md:mx-auto py-3 h-full overflow-auto">

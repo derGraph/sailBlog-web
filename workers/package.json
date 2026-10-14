@@ -5,19 +5,25 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && tsc-alias"
+    "build": "tsc"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@turf/turf": "^7.1.0",
+    "@turf/turf": "^7.4.0",
     "shapefile": "^0.6.6",
-    "workers": "file:"
+    "geolib": "^4.0.0"
   },
   "devDependencies": {
     "@types/shapefile": "^0.6.4",
-    "prisma": "^7.8.0",
-    "tsc-alias": "^1.8.10",
-    "typescript": "^5.5.4"
+    "prisma": "^7.10.0",
+    "typescript": "^6.0.3",
+    "@types/node": "^26.6.5"
+  },
+  "overrides": {
+    "@prisma/config": {
+      "deepmerge-ts": "^8.0.2"
+    },
+    "mysql2": "^3.24.6"
   }
 }
