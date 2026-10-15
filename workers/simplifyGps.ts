@@ -1,4 +1,5 @@
 import { prisma } from './prisma.js';
+import { calculateTripDistances } from './tripCalculations.js';
 import { getDistance, getDistanceFromLine } from 'geolib';
 import { statSync, createReadStream } from 'fs';
 import { point, booleanPointInPolygon } from '@turf/turf';
@@ -134,10 +135,6 @@ export async function simplifyGps(trip: string, amount: number) {
 }
 
 export async function calculateDistance(trip: string) {
-  let newDistanceSail: number = 0;
-  let newDistanceMotor: number = 0;
-  let newDistanceUnknown: number = 0;
-
   let inputTrips = await prisma.datapoint.findMany({
     where: {
       tripId: trip,
@@ -148,32 +145,12 @@ export async function calculateDistance(trip: string) {
     }
   });
 
-  for (let i = 0; i < inputTrips.length - 2; i++) {
-    let distance = getDistance(
-      { lat: Number(inputTrips[i].lat), lon: Number(inputTrips[i].long) },
-      { lat: Number(inputTrips[i + 1].lat), lon: Number(inputTrips[i + 1].long) }
-    );
-    // Add the Miles of this datapoint to the overall miles
-    if (inputTrips[i + 1].propulsion == 1) {
-      // length under motor
-      newDistanceMotor += distance;
-    } else if (inputTrips[i + 1].propulsion == 2) {
-      // length under sail
-      newDistanceSail += distance;
-    } else if (inputTrips[i + 1].propulsion == 3) {
-      // length unknown
-      newDistanceUnknown += distance;
-    }
-  }
-
   await prisma.trip.update({
     where: {
       id: trip
     },
     data: {
-      length_sail: newDistanceSail,
-      length_motor: newDistanceMotor,
-      length_unknown: newDistanceUnknown
+      ...calculateTripDistances(inputTrips)
     }
   });
 }

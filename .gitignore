@@ -11,3 +11,7 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 /store
 /workers/store
+/coverage
+/test-results
+/playwright-report
+/.vitest

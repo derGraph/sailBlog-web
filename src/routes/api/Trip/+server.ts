@@ -443,55 +443,33 @@ export async function DELETE(event) {
     tripId = event.url.searchParams.get('tripId');
     if (tripId) {
       try {
-        if (event.locals.role?.canDeleteAllTrips) {
-          await prisma.trip.update({
-            where: { id: tripId, deleted: false },
-            data: {
-              deleted: true,
-              name: 'deletedTrip ' + new Date(Date.now()).toISOString(),
-              description: null,
-              visibility: 0,
-              recalculate: true
-            }
-          });
-          return new Response('200');
-        } else if (event.locals.role?.canDeleteOwnTrips) {
-          await prisma.trip.update({
-            where: {
-              id: tripId,
-              deleted: false,
-              crew: { some: { username: event.locals.user?.username } }
-            },
-            data: {
-              deleted: true,
-              name: 'deletedTrip ' + new Date(Date.now()).toISOString(),
-              description: null,
-              visibility: 0,
-              recalculate: true
-            }
-          });
-          return new Response('200');
-        } else if (event.locals.role?.canDeleteCrewedTrips) {
-          await prisma.trip.update({
-            where: {
-              id: tripId,
-              deleted: false,
-              OR: [
-                { crew: { some: { username: event.locals.user?.username } } },
-                { skipper: { username: event.locals.user?.username } }
-              ]
-            },
-            data: {
-              deleted: true,
-              name: 'deletedTrip ' + new Date(Date.now()).toISOString(),
-              description: null,
-              visibility: 0,
-              recalculate: true
-            }
-          });
-          return new Response('200');
+        const username = event.locals.user.username;
+        const permissions = [
+          ...(event.locals.role?.canDeleteOwnTrips ? [{ skipperName: username }] : []),
+          ...(event.locals.role?.canDeleteCrewedTrips
+            ? [{ crew: { some: { username } } }, { skipperName: username }]
+            : [])
+        ];
+        if (!event.locals.role?.canDeleteAllTrips && permissions.length === 0) {
+          return error(401, 'You are not allowed to delete this trip!');
         }
+        await prisma.trip.update({
+          where: {
+            id: tripId,
+            deleted: false,
+            ...(!event.locals.role?.canDeleteAllTrips ? { OR: permissions } : {})
+          },
+          data: {
+            deleted: true,
+            name: 'deletedTrip ' + new Date(Date.now()).toISOString(),
+            description: null,
+            visibility: 0,
+            recalculate: true
+          }
+        });
+        return new Response('200');
       } catch (error_message) {
+        if (isHttpError(error_message)) throw error_message;
         if (error_message instanceof Prisma.PrismaClientKnownRequestError) {
           return error(400, 'Update: ' + error_message.meta?.cause);
         } else {

@@ -417,12 +417,16 @@
             editor.isActive('image', { alignment: 'right' })}
           style="font-size: 1.5rem">format_align_right</button
         >
-        <button onclick={() => (isOpen = true)} class={buttonClass} style="font-size: 1.5rem"
-          >add_photo_alternate</button
+        <button
+          aria-label="Insert image"
+          onclick={() => (isOpen = true)}
+          class={buttonClass}
+          style="font-size: 1.5rem">add_photo_alternate</button
         >
       </div>
       <button
         onclick={save}
+        aria-label="Save description"
         class="pl-1! pr-2! py-1! material-symbols-outlined"
         style="font-size: 1.5rem">save</button
       >

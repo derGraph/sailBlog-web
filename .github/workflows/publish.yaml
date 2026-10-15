@@ -1,16 +1,45 @@
 name: Create and publish a Docker image
 
-# Configures this workflow to run every time a change is pushed to the branch called `release`.
-on: [push]
+# Check pushes and pull requests before publishing images on pushes.
+on: [push, pull_request]
 
 # Defines two custom environment variables for the workflow. These are used for the Container registry domain, and a name for the Docker image that this workflow builds.
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
-# There is a single job in this workflow. It's configured to run on the latest available version of Ubuntu.
+# Publishing depends on the test job succeeding.
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            workers/package-lock.json
+      - run: npm ci
+      - run: npm ci --prefix workers
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:all
+      - run: npm run test:runtime
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-failure-artifacts
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+
   build-and-push-image:
+    needs: test
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
     permissions:

@@ -261,6 +261,7 @@
         />
         <button
           class="text-4xl! material-symbols-outlined max-h"
+          aria-label="Save trip name"
           onclick={() => {
             saveTripName(newName);
           }}>save</button
@@ -271,6 +272,7 @@
           {#if canEditTrip(requestedTripData)}
             <button
               class="text-4xl! material-symbols-outlined"
+              aria-label="Edit trip name"
               onclick={() => {
                 editName = true;
               }}>edit</button
@@ -400,7 +402,7 @@
         {#if canEditTrip(requestedTripData)}
           <button
             class="btn-icon preset-tonal-secondary border border-secondary-500 absolute t-2 r-2 z-1 opacity-80"
-            aria-label="Edit"
+            aria-label="Edit description"
             onclick={() => {
               editDescription = true;
             }}

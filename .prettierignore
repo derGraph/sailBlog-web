@@ -2,3 +2,7 @@
 pnpm-lock.yaml
 package-lock.json
 yarn.lock
+coverage/
+test-results/
+playwright-report/
+.vitest/

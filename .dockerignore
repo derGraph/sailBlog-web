@@ -6,3 +6,7 @@ workers/build
 .git
 .github
 npm-debug.log
+coverage
+test-results
+playwright-report
+.vitest

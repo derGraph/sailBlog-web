@@ -62,17 +62,19 @@ export async function parseGPXLazy(
   sampleRate: number = 1,
   onProgress?: (percentage: number) => void
 ): Promise<GPXStreamedResult> {
+  if (!Number.isInteger(sampleRate) || sampleRate < 1) {
+    throw new RangeError('Sample rate must be a positive integer.');
+  }
   const metadata: GPXMetadata = {};
   const trackHeaders: GPXTrackHeader[] = [];
   const routeHeaders: GPXRouteHeader[] = [];
-
-  const decoder = new TextDecoder('utf-8');
 
   // Helper generator that streams raw chunks out of the file layout
   async function* getTargetElements(
     targetType: 'track_segment' | 'route_points' | 'waypoint',
     trackIndex?: number
   ) {
+    const decoder = new TextDecoder('utf-8');
     const parser = sax.parser(true, { lowercase: true, trim: true });
     const reader = file.stream().getReader();
     const totalBytes = file.size;
@@ -217,18 +219,23 @@ export async function parseGPXLazy(
           yield yieldQueue.shift().data;
         }
       }
-      parser.close();
+      if (!targetTrackFinished) {
+        parser.write(decoder.decode());
+        parser.close();
+      }
       while (yieldQueue.length > 0) {
         yield yieldQueue.shift().data;
       }
       if (onProgress) onProgress(100);
     } finally {
+      await reader.cancel();
       reader.releaseLock();
     }
   }
 
   // --- PRE-SCAN FOR STRUCTURAL HEADERS ---
   const preParser = sax.parser(true, { lowercase: true, trim: true });
+  const preDecoder = new TextDecoder('utf-8');
   const preReader = file.stream().getReader();
   const totalBytes = file.size;
   let preLoadedBytes = 0;
@@ -293,8 +300,9 @@ export async function parseGPXLazy(
       if (onProgress && totalBytes > 0) {
         onProgress(Math.min(Math.round((preLoadedBytes / totalBytes) * 100), 100));
       }
-      preParser.write(decoder.decode(value, { stream: true }));
+      preParser.write(preDecoder.decode(value, { stream: true }));
     }
+    preParser.write(preDecoder.decode());
     preParser.close();
   } finally {
     preReader.releaseLock();

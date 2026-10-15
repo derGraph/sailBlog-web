@@ -233,7 +233,7 @@
       </aside>
     </div>
   {/if}
-  <div class="grow min-h-0 flex flex-col">
+  <div class="grow min-h-0 flex flex-col overflow-auto">
     {@render children?.()}
   </div>
   <div
