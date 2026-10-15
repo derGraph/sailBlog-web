@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { setTimeout as delay } from 'node:timers/promises';
+import { fileURLToPath } from 'node:url';
 
 const image = `sailblog-test:${randomUUID().slice(0, 8)}`;
 const container = `sailblog-runtime-${randomUUID().slice(0, 8)}`;
@@ -34,6 +35,20 @@ try {
     docker('run', '--rm', '--entrypoint', 'node', image, '--input-type=module', '-e', smoke)
   );
   console.log(docker('run', '--rm', '--entrypoint', 'npx', image, 'prisma', 'validate'));
+  console.log(
+    docker(
+      'run',
+      '--rm',
+      '--network',
+      'none',
+      '--mount',
+      `type=bind,src=${fileURLToPath(new URL('./pm2-smoke.mjs', import.meta.url))},dst=/app/pm2-smoke.mjs,readonly`,
+      '--entrypoint',
+      'node',
+      image,
+      '/app/pm2-smoke.mjs'
+    )
+  );
   // Bypass the deployment entrypoint: this check never pushes a database schema.
   docker(
     'run',

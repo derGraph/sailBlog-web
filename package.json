@@ -107,6 +107,9 @@
     "mariadb": "^3.5.4",
     "basic-ftp": "^6.2.3",
     "js-yaml": "^4.3.2",
-    "postcss-selector-parser": "^7.1.6"
+    "postcss-selector-parser": "^7.1.6",
+    "pm2": {
+      "chokidar": "4.0.3"
+    }
   }
 }

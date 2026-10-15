@@ -36,6 +36,12 @@ release candidates. Targeted dependency overrides supply patched transitive
 packages without downgrading Prisma or PM2. Review `npm audit` findings individually
 instead of applying `npm audit fix --force`.
 
+PM2's watcher is pinned to Chokidar 4.0.3 through a scoped override to remove
+the unpatched `braces` dependency. Production watching remains disabled.
+Chokidar 4 accepts explicit file/directory paths rather than glob patterns.
+The container tests verify PM2's four-process cluster, crash recovery, and
+directory-triggered worker restarts with this override.
+
 ### Tests
 
 ```sh
