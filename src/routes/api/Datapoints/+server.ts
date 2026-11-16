@@ -2,6 +2,7 @@ import { prisma } from '#lib/server/prisma.ts';
 import { error, isHttpError, json, type RequestEvent } from '@sveltejs/kit';
 import { isCuid } from '@paralleldrive/cuid2';
 import { RequestTimings } from '#lib/server/requestTimings.ts';
+import { readTripDatapoints } from '#lib/server/tripDatapoints.ts';
 
 interface Datapoint {
   id?: string;
@@ -312,38 +313,19 @@ export async function GET(event: RequestEvent) {
     }
   }
 
-  try {
-    if (unparsedStart != null) {
-      start = new Date(parseInt(unparsedStart));
-    } else {
-      start = new Date(0);
-    }
-  } catch (error_message) {
+  if (unparsedStart !== null) start = new Date(Number(unparsedStart));
+  if (!Number.isFinite(start.getTime())) {
     error(400, 'Invalid start Timestamp!');
   }
 
-  try {
-    if (unparsedEnd != null) {
-      end = new Date(parseInt(unparsedEnd));
-    } else {
-      end = new Date(Date.now());
-    }
-  } catch (error_message) {
+  if (unparsedEnd !== null) end = new Date(Number(unparsedEnd));
+  if (!Number.isFinite(end.getTime())) {
     error(400, 'Invalid end Timestamp!');
   }
 
-  try {
-    if (unparsedAmount != null) {
-      if (parseInt(unparsedAmount) > 10000) {
-        error(400, 'Invalid max Amount, only 10000 are allowed!');
-      } else {
-        maxAmount = parseInt(unparsedAmount);
-      }
-    } else {
-      maxAmount = 10000;
-    }
-  } catch (error_message) {
-    error(400, 'Invalid max Amount, only 10000 are allowed!');
+  maxAmount = Number(unparsedAmount ?? 10000);
+  if (!Number.isSafeInteger(maxAmount) || maxAmount < 0 || maxAmount > 10000) {
+    error(400, 'Invalid max Amount: use an integer from 0 to 10000.');
   }
 
   try {
@@ -370,25 +352,7 @@ export async function GET(event: RequestEvent) {
     );
     if (!trip) error(404, 'Trip not found.');
     const datapoints = await timings.measure('datapoints', () =>
-      prisma.datapoint.findMany({
-        where: {
-          tripId: requestedTrip,
-          time: {
-            lte: end,
-            gte: start
-          },
-          OR: [
-            {
-              optimized: 0
-            },
-            {
-              optimized: 2
-            }
-          ]
-        },
-        take: maxAmount,
-        orderBy: [{ time: 'asc' }, { id: 'asc' }]
-      })
+      readTripDatapoints(requestedTrip, start, end, maxAmount)
     );
     return await timings.measure('serialize', async () => {
       let responseData: { [k: string]: any } = {};

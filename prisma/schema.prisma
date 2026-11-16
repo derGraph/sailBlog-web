@@ -139,6 +139,7 @@ model Datapoint {
                                         // 2: needed
 
   @@index([tripId, time, id])
+  @@index([tripId, optimized, time, id])
 }
 
 model Location {

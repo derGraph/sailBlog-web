@@ -49,6 +49,12 @@ managed with Prisma migrations should run `prisma migrate deploy`. Each of the
 four PM2 web processes has its own pool of up to 10 connections, plus up to five
 for the background worker.
 
+Map requests use `Datapoint_tripId_optimized_time_id_idx` to read statuses 0 and 2
+as separate ordered ranges. Each range selects at most the requested number of
+IDs before the results are merged and the full datapoints fetched. Discarded
+points (status 1) are skipped by the index. Apply the new schema/index with the
+application update; the Docker entrypoint handles this with `prisma db push`.
+
 The `Server-Timing` response header separates authentication (`auth`), activity
 updates (`session_touch`, `user_touch`), route handling (`handler`), and total
 request time (`total`). `/api/Datapoints` also reports `trip_access`, `datapoints`,
@@ -56,6 +62,9 @@ and `serialize`. Durations are in milliseconds and appear in the browser's
 Network timing panel. Requests taking at least one second log these durations
 with the method, path, and response status, without query parameters or tokens.
 Fresh session/user timestamps skip activity updates entirely.
+Requests still running after 10 seconds also log the active stages and their
+elapsed times, plus the incoming Cloudflare Ray ID for correlation with proxy
+logs. This works even when a proxy returns a 504 before the app responds.
 
 ### Tests
 
