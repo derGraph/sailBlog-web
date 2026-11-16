@@ -29,8 +29,8 @@
   --spacing: 0.25rem;
   --radius-base: 9999rem;
   --radius-container: 1.5rem;
-  --default-border-width: 6px;
-  --default-divide-width: 4px;
+  --default-border-width: 1px;
+  --default-divide-width: 1px;
   --default-ring-width: 1px;
   --body-background-color: var(--color-surface-50);
   --body-background-color-dark: var(--color-surface-950);

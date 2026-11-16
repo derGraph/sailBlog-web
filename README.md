@@ -42,6 +42,13 @@ Chokidar 4 accepts explicit file/directory paths rather than glob patterns.
 The container tests verify PM2's four-process cluster, crash recovery, and
 directory-triggered worker restarts with this override.
 
+Trip summaries fetch their first and last datapoints in sequential batches of 200
+trips, using the `Datapoint_tripId_time_id_idx` index. Deploy the schema change
+alongside the application: the Docker entrypoint runs `prisma db push`; deployments
+managed with Prisma migrations should run `prisma migrate deploy`. Each of the
+four PM2 web processes has its own pool of up to 10 connections, plus up to five
+for the background worker.
+
 ### Tests
 
 ```sh

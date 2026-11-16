@@ -1,5 +1,6 @@
 import { removeSensitiveData } from '#lib/server/functions.js';
 import { prisma } from '#lib/server/prisma.ts';
+import { appendTripEdgePoints } from '#lib/server/tripEdgePoints.ts';
 import { error, isHttpError, json, redirect } from '@sveltejs/kit';
 
 interface Datapoint {
@@ -119,36 +120,16 @@ export async function GET(event: {
       });
     }
 
-    // Dynamically append ONLY the first and last datapoints for each trip in parallel
-    const formattedData = await Promise.all(
-      trips.map(async (trip) => {
-        const [startPoint, endPoint] = await Promise.all([
-          prisma.datapoint.findFirst({
-            where: { tripId: trip.id },
-            orderBy: { time: 'asc' }
-          }),
-          prisma.datapoint.findFirst({
-            where: { tripId: trip.id },
-            orderBy: { time: 'desc' }
-          })
-        ]);
-
-        return {
-          ...trip,
-          startPoint,
-          endPoint
-        };
-      })
-    );
+    const formattedData = await appendTripEdgePoints(trips);
 
     const cleanedData = removeSensitiveData(formattedData);
     return new Response(JSON.stringify(cleanedData));
   } catch (error_message) {
     if (isHttpError(error_message)) {
-      return error_message;
+      throw error_message;
     } else if (error_message instanceof Error) {
-      console.log(error_message);
-      error(404, error_message.message);
+      console.error('Failed to load trips:', error_message);
+      error(500, 'Unable to load trips. Please try again.');
     } else {
       error(500, 'ERROR');
     }

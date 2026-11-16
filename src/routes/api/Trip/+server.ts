@@ -1,29 +1,10 @@
 import { removeSensitiveData } from '#lib/server/functions.ts';
 import { prisma } from '#lib/server/prisma.ts';
+import { appendTripEdgePoints } from '#lib/server/tripEdgePoints.ts';
 import { checkVisibility } from '#lib/visibility.js';
 import { error, isHttpError, json } from '@sveltejs/kit';
 import DOMPurify from 'isomorphic-dompurify';
 import { Prisma } from '../../../../prisma/generated/client';
-
-// Reusable utility function to fetch bounding edge data points efficiently
-async function appendEdgePoints(trip: any) {
-  if (!trip) return null;
-  const [startPoint, endPoint] = await Promise.all([
-    prisma.datapoint.findFirst({
-      where: { tripId: trip.id },
-      orderBy: { time: 'asc' }
-    }),
-    prisma.datapoint.findFirst({
-      where: { tripId: trip.id },
-      orderBy: { time: 'desc' }
-    })
-  ]);
-  return {
-    ...trip,
-    startPoint,
-    endPoint
-  };
-}
 
 export async function GET(event) {
   let tripId = null;
@@ -81,8 +62,7 @@ export async function GET(event) {
         return error(404, 'Not Found!');
       }
 
-      // Map over the results array to append edge details in parallel
-      const formattedData = await Promise.all(responseData.map(appendEdgePoints));
+      const formattedData = await appendTripEdgePoints(responseData);
       const cleanedData = removeSensitiveData(formattedData);
       return new Response(JSON.stringify(cleanedData));
     }
@@ -90,7 +70,8 @@ export async function GET(event) {
     if (isHttpError(error_message)) {
       error(error_message.status, error_message.body);
     } else if (error_message instanceof Error) {
-      error(404, error_message.message);
+      console.error('Failed to load trip:', error_message);
+      error(500, 'Unable to load trip. Please try again.');
     } else {
       error(500, 'ERROR');
     }
@@ -215,13 +196,13 @@ export async function POST(event) {
       });
     }
 
-    let returnData = await prisma.trip.findFirst({
+    const returnData = await prisma.trip.findUniqueOrThrow({
       where: { id: responseData.id },
       include: { crew: true } // Removed startPoint and endPoint here
     });
 
     // Dynamic edge attachment right before resolving payload response
-    const formattedReturnData = await appendEdgePoints(returnData);
+    const [formattedReturnData] = await appendTripEdgePoints([returnData]);
     return new Response(JSON.stringify(formattedReturnData));
   } else {
     return error(401, 'Not logged in!');

@@ -9,7 +9,6 @@
   import { page } from '$app/state';
   import { goto } from '$app/navigation';
 
-  let navHeight = 2;
   let { data, children } = $props();
 
   onMount(() => {
@@ -57,7 +56,7 @@
   <div class="md:container md:mx-auto">
     <AppBar class="rounded-b-3xl p-2">
       <AppBar.Toolbar class="flex items-center justify-between gap-2">
-        <AppBar.Lead class="flex items-center">
+        <AppBar.Lead class="flex shrink-0 items-center">
           <img src="/sailBlog.svg" alt="Sailblog Logo" class="!size-[32px] mr-1" />
           <a href="/" class="text-2xl leading-none">sailBlog</a>
         </AppBar.Lead>
@@ -86,45 +85,60 @@
           {/if}
         </AppBar.Headline>
 
-        <AppBar.Trail class="flex items-end">
-          <div class="!hidden lg:!flex lg:items-end">
+        <AppBar.Trail class="flex shrink-0 items-center">
+          <div class="!hidden lg:!flex lg:items-center gap-2">
             {#if !user}
-              <div class="btn-md btn preset-tonal-secondary border border-secondary-500">
-                <a href="/sign_in"><button type="button">Sign in!</button></a>
-                <span class="divider-vertical h-6"></span>
-                <a href="/sign_up"><button type="button">Sign up!</button></a>
+              <div
+                class="inline-flex h-8 items-center divide-x divide-secondary-500 overflow-hidden rounded-full preset-tonal-secondary border border-secondary-500 text-sm"
+              >
+                <a href="/sign_in" class="flex h-full items-center px-3">Sign in!</a>
+                <a href="/sign_up" class="flex h-full items-center px-3">Sign up!</a>
               </div>
             {:else}
               <div
-                class="btn-sm btn preset-tonal-secondary border border-secondary-500 material-symbols-outlined grow flex flex-auto"
-                style="margin:0;"
+                class="inline-flex h-8 items-center divide-x divide-secondary-500 overflow-hidden rounded-full preset-tonal-secondary border border-secondary-500"
               >
-                <button onclick={changeDarkMode}>{dark.mode ? 'dark_mode' : 'light_mode'}</button>
-                <span
-                  class="divider-vertical h-8"
-                  style="border-color:rgb(var(--color-secondary-500)); margin:0; padding:0;"
-                ></span>
-                <a href="/sign_out" style="margin:0;padding:0;"
-                  ><button type="button">logout</button></a
+                <button
+                  type="button"
+                  class="flex h-full w-9 items-center justify-center"
+                  aria-label="Toggle dark mode"
+                  onclick={changeDarkMode}
                 >
-              </div>
-              {#if user.firstName && user.lastName}
+                  <span class="material-symbols-outlined" aria-hidden="true"
+                    >{dark.mode ? 'dark_mode' : 'light_mode'}</span
+                  >
+                </button>
                 <a
-                  href="/user"
-                  class="grow flex flex-auto space-x-2 h-auto ml-1 items-center justify-center"
-                  aria-label="Get to the Users page!"
-                  ><Avatar class="!size-[32px]">
-                    <Avatar.Image src={getProfilePicture(user)} class="!size-[32px]" />
-                    <Avatar.Fallback
-                      >{user.firstName.charAt(0) + user.lastName.charAt(0)}</Avatar.Fallback
-                    >
-                  </Avatar>
-                </a>
-              {:else}
-                <a href="/user" aria-label="profile Picture"
-                  ><div class="placeholder-circle !size-[32px]"></div></a
+                  href="/sign_out"
+                  class="flex h-full w-9 items-center justify-center"
+                  aria-label="Sign out"
                 >
-              {/if}
+                  <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+                </a>
+              </div>
+              <a
+                href="/user"
+                class="flex size-8 shrink-0 items-center justify-center rounded-full"
+                aria-label="Your profile"
+              >
+                <Avatar
+                  class="size-8 shrink-0 preset-tonal-secondary"
+                  style="width: 32px; height: 32px;"
+                >
+                  <Avatar.Image
+                    src={getProfilePicture(user)}
+                    alt=""
+                    class="size-full object-cover"
+                  />
+                  <Avatar.Fallback class="text-sm leading-none">
+                    {#if user.firstName && user.lastName}
+                      {user.firstName.charAt(0) + user.lastName.charAt(0)}
+                    {:else}
+                      <span class="material-symbols-outlined" aria-hidden="true">person</span>
+                    {/if}
+                  </Avatar.Fallback>
+                </Avatar>
+              </a>
             {/if}
           </div>
           <button

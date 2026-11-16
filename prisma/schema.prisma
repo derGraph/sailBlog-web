@@ -137,6 +137,8 @@ model Datapoint {
   optimized         Int     @default(0) // 0: to optimize
                                         // 1: deleted
                                         // 2: needed
+
+  @@index([tripId, time, id])
 }
 
 model Location {
