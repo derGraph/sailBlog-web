@@ -1,6 +1,7 @@
 import { prisma } from '#lib/server/prisma.ts';
-import { error, json } from '@sveltejs/kit';
+import { error, isHttpError, json, type RequestEvent } from '@sveltejs/kit';
 import { isCuid } from '@paralleldrive/cuid2';
+import { RequestTimings } from '#lib/server/requestTimings.ts';
 
 interface Datapoint {
   id?: string;
@@ -291,7 +292,8 @@ function compareObjects(
   return;
 }
 
-export async function GET(event) {
+export async function GET(event: RequestEvent) {
+  const timings = event.locals.requestTimings ?? new RequestTimings();
   let requestedTrip = event.url.searchParams.get('tripId');
   let unparsedStart = event.url.searchParams.get('start');
   let unparsedEnd = event.url.searchParams.get('end');
@@ -345,76 +347,59 @@ export async function GET(event) {
   }
 
   try {
-    if (event.locals.user?.username) {
-      if (event.locals.role?.canViewAllTrips) {
-        let tripData = await prisma.trip.findFirstOrThrow({
-          where: {
-            id: requestedTrip
-          }
-        });
-      } else {
-        let tripData = await prisma.trip.findFirstOrThrow({
-          where: {
-            OR: [
-              {
-                id: requestedTrip,
-                visibility: 1
-              },
-              {
-                id: requestedTrip,
-                visibility: 2
-              },
-              {
-                id: requestedTrip,
-                crew: {
-                  some: {
-                    username: event.locals.user?.username
-                  }
-                }
-              }
-            ]
-          }
-        });
-      }
-    } else {
-      let tripData = await prisma.trip.findFirstOrThrow({
+    const username = event.locals.user?.username;
+    const trip = await timings.measure('trip_access', () =>
+      prisma.trip.findFirst({
         where: {
           id: requestedTrip,
-          visibility: 2
-        }
-      });
-    }
-    let datapoints = await prisma.datapoint.findMany({
-      where: {
-        tripId: requestedTrip,
-        time: {
-          lte: end,
-          gte: start
+          ...(event.locals.role?.canViewAllTrips
+            ? {}
+            : username
+              ? {
+                  OR: [
+                    { visibility: 1 },
+                    { visibility: 2 },
+                    { skipperName: username },
+                    { crew: { some: { username } } }
+                  ]
+                }
+              : { visibility: 2 })
         },
-        OR: [
-          {
-            optimized: 0
+        select: { id: true }
+      })
+    );
+    if (!trip) error(404, 'Trip not found.');
+    const datapoints = await timings.measure('datapoints', () =>
+      prisma.datapoint.findMany({
+        where: {
+          tripId: requestedTrip,
+          time: {
+            lte: end,
+            gte: start
           },
-          {
-            optimized: 2
-          }
-        ]
-      },
-      take: maxAmount,
-      orderBy: {
-        time: 'asc'
-      }
+          OR: [
+            {
+              optimized: 0
+            },
+            {
+              optimized: 2
+            }
+          ]
+        },
+        take: maxAmount,
+        orderBy: [{ time: 'asc' }, { id: 'asc' }]
+      })
+    );
+    return await timings.measure('serialize', async () => {
+      let responseData: { [k: string]: any } = {};
+      datapoints.forEach((datapoint) => {
+        responseData[datapoint.id] = { ...datapoint, id: undefined };
+      });
+      return new Response(JSON.stringify(responseData));
     });
-    let responseData: { [k: string]: any } = {};
-    datapoints.forEach((datapoint) => {
-      responseData[datapoint.id] = { ...datapoint, id: undefined };
-    });
-    return new Response(JSON.stringify(responseData));
   } catch (error_message) {
-    if (error_message instanceof Error) {
-      error(404, error_message.message);
-    } else {
-      error(500, 'ERROR');
-    }
+    if (isHttpError(error_message)) throw error_message;
+    console.error('Failed to load datapoints:', error_message);
+    error(500, 'Unable to load datapoints. Please try again.');
   }
 }

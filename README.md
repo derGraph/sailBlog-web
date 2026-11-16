@@ -49,6 +49,14 @@ managed with Prisma migrations should run `prisma migrate deploy`. Each of the
 four PM2 web processes has its own pool of up to 10 connections, plus up to five
 for the background worker.
 
+The `Server-Timing` response header separates authentication (`auth`), activity
+updates (`session_touch`, `user_touch`), route handling (`handler`), and total
+request time (`total`). `/api/Datapoints` also reports `trip_access`, `datapoints`,
+and `serialize`. Durations are in milliseconds and appear in the browser's
+Network timing panel. Requests taking at least one second log these durations
+with the method, path, and response status, without query parameters or tokens.
+Fresh session/user timestamps skip activity updates entirely.
+
 ### Tests
 
 ```sh

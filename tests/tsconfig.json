@@ -1,6 +1,6 @@
 {
   "extends": "../tsconfig.json",
-  "include": ["./**/*.ts", "../workers/*.ts", "../*.config.ts"],
+  "include": ["./**/*.ts", "../src/app.d.ts", "../workers/*.ts", "../*.config.ts"],
   "compilerOptions": {
     "types": ["node"],
     "verbatimModuleSyntax": false
