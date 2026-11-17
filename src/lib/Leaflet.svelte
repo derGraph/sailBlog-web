@@ -452,7 +452,7 @@
       startDate = 0;
     }
     let response = await fetch(
-      '/api/Datapoints?tripId=' + tripId + '&start=' + startDate + '&amount=5000'
+      '/api/Datapoints?tripId=' + tripId + '&start=' + startDate + '&amount=5000&format=map'
     );
     if (!response.ok) {
       $errorStore = response;

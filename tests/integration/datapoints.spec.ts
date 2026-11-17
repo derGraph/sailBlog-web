@@ -23,11 +23,22 @@ for (const visibility of [0, 1, 2]) {
         `/api/Datapoints?tripId=${trip.id}&start=0&amount=5000`
       );
       expect(response.status(), actor).toBe(allowed ? 200 : 404);
+      const mapResponse = await clients[actor].get(
+        `/api/Datapoints?tripId=${trip.id}&start=0&amount=5000&format=map`
+      );
+      expect(mapResponse.status(), actor).toBe(allowed ? 200 : 404);
       expect(response.headers()['server-timing']).toMatch(/trip_access;dur=[\d.]+/);
       if (allowed) {
         const points = Object.values(await response.json()) as { time: string }[];
         expect(points.map(({ time }) => new Date(time).getTime())).toEqual([1000, 3000]);
         expect(response.headers()['server-timing']).toMatch(/datapoints;dur=[\d.]+/);
+        const mapData = await mapResponse.json();
+        expect(Object.keys(mapData)).toEqual(Object.keys(await response.json()));
+        for (const point of Object.values(mapData) as Record<string, unknown>[]) {
+          expect(Object.keys(point).sort()).toEqual(['lat', 'long', 'propulsion', 'time']);
+          expect(typeof point.lat).toBe('number');
+          expect(typeof point.long).toBe('number');
+        }
       }
     }
   });

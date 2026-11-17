@@ -3,7 +3,11 @@ import { afterAll, expect, test } from 'vitest';
 import { Prisma } from '../../prisma/generated/client';
 import { db } from '../helpers/database';
 import { prisma } from '../../src/lib/server/prisma';
-import { readTripDatapoints, tripDatapointsQuery } from '../../src/lib/server/tripDatapoints';
+import {
+  readMapTripDatapoints,
+  readTripDatapoints,
+  tripDatapointsQuery
+} from '../../src/lib/server/tripDatapoints';
 
 afterAll(async () => {
   await prisma.$disconnect();
@@ -55,6 +59,17 @@ test('map reads use covered status ranges and preserve the Prisma response on a 
   // Check dates, nullable fields, and full-precision Decimal serialization as well as IDs/order.
   expect(JSON.parse(JSON.stringify(actual))).toEqual(JSON.parse(JSON.stringify(baseline)));
   expect(actual.every((point) => point.tripId === trip.id && point.optimized !== 1)).toBe(true);
+  const mapPoints = await readMapTripDatapoints(trip.id, start, end, 5000);
+  expect(mapPoints).toEqual(
+    baseline.map((point) => ({
+      id: point.id,
+      time: point.time,
+      lat: Number(point.lat),
+      long: Number(point.long),
+      propulsion: point.propulsion
+    }))
+  );
+  expect(JSON.stringify(mapPoints).length).toBeLessThan(JSON.stringify(actual).length / 2);
 
   const planRows = await prisma.$queryRaw<{ EXPLAIN: string }[]>(Prisma.sql`
       EXPLAIN FORMAT=JSON ${tripDatapointsQuery(trip.id, start, end, 5000)}
@@ -79,5 +94,6 @@ test('map reads use covered status ranges and preserve the Prisma response on a 
   expect(tied.length).toBeGreaterThan(1);
   expect(tied.every((point) => point.time.getTime() === boundary.time.getTime())).toBe(true);
   expect(await readTripDatapoints(trip.id, start, end, 0)).toEqual([]);
+  expect(await readMapTripDatapoints(trip.id, start, end, 0)).toEqual([]);
   expect(await readTripDatapoints(trip.id, end, start, 5000)).toEqual([]);
 }, 60000);

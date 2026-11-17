@@ -54,6 +54,9 @@ as separate ordered ranges. Each range selects at most the requested number of
 IDs before the results are merged and the full datapoints fetched. Discarded
 points (status 1) are skipped by the index. Apply the new schema/index with the
 application update; the Docker entrypoint handles this with `prisma db push`.
+The map requests `format=map`, which returns only numeric coordinates, time,
+and propulsion keyed by datapoint ID. The default API response retains the full
+record and its original Decimal precision for other clients.
 
 The `Server-Timing` response header separates authentication (`auth`), activity
 updates (`session_touch`, `user_touch`), route handling (`handler`), and total

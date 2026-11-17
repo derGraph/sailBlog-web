@@ -2,7 +2,7 @@ import { prisma } from '#lib/server/prisma.ts';
 import { error, isHttpError, json, type RequestEvent } from '@sveltejs/kit';
 import { isCuid } from '@paralleldrive/cuid2';
 import { RequestTimings } from '#lib/server/requestTimings.ts';
-import { readTripDatapoints } from '#lib/server/tripDatapoints.ts';
+import { readMapTripDatapoints, readTripDatapoints } from '#lib/server/tripDatapoints.ts';
 
 interface Datapoint {
   id?: string;
@@ -299,6 +299,7 @@ export async function GET(event: RequestEvent) {
   let unparsedStart = event.url.searchParams.get('start');
   let unparsedEnd = event.url.searchParams.get('end');
   let unparsedAmount = event.url.searchParams.get('amount');
+  const mapOnly = event.url.searchParams.get('format') === 'map';
   let start = new Date(0);
   let end = new Date(Date.now());
   let maxAmount;
@@ -351,8 +352,10 @@ export async function GET(event: RequestEvent) {
       })
     );
     if (!trip) error(404, 'Trip not found.');
-    const datapoints = await timings.measure('datapoints', () =>
-      readTripDatapoints(requestedTrip, start, end, maxAmount)
+    const datapoints = await timings.measure('datapoints', async () =>
+      mapOnly
+        ? readMapTripDatapoints(requestedTrip, start, end, maxAmount)
+        : readTripDatapoints(requestedTrip, start, end, maxAmount)
     );
     return await timings.measure('serialize', async () => {
       let responseData: { [k: string]: any } = {};
